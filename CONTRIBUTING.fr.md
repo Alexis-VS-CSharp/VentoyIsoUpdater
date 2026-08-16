@@ -1,0 +1,51 @@
+🇬🇧 [English](CONTRIBUTING.md) · 🇫🇷 **Français**
+
+# Contribuer
+
+## Ajouter une distribution
+
+Voir `CLAUDE.md` pour l'architecture générale. En résumé : un fichier
+`sources/<distro>.py` (sous-classe de `BaseChecker`) + une entrée dans
+`data/distros.json`.
+
+`sources/` est la surface la plus exposée du projet aux contributions
+externes : c'est du code qui fait des requêtes réseau vers des sites tiers et
+qui applique des expressions régulières à des noms de fichiers. Avant
+d'ouvrir une PR sur `sources/` ou `data/distros.json`, merci de vérifier :
+
+- **HTTPS uniquement.** Pas d'URL `http://` sauf impossibilité technique
+  documentée dans un commentaire (cas réel : le certificat TLS de
+  `download.proxmox.com` ne correspond pas à son propre nom d'hôte — voir
+  `sources/proxmox.py`, qui utilise `enterprise.proxmox.com` à la place).
+- **`timeout=` obligatoire** sur chaque appel `requests.get`/`head`/`post`.
+- **Jamais `shell=True`**, `eval`, `exec`, `pickle` ou `yaml.load`.
+- **Empreinte réelle si disponible.** Si la source publie un fichier de
+  sommes de contrôle (`SHA256SUMS`, `CHECKSUM`, `*.sha256`…), renseignez le
+  champ `checksum=` de `VersionInfo` — pas seulement `checksum_type=`, qui
+  seul ne déclenche aucune vérification (voir `core/downloader.py`). Les
+  helpers `sources/_checksum.py::fetch_sha256sums` /
+  `fetch_bsd_sha256` couvrent les deux formats les plus courants. Si aucune
+  empreinte n'est publiée, ne renseignez ni l'un ni l'autre plutôt que de
+  laisser croire à une vérification qui n'a pas lieu.
+- **Regex sans backtracking catastrophique.** Évitez les motifs imbriqués du
+  type `(.*)+` ou `(\d+)+` appliqués à du texte non fiable (nom de fichier
+  scanné sur la clé, réponse HTML d'un site tiers) — préférez des classes de
+  caractères précises (`[\d.]+`, etc.), comme le fait déjà le reste de
+  `sources/`.
+- **Échecs journalisés, pas seulement avalés.** `except Exception: return
+  None`/`[]` est le pattern attendu (une source injoignable ne doit pas
+  planter l'appli), mais ajoutez un `logger.debug(...)` (voir
+  `core/logger.py`) pour qu'un vrai bug reste diagnosticable plutôt
+  qu'indiscernable d'un site simplement indisponible.
+
+## Tests
+
+```bash
+.venv/bin/pytest tests/ -v
+```
+
+Toute nouvelle logique dans `core/` mérite un test dans `tests/`. Les
+vérificateurs de `sources/` ne sont pas unitairement testés un par un (ce
+serait 64 suites dépendantes du réseau) — `tests/test_version_checker.py`
+et `tests/test_base_checker.py` couvrent le contrat commun (`BaseChecker`,
+`VersionInfo`, orchestration).

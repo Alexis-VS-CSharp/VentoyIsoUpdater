@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Outils de packaging
+tools/appimagetool-x86_64.AppImage
+
+# Logs et config locale
+*.log
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Config locale et fichiers d'agents IA (chemins absolus et permissions propres à la machine)
+CLAUDE.md
+.claude/
+.cursor/
+.aider*

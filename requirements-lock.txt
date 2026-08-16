@@ -1,0 +1,25 @@
+# Verrouillage reproductible des dépendances d'exécution (HARD-4 de l'audit).
+#
+# requirements.txt reste la source de vérité (plages de versions volontairement
+# larges, pour rester compatible avec les distributions qui packagent l'app).
+# Ce fichier fige des versions exactes connues pour fonctionner ensemble —
+# utile pour des builds reproductibles (CI, packaging) et pour que
+# `pip-audit` ait des versions précises à vérifier.
+#
+# Régénération : dans un venv propre avec les dépendances de requirements.txt
+# installées,
+#   pip freeze | grep -iE "customtkinter|pillow|requests|packaging|darkdetect|certifi|charset|idna|urllib3"
+# ou, si pip-tools est disponible :
+#   pip-compile requirements.txt -o requirements-lock.txt
+
+customtkinter==5.2.2
+darkdetect==0.8.0
+pillow==12.3.0
+requests==2.33.0
+packaging==24.2
+
+# Dépendances transitives de requests
+certifi==2026.1.4
+charset-normalizer==3.4.4
+idna==3.15
+urllib3==2.7.0

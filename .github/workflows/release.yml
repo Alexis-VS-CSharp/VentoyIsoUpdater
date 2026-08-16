@@ -1,0 +1,137 @@
+name: Release
+
+# Se déclenche sur un tag de version poussé sur le dépôt, ex. :
+#   git tag v1.2.3 && git push origin v1.2.3
+# Construit les paquets Linux (.deb/.rpm/.AppImage) et Windows
+# (.zip portable + installateur .exe), puis les attache à une Release
+# GitHub créée automatiquement pour ce tag.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write   # nécessaire pour créer la Release et y uploader des fichiers
+
+jobs:
+  tests:
+    name: Tests (garde-fou avant release)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+      - run: pytest tests/ -v
+
+  build-linux:
+    name: Build Linux (.deb/.rpm/.AppImage)
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dérive le numéro de version depuis le tag (vX.Y.Z → X.Y.Z)
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Installe les dépendances système (rpmbuild, dpkg-deb, fuse pour AppImage)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq rpm dpkg-dev libfuse2 || true
+
+      - name: Build de l'exécutable
+        run: ./build.sh
+
+      - name: Package .deb
+        run: VERSION="$VERSION" ./package_deb.sh
+
+      - name: Package .rpm
+        run: VERSION="$VERSION" ./package_rpm.sh
+
+      - name: Package .AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"   # appimagetool sans FUSE natif (ne dépend pas du runner)
+        run: VERSION="$VERSION" ./package_appimage.sh
+
+      - name: Upload des artefacts Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            dist/linux/*.deb
+            dist/linux/*.rpm
+            dist/linux/*.AppImage
+          if-no-files-found: error
+
+  build-windows:
+    name: Build Windows (.zip + installateur)
+    needs: tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dérive le numéro de version depuis le tag (vX.Y.Z → X.Y.Z)
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Installe les dépendances Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Build de l'exécutable
+        shell: cmd
+        run: build.bat < nul
+
+      - name: Package .zip portable
+        shell: cmd
+        run: package_zip_win.bat < nul
+
+      - name: Installe Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Package installateur .exe
+        shell: cmd
+        run: package_installer_win.bat < nul
+
+      - name: Upload des artefacts Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-packages
+          # Seuls le zip portable et l'installateur sont des livrables destinés
+          # à l'utilisateur — dist/windows/VentoyIsoUpdater.exe est le binaire
+          # brut intermédiaire (déjà inclus dans les deux), pas un artefact
+          # de release à part entière.
+          path: |
+            dist/windows/*.zip
+            dist/windows/*-windows-setup.exe
+          if-no-files-found: error
+
+  release:
+    name: Publie la Release GitHub
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Crée la Release et attache les paquets
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/linux-packages/*
+            artifacts/windows-packages/*

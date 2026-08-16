@@ -1,0 +1,1658 @@
+{
+  "version": "1.1",
+  "distros": [
+    {
+      "id": "ubuntu_desktop",
+      "name": "Ubuntu Desktop",
+      "category": "linux",
+      "filename_patterns": [
+        "(?<![a-zA-Z])ubuntu-[\\d.]+-desktop(?:-legacy)?-amd64\\.iso"
+      ],
+      "version_regex": "ubuntu-([\\d.]+)-desktop",
+      "checker": "ubuntu",
+      "checker_variant": "desktop",
+      "logo_filename": "ubuntu.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "homepage": "https://ubuntu.com/download/desktop",
+      "grub_class": "ubuntu"
+    },
+    {
+      "id": "ubuntu_server",
+      "name": "Ubuntu Server",
+      "category": "linux",
+      "filename_patterns": [
+        "(?<![a-zA-Z])ubuntu-[\\d.]+-(?:live-)?server-amd64\\.iso"
+      ],
+      "version_regex": "ubuntu-([\\d.]+)-(?:live-)?server",
+      "checker": "ubuntu",
+      "checker_variant": "server",
+      "logo_filename": "ubuntu.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "homepage": "https://ubuntu.com/download/server",
+      "grub_class": "ubuntu"
+    },
+    {
+      "id": "debian",
+      "name": "Debian",
+      "category": "linux",
+      "filename_patterns": [
+        "debian-[\\d.]+-amd64-(?:netinst|DVD-1)\\.iso"
+      ],
+      "version_regex": "debian-([\\d.]+)-",
+      "checker": "debian",
+      "checker_variant": null,
+      "logo_filename": "debian.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/debian.png",
+      "homepage": "https://www.debian.org/distrib/netinst",
+      "grub_class": "debian"
+    },
+    {
+      "id": "fedora_workstation",
+      "name": "Fedora Workstation",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-Workstation-Live-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-Workstation-Live-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Fedora-Workstation-Live-(?:x86_64-)?([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "Workstation",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/workstation/download",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "fedora_server",
+      "name": "Fedora Server",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-Server-(?:dvd|netinst)-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-Server-(?:dvd|netinst)-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Fedora-Server-[^-]+-(?:x86_64-)?([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "Server",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/server/download",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "linuxmint_cinnamon",
+      "name": "Linux Mint Cinnamon",
+      "category": "linux",
+      "filename_patterns": [
+        "linuxmint-[\\d.]+-cinnamon-64bit\\.iso"
+      ],
+      "version_regex": "linuxmint-([\\d.]+)-cinnamon",
+      "checker": "linuxmint",
+      "checker_variant": "cinnamon",
+      "logo_filename": "linuxmint.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/mint.png",
+      "homepage": "https://www.linuxmint.com/download.php",
+      "grub_class": "linuxmint"
+    },
+    {
+      "id": "linuxmint_mate",
+      "name": "Linux Mint MATE",
+      "category": "linux",
+      "filename_patterns": [
+        "linuxmint-[\\d.]+-mate-64bit\\.iso"
+      ],
+      "version_regex": "linuxmint-([\\d.]+)-mate",
+      "checker": "linuxmint",
+      "checker_variant": "mate",
+      "logo_filename": "linuxmint.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/mint.png",
+      "homepage": "https://www.linuxmint.com/download.php",
+      "grub_class": "linuxmint"
+    },
+    {
+      "id": "linuxmint_xfce",
+      "name": "Linux Mint XFCE",
+      "category": "linux",
+      "filename_patterns": [
+        "linuxmint-[\\d.]+-xfce-64bit\\.iso"
+      ],
+      "version_regex": "linuxmint-([\\d.]+)-xfce",
+      "checker": "linuxmint",
+      "checker_variant": "xfce",
+      "logo_filename": "linuxmint.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/mint.png",
+      "homepage": "https://www.linuxmint.com/download.php",
+      "grub_class": "linuxmint"
+    },
+    {
+      "id": "arch",
+      "name": "Arch Linux",
+      "category": "linux",
+      "filename_patterns": [
+        "archlinux-(?:\\d{4}\\.\\d{2}\\.\\d{2}-)?x86_64\\.iso"
+      ],
+      "version_regex": "archlinux-(\\d{4}\\.\\d{2}\\.\\d{2})-",
+      "checker": "arch",
+      "checker_variant": null,
+      "logo_filename": "arch.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/arch.png",
+      "homepage": "https://archlinux.org/download",
+      "grub_class": "arch"
+    },
+    {
+      "id": "manjaro_kde",
+      "name": "Manjaro KDE",
+      "category": "linux",
+      "filename_patterns": [
+        "manjaro-kde-[\\d.]+-[\\d.]+-x86_64\\.iso"
+      ],
+      "version_regex": "manjaro-kde-([\\d.]+)-",
+      "checker": "manjaro",
+      "checker_variant": "kde",
+      "logo_filename": "manjaro.png",
+      "logo_url": "https://manjaro.org/img/logo/vector/manjaro-logo-vector.svg",
+      "homepage": "https://manjaro.org/download/",
+      "grub_class": "manjaro"
+    },
+    {
+      "id": "manjaro_gnome",
+      "name": "Manjaro GNOME",
+      "category": "linux",
+      "filename_patterns": [
+        "manjaro-gnome-[\\d.]+-[\\d.]+-x86_64\\.iso"
+      ],
+      "version_regex": "manjaro-gnome-([\\d.]+)-",
+      "checker": "manjaro",
+      "checker_variant": "gnome",
+      "logo_filename": "manjaro.png",
+      "logo_url": "https://manjaro.org/img/logo/vector/manjaro-logo-vector.svg",
+      "homepage": "https://manjaro.org/download/",
+      "grub_class": "manjaro"
+    },
+    {
+      "id": "manjaro_xfce",
+      "name": "Manjaro XFCE",
+      "category": "linux",
+      "filename_patterns": [
+        "manjaro-xfce-[\\d.]+-[\\d.]+-x86_64\\.iso"
+      ],
+      "version_regex": "manjaro-xfce-([\\d.]+)-",
+      "checker": "manjaro",
+      "checker_variant": "xfce",
+      "logo_filename": "manjaro.png",
+      "logo_url": "https://manjaro.org/img/logo/vector/manjaro-logo-vector.svg",
+      "homepage": "https://manjaro.org/download/",
+      "grub_class": "manjaro"
+    },
+    {
+      "id": "endeavouros",
+      "name": "EndeavourOS",
+      "category": "linux",
+      "filename_patterns": [
+        "EndeavourOS[_-](?:[A-Za-z]+[_-])*\\d{4}\\.\\d{2}\\.\\d{2}[^.]*\\.iso"
+      ],
+      "version_regex": "EndeavourOS[_-](?:[A-Za-z]+[_-])*(\\d{4}\\.\\d{2}\\.\\d{2})",
+      "checker": "endeavouros",
+      "checker_variant": null,
+      "logo_filename": "endeavouros.png",
+      "logo_url": "https://endeavouros.com/wp-content/uploads/2021/08/cropped-endeavour-logo-1-270x270.png",
+      "homepage": "https://endeavouros.com/",
+      "grub_class": "endeavouros"
+    },
+    {
+      "id": "opensuse_leap",
+      "name": "openSUSE Leap",
+      "category": "linux",
+      "filename_patterns": [
+        "openSUSE-Leap-[\\d.]+-DVD-x86_64[^.]*\\.iso"
+      ],
+      "version_regex": "openSUSE-Leap-([\\d.]+)-",
+      "checker": "opensuse",
+      "checker_variant": "leap",
+      "logo_filename": "opensuse.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/suse.png",
+      "homepage": "https://get.opensuse.org/leap/",
+      "grub_class": "opensuse"
+    },
+    {
+      "id": "opensuse_tumbleweed",
+      "name": "openSUSE Tumbleweed",
+      "category": "linux",
+      "filename_patterns": [
+        "openSUSE-Tumbleweed-DVD-x86_64[^.]*\\.iso"
+      ],
+      "version_regex": "Tumbleweed-DVD-x86_64-(\\d+)",
+      "checker": "opensuse",
+      "checker_variant": "tumbleweed",
+      "logo_filename": "opensuse.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/suse.png",
+      "homepage": "https://get.opensuse.org/tumbleweed/",
+      "grub_class": "opensuse"
+    },
+    {
+      "id": "popos_intel",
+      "name": "Pop!_OS (Intel/AMD)",
+      "category": "linux",
+      "filename_patterns": [
+        "pop-os_[\\d.]+_amd64_intel_\\d+\\.iso"
+      ],
+      "version_regex": "pop-os_([\\d.]+)_amd64",
+      "checker": "popos",
+      "checker_variant": "intel",
+      "logo_filename": "popos.png",
+      "logo_url": "local:Pop!OS.png",
+      "homepage": "https://pop.system76.com/",
+      "grub_class": "popos"
+    },
+    {
+      "id": "popos_nvidia",
+      "name": "Pop!_OS (NVIDIA)",
+      "category": "linux",
+      "filename_patterns": [
+        "pop-os_[\\d.]+_amd64_nvidia_\\d+\\.iso"
+      ],
+      "version_regex": "pop-os_([\\d.]+)_amd64",
+      "checker": "popos",
+      "checker_variant": "nvidia",
+      "logo_filename": "popos.png",
+      "logo_url": "local:Pop!OS.png",
+      "homepage": "https://pop.system76.com/",
+      "grub_class": "popos"
+    },
+    {
+      "id": "elementary",
+      "name": "elementary OS",
+      "category": "linux",
+      "filename_patterns": [
+        "elementaryos-[\\d.]+-stable-amd64\\.\\d+\\.iso"
+      ],
+      "version_regex": "elementaryos-([\\d.]+)-stable",
+      "checker": "elementary",
+      "logo_filename": "elementary.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/elementary.png",
+      "homepage": "https://elementary.io/",
+      "grub_class": "elementary"
+    },
+    {
+      "id": "zorin_core",
+      "name": "Zorin OS Core",
+      "category": "linux",
+      "filename_patterns": [
+        "Zorin-OS-[\\d.]+-Core-64-bit(?:-r\\d+)?\\.iso"
+      ],
+      "version_regex": "Zorin-OS-([\\d.]+)-",
+      "checker": "zorin",
+      "checker_variant": "core",
+      "logo_filename": "Zorin.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/zorin.png",
+      "homepage": "https://zorin.com/os/download/18/core/",
+      "grub_class": "Zorin"
+    },
+    {
+      "id": "zorin_education",
+      "name": "Zorin OS Education",
+      "category": "linux",
+      "filename_patterns": [
+        "Zorin-OS-[\\d.]+-Education-64-bit(?:-r\\d+)?\\.iso"
+      ],
+      "version_regex": "Zorin-OS-([\\d.]+)-",
+      "checker": "zorin",
+      "checker_variant": "education",
+      "logo_filename": "Zorin.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/zorin.png",
+      "homepage": "https://zorin.com/os/download/18/education/",
+      "grub_class": "Zorin"
+    },
+    {
+      "id": "mxlinux_xfce",
+      "name": "MX Linux XFCE",
+      "category": "linux",
+      "filename_patterns": [
+        "MX-[\\d.]+_x86_64\\.iso"
+      ],
+      "version_regex": "MX-([\\d.]+)_x86_64",
+      "checker": "mxlinux",
+      "checker_variant": "xfce",
+      "logo_filename": "mxlinux.png",
+      "logo_url": "https://mxlinux.org/wp-content/uploads/sites/2/2020/01/mxlinux-logo.png",
+      "homepage": "https://mxlinux.org/download-links/",
+      "grub_class": "mxlinux"
+    },
+    {
+      "id": "mxlinux_kde",
+      "name": "MX Linux KDE",
+      "category": "linux",
+      "filename_patterns": [
+        "MX-[\\d.]+_KDE_x86_64\\.iso"
+      ],
+      "version_regex": "MX-([\\d.]+)_KDE",
+      "checker": "mxlinux",
+      "checker_variant": "kde",
+      "logo_filename": "mxlinux.png",
+      "logo_url": "https://mxlinux.org/wp-content/uploads/sites/2/2020/01/mxlinux-logo.png",
+      "homepage": "https://mxlinux.org/download-links/",
+      "grub_class": "mxlinux"
+    },
+    {
+      "id": "kali",
+      "name": "Kali Linux",
+      "category": "security",
+      "filename_patterns": [
+        "kali-linux-[\\d.]+-(?:installer|live)-amd64\\.iso"
+      ],
+      "version_regex": "kali-linux-([\\d.]+)-",
+      "checker": "kali",
+      "checker_variant": null,
+      "logo_filename": "kali.png",
+      "logo_url": "https://www.kali.org/images/kali-logo.svg",
+      "homepage": "https://www.kali.org/get-kali",
+      "grub_class": "kali"
+    },
+    {
+      "id": "tails",
+      "name": "Tails OS",
+      "category": "security",
+      "filename_patterns": [
+        "tails-(?:amd64-)?[\\d.]+\\.(?:iso|img)"
+      ],
+      "version_regex": "tails(?:-amd64)?-([\\d.]+)",
+      "checker": "tails",
+      "checker_variant": null,
+      "logo_filename": "tails.png",
+      "logo_url": "https://tails.net/favicon.ico",
+      "homepage": "https://tails.net/install/download/",
+      "grub_class": "tails"
+    },
+    {
+      "id": "nixos_gnome",
+      "name": "NixOS GNOME",
+      "category": "linux",
+      "filename_patterns": [
+        "nixos-gnome-[\\d.]+-x86_64-linux\\.iso",
+        "nixos-graphical-[\\w.-]+-x86_64-linux\\.iso"
+      ],
+      "version_regex": "nixos-(?:gnome|graphical)-([\\w.-]+)-x86_64",
+      "checker": "nixos",
+      "checker_variant": "gnome",
+      "logo_filename": "nixos.png",
+      "logo_url": "https://nixos.org/logo/nixos-logo-only-hires.png",
+      "homepage": "https://nixos.org/download",
+      "grub_class": "nixos"
+    },
+    {
+      "id": "nixos_minimal",
+      "name": "NixOS Minimal",
+      "category": "linux",
+      "filename_patterns": [
+        "nixos-minimal-[\\d.]+-x86_64-linux\\.iso"
+      ],
+      "version_regex": "nixos-minimal-([\\d.]+)",
+      "checker": "nixos",
+      "checker_variant": "minimal",
+      "logo_filename": "nixos.png",
+      "logo_url": "https://nixos.org/logo/nixos-logo-only-hires.png",
+      "homepage": "https://nixos.org/download",
+      "grub_class": "nixos"
+    },
+    {
+      "id": "rocky",
+      "name": "Rocky Linux",
+      "category": "linux",
+      "filename_patterns": [
+        "Rocky-[\\d.]+-x86_64-(?:dvd|minimal|boot)\\.iso"
+      ],
+      "version_regex": "Rocky-([\\d.]+)-",
+      "checker": "rocky",
+      "checker_variant": null,
+      "logo_filename": "rocky.png",
+      "logo_url": "https://rockylinux.org/favicon.png",
+      "homepage": "https://rockylinux.org/download",
+      "grub_class": "rocky"
+    },
+    {
+      "id": "almalinux",
+      "name": "AlmaLinux",
+      "category": "linux",
+      "filename_patterns": [
+        "AlmaLinux-[\\d.]+-x86_64-(?:dvd|minimal|boot)\\.iso"
+      ],
+      "version_regex": "AlmaLinux-([\\d.]+)-",
+      "checker": "almalinux",
+      "checker_variant": null,
+      "logo_filename": "almalinux.png",
+      "logo_url": "https://almalinux.org/images/almalinux-logo.svg",
+      "homepage": "https://almalinux.org/get-almalinux",
+      "grub_class": "almalinux"
+    },
+    {
+      "id": "garuda_dr460nized",
+      "name": "Garuda Dr460nized",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-dr460nized-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-dr460nized-([\\d]+)",
+      "checker": "garuda",
+      "checker_variant": "dr460nized",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_kde",
+      "name": "Garuda KDE Lite",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-kde-lite-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-kde-lite-([\\d]+)",
+      "checker": "garuda",
+      "checker_variant": "kde-lite",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_dr460nized_gaming",
+      "name": "Garuda Dr460nized Gaming",
+      "category": "gaming",
+      "filename_patterns": [
+        "garuda-dr460nized-gaming-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-dr460nized-gaming-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "dr460nized-gaming",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_gnome",
+      "name": "Garuda GNOME",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-gnome-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-gnome-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "gnome",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_cinnamon",
+      "name": "Garuda Cinnamon",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-cinnamon-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-cinnamon-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "cinnamon",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_xfce",
+      "name": "Garuda Xfce",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-xfce-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-xfce-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "xfce",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_hyprland",
+      "name": "Garuda Hyprland",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-hyprland-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-hyprland-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "hyprland",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_sway",
+      "name": "Garuda Sway",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-sway-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-sway-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "sway",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_i3",
+      "name": "Garuda i3",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-i3-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-i3-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "i3",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "garuda_mokka",
+      "name": "Garuda Mokka",
+      "category": "linux",
+      "filename_patterns": [
+        "garuda-mokka-[^.]+\\.iso"
+      ],
+      "version_regex": "garuda-mokka-linux-[a-z]+-(\\d+)",
+      "checker": "garuda",
+      "checker_variant": "mokka",
+      "logo_filename": "garuda.png",
+      "logo_url": "https://garudalinux.org/favicon.ico",
+      "homepage": "https://garudalinux.org/downloads",
+      "grub_class": "garuda"
+    },
+    {
+      "id": "freebsd",
+      "name": "FreeBSD",
+      "category": "bsd",
+      "filename_patterns": [
+        "FreeBSD-[\\d.]+-RELEASE-amd64-(?:dvd\\d?|disc1|memstick)\\.iso"
+      ],
+      "version_regex": "FreeBSD-([\\d.]+-RELEASE)",
+      "checker": "freebsd",
+      "checker_variant": null,
+      "logo_filename": "freebsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/freebsd.png",
+      "homepage": "https://www.freebsd.org/where/",
+      "grub_class": "freebsd"
+    },
+    {
+      "id": "bazzite",
+      "name": "Bazzite",
+      "category": "gaming",
+      "filename_patterns": [
+        "^bazzite-(?!gnome|deck)[^.]+\\.iso"
+      ],
+      "version_regex": "bazzite.*?-([\\d.]+)",
+      "checker": "bazzite",
+      "checker_variant": null,
+      "logo_filename": "bazzite.png",
+      "logo_url": "https://bazzite.gg/favicon.ico",
+      "homepage": "https://bazzite.gg/",
+      "grub_class": "bazzite"
+    },
+    {
+      "id": "bazzite_deck",
+      "name": "Bazzite Steam Deck",
+      "category": "gaming",
+      "filename_patterns": [
+        "bazzite-deck-[^.]+\\.iso"
+      ],
+      "version_regex": "bazzite-deck.*?-([\\d.]+)",
+      "checker": "bazzite",
+      "checker_variant": "deck",
+      "logo_filename": "bazzite.png",
+      "logo_url": "https://bazzite.gg/favicon.ico",
+      "homepage": "https://bazzite.gg/",
+      "grub_class": "bazzite"
+    },
+    {
+      "id": "nobara",
+      "name": "Nobara Project",
+      "category": "gaming",
+      "filename_patterns": [
+        "Nobara-[\\d.]+[^.]*\\.iso"
+      ],
+      "version_regex": "Nobara-([\\d.]+)",
+      "checker": "nobara",
+      "checker_variant": null,
+      "logo_filename": "nobara.png",
+      "logo_url": "https://nobaraproject.org/wp-content/uploads/2022/01/nobara-hat-logo.svg",
+      "homepage": "https://nobaraproject.org/download-nobara/",
+      "grub_class": "nobara"
+    },
+    {
+      "id": "chimeraos",
+      "name": "ChimeraOS",
+      "category": "gaming",
+      "filename_patterns": [
+        "chimeraos-[\\d.]+-[^.]+\\.iso"
+      ],
+      "version_regex": "chimeraos-([\\d.]+)",
+      "checker": "chimeraos",
+      "checker_variant": null,
+      "logo_filename": "chimeraos.png",
+      "logo_url": "https://chimeraos.org/favicon.ico",
+      "homepage": "https://chimeraos.org/",
+      "grub_class": "chimeraos"
+    },
+    {
+      "id": "batocera",
+      "name": "Batocera",
+      "category": "gaming",
+      "filename_patterns": [
+        "batocera-x86_64-[\\d.]+-[^.]+\\.img\\.gz"
+      ],
+      "version_regex": "batocera[_-](?:x86_64[_-])?([\\d.]+)",
+      "checker": "batocera",
+      "checker_variant": null,
+      "logo_filename": "batocera.png",
+      "logo_url": "https://batocera.org/favicon.ico",
+      "homepage": "https://batocera.org/",
+      "grub_class": "batocera"
+    },
+    {
+      "id": "proxmox",
+      "name": "Proxmox VE",
+      "category": "server",
+      "filename_patterns": [
+        "proxmox-ve_[\\d.]+-[\\d]+\\.iso"
+      ],
+      "version_regex": "proxmox-ve_([\\d.]+-[\\d]+)",
+      "checker": "proxmox",
+      "checker_variant": null,
+      "logo_filename": "proxmox.png",
+      "logo_url": "local:proxmox.png",
+      "homepage": "https://www.proxmox.com/en/downloads",
+      "grub_class": "proxmox"
+    },
+    {
+      "id": "truenas_scale",
+      "name": "TrueNAS",
+      "category": "server",
+      "filename_patterns": [
+        "TrueNAS-SCALE-[\\w.-]+\\.iso",
+        "TrueNAS-CORE-[\\d.]+(?:U[\\d.]+)?\\.iso"
+      ],
+      "version_regex": "TrueNAS-(?:SCALE|CORE)[_-]([\\w.]+)",
+      "checker": "truenas",
+      "checker_variant": "scale",
+      "logo_filename": "truenas.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/freenas.png",
+      "homepage": "https://www.truenas.com/truenas-scale/",
+      "grub_class": "truenas"
+    },
+    {
+      "id": "opnsense",
+      "name": "OPNsense",
+      "category": "server",
+      "filename_patterns": [
+        "OPNsense-[\\d.]+-(?:dvd|vga)-amd64\\.iso(?:\\.bz2)?"
+      ],
+      "version_regex": "OPNsense-([\\d.]+)-",
+      "checker": "opnsense",
+      "checker_variant": "dvd",
+      "logo_filename": "opnsense.png",
+      "logo_url": "https://opnsense.org/favicon.ico",
+      "homepage": "https://opnsense.org/download/",
+      "grub_class": "opnsense"
+    },
+    {
+      "id": "windows10",
+      "name": "Windows 10",
+      "category": "windows",
+      "filename_patterns": [
+        "[Ww]in(?:dows)?[-_]?10.*\\.iso",
+        "Win10_.*\\.iso"
+      ],
+      "version_regex": null,
+      "checker": "windows",
+      "checker_variant": "10",
+      "logo_filename": "windows.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/redmond.png",
+      "homepage": "https://www.microsoft.com/software-download/windows10ISO",
+      "grub_class": "windows"
+    },
+    {
+      "id": "windows11",
+      "name": "Windows 11",
+      "category": "windows",
+      "filename_patterns": [
+        "[Ww]in(?:dows)?[-_]?11.*\\.iso",
+        "Win11_.*\\.iso"
+      ],
+      "version_regex": null,
+      "checker": "windows",
+      "checker_variant": "11",
+      "logo_filename": "windows.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/redmond.png",
+      "homepage": "https://www.microsoft.com/software-download/windows11",
+      "grub_class": "windows"
+    },
+    {
+      "id": "windows_server_2025",
+      "name": "Windows Server 2025",
+      "category": "server",
+      "filename_patterns": [
+        "[Ww]indows[._-]?[Ss]erver[._-]?2025.*\\.iso"
+      ],
+      "version_regex": null,
+      "checker": "windows",
+      "checker_variant": "server2025",
+      "logo_filename": "windows.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/redmond.png",
+      "homepage": "https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2025",
+      "grub_class": "windows"
+    },
+    {
+      "id": "windows_server_2022",
+      "name": "Windows Server 2022",
+      "category": "server",
+      "filename_patterns": [
+        "[Ww]indows[._-]?[Ss]erver[._-]?2022.*\\.iso"
+      ],
+      "version_regex": null,
+      "checker": "windows",
+      "checker_variant": "server2022",
+      "logo_filename": "windows.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/redmond.png",
+      "homepage": "https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022",
+      "grub_class": "windows"
+    },
+    {
+      "id": "windows_server_2019",
+      "name": "Windows Server 2019",
+      "category": "server",
+      "filename_patterns": [
+        "[Ww]indows[._-]?[Ss]erver[._-]?2019.*\\.iso"
+      ],
+      "version_regex": null,
+      "checker": "windows",
+      "checker_variant": "server2019",
+      "logo_filename": "windows.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/redmond.png",
+      "homepage": "https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2019",
+      "grub_class": "windows"
+    },
+    {
+      "id": "kubuntu",
+      "name": "Kubuntu",
+      "category": "linux",
+      "filename_patterns": [
+        "kubuntu-[\\d.]+-desktop-amd64\\.iso"
+      ],
+      "version_regex": "kubuntu-([\\d.]+)-",
+      "checker": "ubuntu_flavors",
+      "checker_variant": "kubuntu",
+      "logo_filename": "kubuntu.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/kubuntu.png",
+      "homepage": "https://kubuntu.org/getkubuntu/",
+      "grub_class": "kubuntu"
+    },
+    {
+      "id": "xubuntu",
+      "name": "Xubuntu",
+      "category": "linux",
+      "filename_patterns": [
+        "xubuntu-[\\d.]+-desktop-amd64\\.iso"
+      ],
+      "version_regex": "xubuntu-([\\d.]+)-",
+      "checker": "ubuntu_flavors",
+      "checker_variant": "xubuntu",
+      "logo_filename": "xubuntu.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/xubuntu.png",
+      "homepage": "https://xubuntu.org/download/",
+      "grub_class": "xubuntu"
+    },
+    {
+      "id": "lubuntu",
+      "name": "Lubuntu",
+      "category": "linux",
+      "filename_patterns": [
+        "lubuntu-[\\d.]+-desktop-amd64\\.iso"
+      ],
+      "version_regex": "lubuntu-([\\d.]+)-",
+      "checker": "ubuntu_flavors",
+      "checker_variant": "lubuntu",
+      "logo_filename": "lubuntu.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/lubuntu.png",
+      "homepage": "https://lubuntu.me/downloads/",
+      "grub_class": "lubuntu"
+    },
+    {
+      "id": "ubuntu_mate",
+      "name": "Ubuntu MATE",
+      "category": "linux",
+      "filename_patterns": [
+        "ubuntu-mate-[\\d.]+-desktop-amd64\\.iso"
+      ],
+      "version_regex": "ubuntu-mate-([\\d.]+)-",
+      "checker": "ubuntu_flavors",
+      "checker_variant": "ubuntu-mate",
+      "logo_filename": "ubuntu-mate.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "homepage": "https://ubuntu-mate.org/download/",
+      "grub_class": "ubuntu-mate"
+    },
+    {
+      "id": "ubuntu_budgie",
+      "name": "Ubuntu Budgie",
+      "category": "linux",
+      "filename_patterns": [
+        "ubuntu-budgie-[\\d.]+-desktop-amd64\\.iso"
+      ],
+      "version_regex": "ubuntu-budgie-([\\d.]+)-",
+      "checker": "ubuntu_flavors",
+      "checker_variant": "ubuntu-budgie",
+      "logo_filename": "ubuntu-budgie.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "homepage": "https://ubuntubudgie.org/downloads/",
+      "grub_class": "ubuntu-budgie"
+    },
+    {
+      "id": "ubuntu_studio",
+      "name": "Ubuntu Studio",
+      "category": "linux",
+      "filename_patterns": [
+        "ubuntustudio-[\\d.]+-dvd-amd64\\.iso"
+      ],
+      "version_regex": "ubuntustudio-([\\d.]+)-",
+      "checker": "ubuntu_flavors",
+      "checker_variant": "ubuntustudio",
+      "logo_filename": "ubuntustudio.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntustudio.png",
+      "homepage": "https://ubuntustudio.org/download/",
+      "grub_class": "ubuntustudio"
+    },
+    {
+      "id": "fedora_silverblue",
+      "name": "Fedora Silverblue",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-Silverblue-ostree-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Silverblue-ostree-x86_64-([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "Silverblue",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/silverblue/download/",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "fedora_kinoite",
+      "name": "Fedora Kinoite",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-Kinoite-ostree-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Kinoite-ostree-x86_64-([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "Kinoite",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/kinoite/download/",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "fedora_kde",
+      "name": "Fedora KDE Plasma",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-KDE-Desktop-Live-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-KDE-Desktop-Live-x86_64-[\\d.]+-[\\d.]+\\.iso",
+        "Fedora-KDE-Live-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-KDE-Live-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Fedora-KDE-(?:Desktop-)?Live-(?:x86_64-)?([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "KDE",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/spins/kde/download/",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "fedora_xfce",
+      "name": "Fedora Xfce",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-Xfce-Live-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-Xfce-Live-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Fedora-Xfce-Live-(?:x86_64-)?([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "Xfce",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/spins/xfce/download/",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "fedora_cinnamon",
+      "name": "Fedora Cinnamon",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-Cinnamon-Live-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-Cinnamon-Live-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Fedora-Cinnamon-Live-(?:x86_64-)?([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "Cinnamon",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/spins/cinnamon/download/",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "fedora_mate",
+      "name": "Fedora MATE",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-MATE_Compiz-Live-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-MATE_Compiz-Live-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Fedora-MATE_Compiz-Live-(?:x86_64-)?([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "MATE",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/spins/mate/download/",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "fedora_lxqt",
+      "name": "Fedora LXQt",
+      "category": "linux",
+      "filename_patterns": [
+        "Fedora-LXQt-Live-[\\d.]+-[\\d.]+\\.x86_64\\.iso",
+        "Fedora-LXQt-Live-x86_64-[\\d.]+-[\\d.]+\\.iso"
+      ],
+      "version_regex": "Fedora-LXQt-Live-(?:x86_64-)?([\\d]+)-",
+      "checker": "fedora",
+      "checker_variant": "LXQt",
+      "logo_filename": "fedora.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "homepage": "https://fedoraproject.org/spins/lxqt/download/",
+      "grub_class": "fedora"
+    },
+    {
+      "id": "kde_neon",
+      "name": "KDE Neon",
+      "category": "linux",
+      "filename_patterns": [
+        "neon-user-\\d{8}[^.]*-amd64\\.iso",
+        "neon-user-desktop-\\d{8}-\\d+\\.iso"
+      ],
+      "version_regex": "neon-user-(?:desktop-)?(\\d{8})",
+      "checker": "kde_neon",
+      "checker_variant": null,
+      "logo_filename": "kde_neon.png",
+      "logo_url": "https://neon.kde.org/images/logo.png",
+      "homepage": "https://neon.kde.org/download",
+      "grub_class": "kde_neon"
+    },
+    {
+      "id": "cachyos",
+      "name": "CachyOS",
+      "category": "linux",
+      "filename_patterns": [
+        "cachyos-[^.]+\\.iso",
+        "CachyOS-[^.]+\\.iso"
+      ],
+      "version_regex": "cachyos[^\\d]*(\\d{6,8})",
+      "checker": "cachyos",
+      "checker_variant": null,
+      "logo_filename": "cachyos.png",
+      "logo_url": "https://cachyos.org/favicon.ico",
+      "homepage": "https://cachyos.org/download/",
+      "grub_class": "cachyos"
+    },
+    {
+      "id": "deepin",
+      "name": "Deepin",
+      "category": "linux",
+      "filename_patterns": [
+        "deepin-desktop-community-[\\d.]+-amd64\\.iso",
+        "deepin-[\\d.]+-amd64\\.iso"
+      ],
+      "version_regex": "deepin[^\\d]+(\\d[\\d.]+)",
+      "checker": "deepin",
+      "checker_variant": null,
+      "logo_filename": "deepin.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/deepin.png",
+      "homepage": "https://www.deepin.org/en/download/",
+      "grub_class": "deepin"
+    },
+    {
+      "id": "linux_lite",
+      "name": "Linux Lite",
+      "category": "linux",
+      "filename_patterns": [
+        "linux-lite-[\\d.]+-64bit\\.iso"
+      ],
+      "version_regex": "linux-lite-([\\d.]+)-",
+      "checker": "linux_lite",
+      "checker_variant": null,
+      "logo_filename": "linux_lite.png",
+      "logo_url": "https://www.linuxliteos.com/images/logo.png",
+      "homepage": "https://www.linuxliteos.com/download.html",
+      "grub_class": "linux_lite"
+    },
+    {
+      "id": "peppermint",
+      "name": "Peppermint OS",
+      "category": "linux",
+      "filename_patterns": [
+        "peppermintos-[\\d]+-amd64[^.]*\\.iso",
+        "PeppermintOS-Debian-64\\.iso",
+        "peppermint_devuan-amd64\\.iso"
+      ],
+      "version_regex": "peppermintos-(\\d+)",
+      "checker": "peppermint",
+      "checker_variant": null,
+      "logo_filename": "peppermint.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/peppermint.png",
+      "homepage": "https://peppermintos.com/trixie-base-downloads/",
+      "grub_class": "peppermint"
+    },
+    {
+      "id": "lmde",
+      "name": "LMDE (Linux Mint Debian)",
+      "category": "linux",
+      "filename_patterns": [
+        "lmde-[\\d.]+-cinnamon-64bit\\.iso",
+        "LMDE-\\d+-cinnamon-64bit\\.iso"
+      ],
+      "version_regex": "(?:lmde|LMDE)-([\\d.]+)",
+      "checker": "lmde",
+      "checker_variant": null,
+      "logo_filename": "linuxmint.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/mint.png",
+      "homepage": "https://www.linuxmint.com/download_lmde.php",
+      "grub_class": "linuxmint"
+    },
+    {
+      "id": "solus_budgie",
+      "name": "Solus Budgie",
+      "category": "linux",
+      "filename_patterns": [
+        "Solus-[\\d.]+-Budgie\\.iso",
+        "Solus-Budgie-Release-[\\d-]+\\.iso"
+      ],
+      "version_regex": "Solus-(?:Budgie-Release-)?([\\d.-]+)(?:-Budgie)?\\.iso",
+      "checker": "solus",
+      "checker_variant": "Budgie",
+      "logo_filename": "solus.png",
+      "logo_url": "https://getsol.us/favicon.ico",
+      "homepage": "https://getsol.us/download/",
+      "grub_class": "solus"
+    },
+    {
+      "id": "solus_plasma",
+      "name": "Solus Plasma",
+      "category": "linux",
+      "filename_patterns": [
+        "Solus-[\\d.]+-Plasma\\.iso",
+        "Solus-Plasma-Release-[\\d-]+\\.iso"
+      ],
+      "version_regex": "Solus-(?:Plasma-Release-)?([\\d.-]+)(?:-Plasma)?\\.iso",
+      "checker": "solus",
+      "checker_variant": "Plasma",
+      "logo_filename": "solus.png",
+      "logo_url": "https://getsol.us/favicon.ico",
+      "homepage": "https://getsol.us/download/",
+      "grub_class": "solus"
+    },
+    {
+      "id": "antix",
+      "name": "antiX Linux",
+      "category": "linux",
+      "filename_patterns": [
+        "antiX-[\\d.]+[^.]*amd64\\.iso"
+      ],
+      "version_regex": "antiX-([\\d.]+)",
+      "checker": "antix",
+      "checker_variant": null,
+      "logo_filename": "antix.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/antix.png",
+      "homepage": "https://antixlinux.com/download/",
+      "grub_class": "antix"
+    },
+    {
+      "id": "sparkylinux",
+      "name": "SparkyLinux",
+      "category": "linux",
+      "filename_patterns": [
+        "sparkylinux-[\\d.]+-x86_64-[a-z]+\\.iso"
+      ],
+      "version_regex": "sparkylinux-([\\d.]+)-",
+      "checker": "sparkylinux",
+      "checker_variant": null,
+      "logo_filename": "sparkylinux.png",
+      "logo_url": "https://sparkylinux.org/favicon.ico",
+      "homepage": "https://sparkylinux.org/download/stable/",
+      "grub_class": "sparkylinux"
+    },
+    {
+      "id": "q4os",
+      "name": "Q4OS",
+      "category": "linux",
+      "filename_patterns": [
+        "q4os-[\\d.]+-x86_64[^.]*\\.iso",
+        "q4os-[\\d.]+-x64(?:-\\w+)?\\.r\\d+\\.iso"
+      ],
+      "version_regex": "q4os-([\\d.]+)-",
+      "checker": "q4os",
+      "checker_variant": null,
+      "logo_filename": "q4os.png",
+      "logo_url": "https://q4os.org/img/Q4OS-icon.png",
+      "homepage": "https://q4os.org/downloads1.html",
+      "grub_class": "q4os"
+    },
+    {
+      "id": "mageia",
+      "name": "Mageia",
+      "category": "linux",
+      "filename_patterns": [
+        "Mageia-[\\d.]+-x86_64-DVD\\.iso",
+        "Mageia-[\\d.]+-Live-(?:GNOME|Plasma|Xfce)-x86_64\\.iso"
+      ],
+      "version_regex": "Mageia-([\\d.]+)-",
+      "checker": "mageia",
+      "checker_variant": null,
+      "logo_filename": "mageia.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/mageia.png",
+      "homepage": "https://www.mageia.org/en/downloads/",
+      "grub_class": "mageia"
+    },
+    {
+      "id": "pclinuxos",
+      "name": "PCLinuxOS",
+      "category": "linux",
+      "filename_patterns": [
+        "pclinuxos-[a-z]+-[\\d]+-x86_64\\.iso",
+        "pclinuxos[^.]*\\.iso"
+      ],
+      "version_regex": "pclinuxos[^-]*-(?:[a-z]+-)?([\\d.]+)",
+      "checker": "pclinuxos",
+      "checker_variant": null,
+      "logo_filename": "pclinuxos.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/pclinuxos.png",
+      "homepage": "https://www.pclinuxos.com/?page_id=10",
+      "grub_class": "pclinuxos"
+    },
+    {
+      "id": "void_glibc",
+      "name": "Void Linux (glibc)",
+      "category": "linux",
+      "filename_patterns": [
+        "void-live-x86_64-\\d+\\.iso"
+      ],
+      "version_regex": "void-live-x86_64-(\\d+)",
+      "checker": "void_linux",
+      "checker_variant": "glibc",
+      "logo_filename": "void.png",
+      "logo_url": "https://voidlinux.org/assets/img/void_linux_logo_only.png",
+      "homepage": "https://voidlinux.org/download/",
+      "grub_class": "void"
+    },
+    {
+      "id": "void_musl",
+      "name": "Void Linux (musl)",
+      "category": "linux",
+      "filename_patterns": [
+        "void-live-x86_64-\\d+-musl\\.iso",
+        "void-live-x86_64-musl-\\d+(?:-(?:base|xfce))?\\.iso"
+      ],
+      "version_regex": "void-live-x86_64-(?:musl-)?(\\d+)(?:-musl)?",
+      "checker": "void_linux",
+      "checker_variant": "musl",
+      "logo_filename": "void.png",
+      "logo_url": "https://voidlinux.org/assets/img/void_linux_logo_only.png",
+      "homepage": "https://voidlinux.org/download/",
+      "grub_class": "void"
+    },
+    {
+      "id": "slackware",
+      "name": "Slackware",
+      "category": "linux",
+      "filename_patterns": [
+        "slackware64-[\\d.]+-install-dvd\\.iso"
+      ],
+      "version_regex": "slackware(?:64)?-([\\d.]+)",
+      "checker": "slackware",
+      "checker_variant": null,
+      "logo_filename": "slackware.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/slackware.png",
+      "homepage": "http://www.slackware.com/getslack/",
+      "grub_class": "slackware"
+    },
+    {
+      "id": "gentoo",
+      "name": "Gentoo",
+      "category": "linux",
+      "filename_patterns": [
+        "install-amd64-minimal-[\\d]+T[\\d]+Z\\.iso"
+      ],
+      "version_regex": "install-amd64-minimal-(\\d+T\\d+Z)",
+      "checker": "gentoo",
+      "checker_variant": null,
+      "logo_filename": "gentoo.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/gentoo.png",
+      "homepage": "https://www.gentoo.org/downloads/",
+      "grub_class": "gentoo"
+    },
+    {
+      "id": "vanillaos",
+      "name": "VanillaOS",
+      "category": "linux",
+      "filename_patterns": [
+        "vanilla-os-[^.]+\\.iso",
+        "vanilla_os-[^.]+\\.iso"
+      ],
+      "version_regex": "vanilla[_-]os[_-]?([\\d.]+)",
+      "checker": "vanillaos",
+      "checker_variant": null,
+      "logo_filename": "vanillaos.png",
+      "logo_url": "https://vanillaos.org/favicon.ico",
+      "homepage": "https://vanillaos.org/",
+      "grub_class": "vanillaos"
+    },
+    {
+      "id": "parrot_home",
+      "name": "Parrot OS Home",
+      "category": "security",
+      "filename_patterns": [
+        "Parrot-home-[\\d.]+_amd64\\.iso"
+      ],
+      "version_regex": "Parrot-home-([\\d.]+)_",
+      "checker": "parrot",
+      "checker_variant": "home",
+      "logo_filename": "parrot.png",
+      "logo_url": "https://www.parrotsec.org/favicon.ico",
+      "homepage": "https://www.parrotsec.org/download/",
+      "grub_class": "parrot"
+    },
+    {
+      "id": "parrot_security",
+      "name": "Parrot OS Security",
+      "category": "security",
+      "filename_patterns": [
+        "Parrot-security-[\\d.]+_amd64\\.iso"
+      ],
+      "version_regex": "Parrot-security-([\\d.]+)_",
+      "checker": "parrot",
+      "checker_variant": "security",
+      "logo_filename": "parrot.png",
+      "logo_url": "https://www.parrotsec.org/favicon.ico",
+      "homepage": "https://www.parrotsec.org/download/",
+      "grub_class": "parrot"
+    },
+    {
+      "id": "blackarch",
+      "name": "BlackArch Linux",
+      "category": "security",
+      "filename_patterns": [
+        "blackarch-linux-full-[\\d.]+-x86_64\\.iso",
+        "blackarchlinux-[^.]+\\.iso"
+      ],
+      "version_regex": "blackarch[^\\.]*-(\\d{4}\\.\\d{2}\\.\\d{2})",
+      "checker": "blackarch",
+      "checker_variant": null,
+      "logo_filename": "blackarch.png",
+      "logo_url": "https://blackarch.org/favicon.ico",
+      "homepage": "https://blackarch.org/downloads.html",
+      "grub_class": "blackarch"
+    },
+    {
+      "id": "qubes",
+      "name": "Qubes OS",
+      "category": "security",
+      "filename_patterns": [
+        "Qubes-R[\\d.]+-x86_64\\.iso"
+      ],
+      "version_regex": "Qubes-R([\\d.]+)",
+      "checker": "qubes",
+      "checker_variant": null,
+      "logo_filename": "qubes.png",
+      "logo_url": "https://www.qubes-os.org/attachment/icons/favicon.ico",
+      "homepage": "https://www.qubes-os.org/downloads/",
+      "grub_class": "qubes"
+    },
+    {
+      "id": "whonix",
+      "name": "Whonix",
+      "category": "security",
+      "filename_patterns": [
+        "Whonix[^.]*\\.ova",
+        "Whonix[^.]*\\.iso"
+      ],
+      "version_regex": "Whonix[^\\d]*([\\d.]+)",
+      "checker": "whonix",
+      "checker_variant": null,
+      "logo_filename": "whonix.png",
+      "logo_url": "https://www.whonix.org/favicon.ico",
+      "homepage": "https://www.whonix.org/wiki/Download",
+      "grub_class": "whonix"
+    },
+    {
+      "id": "alpine_standard",
+      "name": "Alpine Linux",
+      "category": "linux",
+      "filename_patterns": [
+        "alpine-standard-[\\d.]+-x86_64\\.iso"
+      ],
+      "version_regex": "alpine-standard-([\\d.]+)-x86_64",
+      "checker": "alpine",
+      "checker_variant": "standard",
+      "logo_filename": "alpine.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/alpine.png",
+      "homepage": "https://alpinelinux.org/downloads/",
+      "grub_class": "alpine"
+    },
+    {
+      "id": "alpine_extended",
+      "name": "Alpine Linux Extended",
+      "category": "linux",
+      "filename_patterns": [
+        "alpine-extended-[\\d.]+-x86_64\\.iso"
+      ],
+      "version_regex": "alpine-extended-([\\d.]+)-x86_64",
+      "checker": "alpine",
+      "checker_variant": "extended",
+      "logo_filename": "alpine.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/alpine.png",
+      "homepage": "https://alpinelinux.org/downloads/",
+      "grub_class": "alpine"
+    },
+    {
+      "id": "lakka",
+      "name": "Lakka",
+      "category": "gaming",
+      "filename_patterns": [
+        "Lakka-Generic\\.x86_64-[\\d.]+\\.img"
+      ],
+      "version_regex": "Lakka-Generic\\.x86_64-([\\d.]+)",
+      "checker": "lakka",
+      "checker_variant": null,
+      "logo_filename": "lakka.png",
+      "logo_url": "https://www.lakka.tv/img/lakka-logo.png",
+      "homepage": "https://www.lakka.tv/get/",
+      "grub_class": "lakka"
+    },
+    {
+      "id": "openbsd",
+      "name": "OpenBSD",
+      "category": "bsd",
+      "filename_patterns": [
+        "install[\\d]+\\.iso"
+      ],
+      "version_regex": "install(\\d\\d)",
+      "checker": "openbsd",
+      "checker_variant": null,
+      "logo_filename": "openbsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/openbsd.png",
+      "homepage": "https://www.openbsd.org/faq/faq4.html",
+      "grub_class": "openbsd"
+    },
+    {
+      "id": "netbsd",
+      "name": "NetBSD",
+      "category": "bsd",
+      "filename_patterns": [
+        "NetBSD-[\\d.]+-amd64\\.iso",
+        "boot\\.iso"
+      ],
+      "version_regex": "NetBSD-([\\d.]+)",
+      "checker": "netbsd",
+      "checker_variant": null,
+      "logo_filename": "netbsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/netbsd.png",
+      "homepage": "https://www.netbsd.org/releases/",
+      "grub_class": "netbsd"
+    },
+    {
+      "id": "ghostbsd",
+      "name": "GhostBSD",
+      "category": "bsd",
+      "filename_patterns": [
+        "GhostBSD[\\d.]+\\.STABLE-[^.]+\\.amd64\\.iso",
+        "GhostBSD-[\\d.]+-R[\\d.]+p?\\d*\\.iso"
+      ],
+      "version_regex": "GhostBSD-?([\\d.]+-R[\\d.]+(?:p\\d+)?|[\\d.]+)",
+      "checker": "ghostbsd",
+      "checker_variant": "mate",
+      "logo_filename": "ghostbsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ghostbsd.png",
+      "homepage": "https://ghostbsd.org/download",
+      "grub_class": "ghostbsd"
+    },
+    {
+      "id": "ghostbsd_xfce",
+      "name": "GhostBSD XFCE",
+      "category": "bsd",
+      "filename_patterns": [
+        "GhostBSD-[\\d.]+-R[\\d.]+p?\\d*-XFCE\\.iso"
+      ],
+      "version_regex": "GhostBSD-([\\d.]+-R[\\d.]+(?:p\\d+)?)-XFCE",
+      "checker": "ghostbsd",
+      "checker_variant": "xfce",
+      "logo_filename": "ghostbsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ghostbsd.png",
+      "homepage": "https://ghostbsd.org/download",
+      "grub_class": "ghostbsd"
+    },
+    {
+      "id": "ghostbsd_gershwin",
+      "name": "GhostBSD GERSHWIN",
+      "category": "bsd",
+      "filename_patterns": [
+        "GhostBSD-[\\d.]+-R[\\d.]+p?\\d*-GERSHWIN\\.iso"
+      ],
+      "version_regex": "GhostBSD-([\\d.]+-R[\\d.]+(?:p\\d+)?)-GERSHWIN",
+      "checker": "ghostbsd",
+      "checker_variant": "gershwin",
+      "logo_filename": "ghostbsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ghostbsd.png",
+      "homepage": "https://ghostbsd.org/download",
+      "grub_class": "ghostbsd"
+    },
+    {
+      "id": "dragonflybsd",
+      "name": "DragonFlyBSD",
+      "category": "bsd",
+      "filename_patterns": [
+        "dfly-x86_64-[\\d.]+_REL\\.iso"
+      ],
+      "version_regex": "dfly-x86_64-([\\d.]+)_REL",
+      "checker": "dragonflybsd",
+      "checker_variant": null,
+      "logo_filename": "dragonflybsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/dragonflybsd.png",
+      "homepage": "https://www.dragonflybsd.org/download/",
+      "grub_class": "dragonflybsd"
+    },
+    {
+      "id": "centos_stream_9",
+      "name": "CentOS Stream 9",
+      "category": "server",
+      "filename_patterns": [
+        "CentOS-Stream-9[^.]*\\.iso"
+      ],
+      "version_regex": "CentOS-Stream-(\\d+)",
+      "checker": "centos_stream",
+      "checker_variant": "9",
+      "logo_filename": "centos.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/centos.png",
+      "homepage": "https://www.centos.org/centos-stream/",
+      "grub_class": "centos"
+    },
+    {
+      "id": "centos_stream_10",
+      "name": "CentOS Stream 10",
+      "category": "server",
+      "filename_patterns": [
+        "CentOS-Stream-10[^.]*\\.iso"
+      ],
+      "version_regex": "CentOS-Stream-(\\d+)",
+      "checker": "centos_stream",
+      "checker_variant": "10",
+      "logo_filename": "centos.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/centos.png",
+      "homepage": "https://www.centos.org/centos-stream/",
+      "grub_class": "centos"
+    },
+    {
+      "id": "oracle_linux",
+      "name": "Oracle Linux",
+      "category": "server",
+      "filename_patterns": [
+        "OracleLinux-R[\\d]+-U[\\d]+-(?:Server-)?x86_64-dvd\\.iso"
+      ],
+      "version_regex": "OracleLinux-R(\\d+)-U(\\d+)",
+      "checker": "oracle_linux",
+      "checker_variant": null,
+      "logo_filename": "oracle.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/oracle.png",
+      "homepage": "https://yum.oracle.com/oracle-linux-isos.html",
+      "grub_class": "oracle"
+    },
+    {
+      "id": "pfsense",
+      "name": "pfSense CE",
+      "category": "server",
+      "filename_patterns": [
+        "pfSense-CE-[\\d.]+-RELEASE-amd64\\.iso(?:\\.gz)?"
+      ],
+      "version_regex": "pfSense-CE-([\\d.]+)-RELEASE",
+      "checker": "pfsense",
+      "checker_variant": null,
+      "logo_filename": "pfsense.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/pfsense.png",
+      "homepage": "https://www.pfsense.org/download/",
+      "grub_class": "pfsense"
+    },
+    {
+      "id": "zentyal",
+      "name": "Zentyal",
+      "category": "server",
+      "filename_patterns": [
+        "zentyal-[\\d.]+-[^.]+\\.iso"
+      ],
+      "version_regex": "zentyal-([\\d.]+)",
+      "checker": "zentyal",
+      "checker_variant": null,
+      "logo_filename": "zentyal.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/zentyal.png",
+      "homepage": "https://zentyal.com/community/",
+      "grub_class": "zentyal"
+    },
+    {
+      "id": "univention",
+      "name": "Univention UCS",
+      "category": "server",
+      "filename_patterns": [
+        "univention-corporate-server[^.]*\\.iso"
+      ],
+      "version_regex": "univention[^\\d]*([\\d.]+)",
+      "checker": "univention",
+      "checker_variant": null,
+      "logo_filename": "univention.png",
+      "logo_url": "https://www.univention.com/favicon.ico",
+      "homepage": "https://www.univention.com/downloads/ucs-download/iso-installation-image/",
+      "grub_class": "univention"
+    },
+    {
+      "id": "systemrescue",
+      "name": "SystemRescue",
+      "category": "server",
+      "filename_patterns": [
+        "systemrescue-[\\d.]+-amd64\\.iso"
+      ],
+      "version_regex": "systemrescue-([\\d.]+)",
+      "checker": "systemrescue",
+      "checker_variant": null,
+      "logo_filename": "systemrescue.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/systemrescue.png",
+      "homepage": "https://www.system-rescue.org/Download/",
+      "grub_class": "systemrescue"
+    },
+    {
+      "id": "clonezilla",
+      "name": "Clonezilla Live",
+      "category": "server",
+      "filename_patterns": [
+        "clonezilla-live-[\\d.]+-\\d+-amd64\\.iso"
+      ],
+      "version_regex": "clonezilla-live-([\\d.]+-\\d+)",
+      "checker": "clonezilla",
+      "checker_variant": null,
+      "logo_filename": "clonezilla.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/clonezilla.png",
+      "homepage": "https://clonezilla.org/downloads.php",
+      "grub_class": "clonezilla"
+    },
+    {
+      "id": "gparted",
+      "name": "GParted Live",
+      "category": "server",
+      "filename_patterns": [
+        "gparted-live-[\\d.]+-\\d+-amd64\\.iso"
+      ],
+      "version_regex": "gparted-live-([\\d.]+-\\d+)",
+      "checker": "gparted",
+      "checker_variant": null,
+      "logo_filename": "gparted.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/gparted.png",
+      "homepage": "https://gparted.org/livecd.php",
+      "grub_class": "gparted"
+    },
+    {
+      "id": "memtest86plus",
+      "name": "Memtest86+",
+      "category": "server",
+      "filename_patterns": [
+        "memtest86\\+-[\\d.]+\\.iso",
+        "memtest86\\+-[\\d.]+\\.img",
+        "memtest86\\+-[\\d.]+-\\d+-iso\\.zip",
+        "mt86plus_[\\d.]+_x86_64\\.iso\\.zip"
+      ],
+      "version_regex": "(?:memtest86\\+-|mt86plus_)(\\d+(?:\\.\\d+)*)(?:-\\d+-iso\\.zip|_x86_64)?",
+      "checker": "memtest86plus",
+      "checker_variant": null,
+      "logo_filename": "memtest86plus.png",
+      "logo_url": "https://www.memtest.org/favicon.ico",
+      "homepage": "https://www.memtest.org/",
+      "grub_class": "memtest86plus"
+    },
+    {
+      "id": "hirens",
+      "name": "Hiren's BootCD PE",
+      "category": "server",
+      "filename_patterns": [
+        "Hirens\\.BootCD\\.[\\d.]+\\.iso",
+        "HBCD_PE_x64\\.iso"
+      ],
+      "version_regex": "Hirens\\.BootCD\\.([\\d.]+)",
+      "checker": "hirens",
+      "checker_variant": null,
+      "logo_filename": "hirens.png",
+      "logo_url": "https://www.hirensbootcd.org/favicon.ico",
+      "homepage": "https://www.hirensbootcd.org/download/",
+      "grub_class": "hirens"
+    }
+  ]
+}

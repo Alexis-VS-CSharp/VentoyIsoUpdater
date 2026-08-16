@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ventoy-iso-updater"
+version = "1.0.0"
+description = "GUI to manage Ventoy USB keys: check for ISO updates, download, and manage themes"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "customtkinter>=5.2.0,<6.0.0",
+    "Pillow>=10.0.0,<12.0.0",
+    "requests>=2.31.0,<3.0.0",
+    "packaging>=23.0,<25.0",
+]
+
+[project.scripts]
+ventoy-iso-updater = "main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "gui*", "sources*"]
+
+[tool.setuptools.package-data]
+"*" = ["data/*.json", "assets/**/*"]
