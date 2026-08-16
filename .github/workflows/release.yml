@@ -1,20 +1,20 @@
 name: Release
 
-# Se déclenche sur un tag de version poussé sur le dépôt, ex. :
+# Triggered by a version tag pushed to the repo, e.g.:
 #   git tag v1.2.3 && git push origin v1.2.3
-# Construit les paquets Linux (.deb/.rpm/.AppImage) et Windows
-# (.zip portable + installateur .exe), puis les attache à une Release
-# GitHub créée automatiquement pour ce tag.
+# Builds the Linux (.deb/.rpm/.AppImage) and Windows (.zip portable +
+# .exe installer) packages, then attaches them to a GitHub Release
+# automatically created for that tag.
 on:
   push:
     tags: ["v*.*.*"]
 
 permissions:
-  contents: write   # nécessaire pour créer la Release et y uploader des fichiers
+  contents: write   # needed to create the Release and upload files to it
 
 jobs:
   tests:
-    name: Tests (garde-fou avant release)
+    name: Tests (safety net before release)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,15 +37,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Dérive le numéro de version depuis le tag (vX.Y.Z → X.Y.Z)
+      - name: Derive the version number from the tag (vX.Y.Z → X.Y.Z)
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
 
-      - name: Installe les dépendances système (rpmbuild, dpkg-deb, fuse pour AppImage)
+      - name: Install system dependencies (rpmbuild, dpkg-deb, fuse for AppImage)
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq rpm dpkg-dev libfuse2 || true
 
-      - name: Build de l'exécutable
+      - name: Build the executable
         run: ./build.sh
 
       - name: Package .deb
@@ -56,10 +56,10 @@ jobs:
 
       - name: Package .AppImage
         env:
-          APPIMAGE_EXTRACT_AND_RUN: "1"   # appimagetool sans FUSE natif (ne dépend pas du runner)
+          APPIMAGE_EXTRACT_AND_RUN: "1"   # appimagetool without native FUSE (runner-independent)
         run: VERSION="$VERSION" ./package_appimage.sh
 
-      - name: Upload des artefacts Linux
+      - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-packages
@@ -70,7 +70,7 @@ jobs:
           if-no-files-found: error
 
   build-windows:
-    name: Build Windows (.zip + installateur)
+    name: Build Windows (.zip + installer)
     needs: tests
     runs-on: windows-latest
     steps:
@@ -80,47 +80,47 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Dérive le numéro de version depuis le tag (vX.Y.Z → X.Y.Z)
+      - name: Derive the version number from the tag (vX.Y.Z → X.Y.Z)
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}" -replace '^v', ''
           echo "VERSION=$version" >> $env:GITHUB_ENV
 
-      - name: Installe les dépendances Python
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt pyinstaller
 
-      - name: Build de l'exécutable
+      - name: Build the executable
         shell: cmd
         run: build.bat < nul
 
-      - name: Package .zip portable
+      - name: Package portable .zip
         shell: cmd
         run: package_zip_win.bat < nul
 
-      - name: Installe Inno Setup
+      - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
 
-      - name: Package installateur .exe
+      - name: Package .exe installer
         shell: cmd
         run: package_installer_win.bat < nul
 
-      - name: Upload des artefacts Windows
+      - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-packages
-          # Seuls le zip portable et l'installateur sont des livrables destinés
-          # à l'utilisateur — dist/windows/VentoyIsoUpdater.exe est le binaire
-          # brut intermédiaire (déjà inclus dans les deux), pas un artefact
-          # de release à part entière.
+          # Only the portable zip and the installer are user-facing
+          # deliverables — dist/windows/VentoyIsoUpdater.exe is the raw
+          # intermediate binary (already included in both), not a
+          # standalone release artifact.
           path: |
             dist/windows/*.zip
             dist/windows/*-windows-setup.exe
           if-no-files-found: error
 
   release:
-    name: Publie la Release GitHub
+    name: Publish the GitHub Release
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
     steps:
@@ -128,7 +128,7 @@ jobs:
         with:
           path: artifacts
 
-      - name: Crée la Release et attache les paquets
+      - name: Create the Release and attach the packages
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
