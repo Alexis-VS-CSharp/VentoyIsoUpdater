@@ -1,6 +1,7 @@
 """
 Version checker for CentOS Stream.
-Source: https://mirror.stream.centos.org/{stream}-stream/BaseOS/x86_64/iso/
+Source: https://mirror.stream.centos.org/{stream}-stream/BaseOS/{arch}/iso/
+Publishes a real, generic ISO for both x86_64 and aarch64.
 """
 
 import re
@@ -10,6 +11,8 @@ from sources.base import BaseChecker, VersionInfo
 from sources._checksum import fetch_bsd_sha256
 from core.logger import logger
 
+_ARCH_DIR = {"amd64": "x86_64", "arm64": "aarch64"}
+
 
 class CentOSStreamChecker(BaseChecker):
 
@@ -18,7 +21,8 @@ class CentOSStreamChecker(BaseChecker):
 
     def _iso_dir_url(self) -> str:
         sv = self._stream_version()
-        return f"https://mirror.stream.centos.org/{sv}-stream/BaseOS/x86_64/iso/"
+        arch_dir = _ARCH_DIR.get(self.arch, "x86_64")
+        return f"https://mirror.stream.centos.org/{sv}-stream/BaseOS/{arch_dir}/iso/"
 
     def get_latest_version(self) -> Optional[VersionInfo]:
         versions = self.get_all_versions()
@@ -26,12 +30,13 @@ class CentOSStreamChecker(BaseChecker):
 
     def get_all_versions(self) -> list[VersionInfo]:
         sv = self._stream_version()
+        arch_dir = _ARCH_DIR.get(self.arch, "x86_64")
         iso_dir = self._iso_dir_url()
         try:
             resp = requests.get(iso_dir, timeout=10)
             resp.raise_for_status()
             matches = re.findall(
-                r"(CentOS-Stream-(\d+)-latest-x86_64-dvd1\.iso)",
+                rf"(CentOS-Stream-(\d+)-latest-{arch_dir}-dvd1\.iso)",
                 resp.text
             )
             seen = set()
@@ -48,6 +53,7 @@ class CentOSStreamChecker(BaseChecker):
                     checksum=checksum,
                     checksum_type="sha256",
                     variant_label=f"Stream {sv}",
+                    arch=self.arch,
                 ))
             return results
         except Exception as _exc:

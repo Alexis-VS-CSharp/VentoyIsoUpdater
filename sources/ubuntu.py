@@ -1,6 +1,10 @@
 """
 Version checker for Ubuntu (Desktop and Server).
 Source: https://releases.ubuntu.com/
+Server publishes a real, generic arm64 ISO too; Desktop currently doesn't
+at this location (only x86_64 classic installer ISOs) — requesting
+arch="arm64" with variant="desktop" simply finds nothing (all HEAD checks
+404) and returns None, same as any other genuinely unavailable combination.
 """
 
 import re
@@ -34,13 +38,13 @@ class UbuntuChecker(BaseChecker):
 
         if variant == "server":
             candidates = [
-                (f"ubuntu-{version}-live-server-amd64.iso", "Server"),
-                (f"ubuntu-{version}-server-amd64.iso",      "Server"),
+                (f"ubuntu-{version}-live-server-{self.arch}.iso", "Server"),
+                (f"ubuntu-{version}-server-{self.arch}.iso",      "Server"),
             ]
         else:
             candidates = [
-                (f"ubuntu-{version}-desktop-amd64.iso",     "Desktop"),
-                (f"ubuntu-{version}-desktop-legacy-amd64.iso", "Desktop (legacy)"),
+                (f"ubuntu-{version}-desktop-{self.arch}.iso",     "Desktop"),
+                (f"ubuntu-{version}-desktop-legacy-{self.arch}.iso", "Desktop (legacy)"),
             ]
 
         # LTS = xx.04 versions (stable), xx.10 = interim (non-LTS)
@@ -63,6 +67,7 @@ class UbuntuChecker(BaseChecker):
                         release_notes_url="https://wiki.ubuntu.com/Releases",
                         variant_label=lbl,
                         stable=is_lts,
+                        arch=self.arch,
                     )
             except Exception as _exc:
                 logger.debug("%s: failed, ignored: %s", __name__, _exc)

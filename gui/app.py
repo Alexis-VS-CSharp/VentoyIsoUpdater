@@ -847,7 +847,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         if not cfg:
             return None
         cls = _CHECKER_REGISTRY.get(cfg.get("checker"))
-        return cls(variant=cfg.get("checker_variant")) if cls else None
+        return cls(variant=cfg.get("checker_variant"), arch=cfg.get("checker_arch", "amd64")) if cls else None
 
     def _set_status(self, text: str):
         self.lbl_status.configure(text=text)
@@ -953,12 +953,13 @@ class VersionBrowserDialog(ctk.CTkToplevel):
             _load_checkers()
             checker_id = self.distro_cfg.get("checker")
             variant = self.distro_cfg.get("checker_variant")
+            arch = self.distro_cfg.get("checker_arch", "amd64")
             cls = _CHECKER_REGISTRY.get(checker_id)
             if not cls:
                 self.after(0, lambda: self.winfo_exists() and
                            self.lbl_loading.configure(text=t('Checker non disponible.')))
                 return
-            checker = cls(variant=variant)
+            checker = cls(variant=variant, arch=arch)
             versions = checker.get_all_versions()
             self.after(0, lambda v=versions: self.winfo_exists() and self._show_versions(v))
 
@@ -1360,7 +1361,8 @@ class DistroPickerDialog(ctk.CTkToplevel):
                 self.after(0, lambda c=distro_cfg:
                            self.winfo_exists() and self._show_versions([], c))
                 return
-            checker = cls(variant=distro_cfg.get("checker_variant"))
+            checker = cls(variant=distro_cfg.get("checker_variant"),
+                          arch=distro_cfg.get("checker_arch", "amd64"))
             versions = checker.get_all_versions()
             self.after(0, lambda v=versions, c=distro_cfg:
                        self.winfo_exists() and self._show_versions(v, c))

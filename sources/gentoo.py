@@ -1,6 +1,7 @@
 """
 Version checker for Gentoo (minimal install ISO).
-Source: https://distfiles.gentoo.org/releases/amd64/autobuilds/current-install-amd64-minimal/
+Source: https://distfiles.gentoo.org/releases/{arch}/autobuilds/current-install-{arch}-minimal/
+Publishes a real, generic ISO for both amd64 and arm64.
 """
 
 import re
@@ -12,19 +13,22 @@ from core.logger import logger
 
 
 class GentooChecker(BaseChecker):
-    BASE_URL = ("https://distfiles.gentoo.org/releases/amd64/autobuilds/"
-                "current-install-amd64-minimal/")
+
+    def _base_url(self) -> str:
+        return (f"https://distfiles.gentoo.org/releases/{self.arch}/autobuilds/"
+                f"current-install-{self.arch}-minimal/")
 
     def get_latest_version(self) -> Optional[VersionInfo]:
         versions = self.get_all_versions()
         return versions[0] if versions else None
 
     def get_all_versions(self) -> list[VersionInfo]:
+        base_url = self._base_url()
         try:
-            resp = requests.get(self.BASE_URL, timeout=10)
+            resp = requests.get(base_url, timeout=10)
             resp.raise_for_status()
             matches = re.findall(
-                r"(install-amd64-minimal-(\d+T\d+Z)\.iso)",
+                rf"(install-{self.arch}-minimal-(\d+T\d+Z)\.iso)",
                 resp.text
             )
             seen = set()
@@ -33,14 +37,15 @@ class GentooChecker(BaseChecker):
                 if filename in seen:
                     continue
                 seen.add(filename)
-                checksum = fetch_sha256sums(self.BASE_URL + filename + ".sha256", filename)
+                checksum = fetch_sha256sums(base_url + filename + ".sha256", filename)
                 results.append(VersionInfo(
                     version=version,
-                    download_url=self.BASE_URL + filename,
+                    download_url=base_url + filename,
                     filename=filename,
                     checksum=checksum,
                     checksum_type="sha256",
                     variant_label="Minimal Install",
+                    arch=self.arch,
                 ))
             results.sort(key=lambda x: x.version, reverse=True)
             return results
@@ -49,5 +54,5 @@ class GentooChecker(BaseChecker):
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:
-        m = re.search(r"install-amd64-minimal-(\d+T\d+Z)", filename)
+        m = re.search(r"install-(?:amd64|arm64)-minimal-(\d+T\d+Z)", filename)
         return m.group(1) if m else None

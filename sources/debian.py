@@ -1,6 +1,9 @@
 """
 Version checker for Debian.
 Source: https://cdimage.debian.org/debian-cd/
+Publishes a real, generic ISO for both amd64 and arm64 — arm64 only ships
+as netinst (no DVD-1), the regex's (netinst|DVD-1) alternation already
+tolerates that.
 """
 
 import re
@@ -12,8 +15,10 @@ from core.logger import logger
 
 
 class DebianChecker(BaseChecker):
-    CURRENT_URL = "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/"
     ARCHIVE_URL = "https://cdimage.debian.org/cdimage/archive/"
+
+    def _current_url(self) -> str:
+        return f"https://cdimage.debian.org/debian-cd/current/{self.arch}/iso-cd/"
 
     def _parse_iso_list(self, url: str, variant_label: str) -> list[VersionInfo]:
         results = []
@@ -21,7 +26,7 @@ class DebianChecker(BaseChecker):
             resp = requests.get(url, timeout=10)
             resp.raise_for_status()
             matches = re.findall(
-                r'(debian-(\d+\.\d+(?:\.\d+)?)-amd64-(netinst|DVD-1)\.iso)',
+                rf'(debian-(\d+\.\d+(?:\.\d+)?)-{re.escape(self.arch)}-(netinst|DVD-1)\.iso)',
                 resp.text
             )
             for filename, version, iso_type in matches:
@@ -34,6 +39,7 @@ class DebianChecker(BaseChecker):
                     checksum_type="sha256",
                     release_notes_url="https://www.debian.org/releases/stable/releasenotes",
                     variant_label=f"{variant_label} ({iso_type})",
+                    arch=self.arch,
                 ))
         except Exception as _exc:
             logger.debug("%s: failed, ignored: %s", __name__, _exc)
@@ -41,7 +47,7 @@ class DebianChecker(BaseChecker):
         return results
 
     def get_latest_version(self) -> Optional[VersionInfo]:
-        items = self._parse_iso_list(self.CURRENT_URL, "Stable")
+        items = self._parse_iso_list(self._current_url(), "Stable")
         if not items:
             return None
         from packaging.version import Version
@@ -51,7 +57,7 @@ class DebianChecker(BaseChecker):
         results = []
 
         # Current stable version
-        results.extend(self._parse_iso_list(self.CURRENT_URL, "Stable"))
+        results.extend(self._parse_iso_list(self._current_url(), "Stable"))
 
         # Archives: debian 10, 11, 12, etc.
         try:
@@ -63,7 +69,7 @@ class DebianChecker(BaseChecker):
                 set(archive_versions), key=lambda v: Version(v), reverse=True
             )
             for av in archive_versions[:12]:  # Last 12 archived versions
-                url = f"{self.ARCHIVE_URL}{av}/amd64/iso-cd/"
+                url = f"{self.ARCHIVE_URL}{av}/{self.arch}/iso-cd/"
                 results.extend(self._parse_iso_list(url, f"Archive {av}"))
         except Exception as _exc:
             logger.debug("%s: failed, ignored: %s", __name__, _exc)

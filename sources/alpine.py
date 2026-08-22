@@ -1,6 +1,7 @@
 """
 Version checker for Alpine Linux.
 Source: https://dl-cdn.alpinelinux.org/alpine/
+Publishes a real, generic ISO for both x86_64 and aarch64.
 """
 
 import re
@@ -9,6 +10,8 @@ from typing import Optional
 from sources.base import BaseChecker, VersionInfo
 from sources._checksum import fetch_sha256sums
 from core.logger import logger
+
+_ARCH_DIR = {"amd64": "x86_64", "arm64": "aarch64"}
 
 
 class AlpineChecker(BaseChecker):
@@ -29,11 +32,12 @@ class AlpineChecker(BaseChecker):
 
     def _find_iso_in_release_dir(self, major: str) -> Optional[VersionInfo]:
         variant = self.variant or "standard"
-        arch_url = f"{self.BASE_URL}{major}/releases/x86_64/"
+        arch_dir = _ARCH_DIR.get(self.arch, "x86_64")
+        arch_url = f"{self.BASE_URL}{major}/releases/{arch_dir}/"
         try:
             resp = requests.get(arch_url, timeout=10)
             resp.raise_for_status()
-            pattern = rf"(alpine-{re.escape(variant)}-([\d.]+)-x86_64\.iso)"
+            pattern = rf"(alpine-{re.escape(variant)}-([\d.]+)-{arch_dir}\.iso)"
             matches = re.findall(pattern, resp.text)
             if not matches:
                 return None
@@ -50,6 +54,7 @@ class AlpineChecker(BaseChecker):
                 checksum=checksum,
                 checksum_type="sha256",
                 variant_label=variant.capitalize(),
+                arch=self.arch,
             )
         except Exception as _exc:
             logger.debug("%s: failed, ignored: %s", __name__, _exc)
@@ -71,5 +76,5 @@ class AlpineChecker(BaseChecker):
         return results
 
     def parse_local_version(self, filename: str) -> Optional[str]:
-        m = re.search(r"alpine-(?:standard|extended)-([\d.]+)-x86_64", filename, re.IGNORECASE)
+        m = re.search(r"alpine-(?:standard|extended)-([\d.]+)-(?:x86_64|aarch64)", filename, re.IGNORECASE)
         return m.group(1) if m else None

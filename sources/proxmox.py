@@ -4,6 +4,8 @@ Source: enterprise.proxmox.com (official HTTPS mirror — download.proxmox.com
 doesn't present a valid TLS certificate for its own hostname and is
 therefore only reachable over HTTP; enterprise.proxmox.com serves the same
 ISOs with a correct certificate and a .sha256 checksum per file).
+Also publishes a real, generic arm64 ISO (suffixed "-arm64" in the
+filename, e.g. proxmox-ve_9.2-1-arm64.iso vs proxmox-ve_9.2-1.iso for amd64).
 """
 import re
 import requests
@@ -20,19 +22,21 @@ class ProxmoxChecker(BaseChecker):
         try:
             resp = requests.get(self.INDEX_URL, timeout=10)
             resp.raise_for_status()
-            # The directory also lists arm64 builds (e.g. proxmox-ve_9.2-1-arm64.iso) —
-            # the \.iso$ anchored right after the version number already excludes
-            # that suffix (arm64 wouldn't match it), but it's also re-checked
-            # explicitly as a safety net, and deduplicated (the HTML repeats each
-            # filename several times: link, size, date).
-            matches = re.findall(
-                r'(proxmox-ve_(\d+\.\d+(?:-\d+)?)\.iso)(?!\w)',
-                resp.text
-            )
+            if self.arch == "arm64":
+                # e.g. proxmox-ve_9.2-1-arm64.iso
+                pattern = r'(proxmox-ve_(\d+\.\d+(?:-\d+)?)-arm64\.iso)'
+            else:
+                # e.g. proxmox-ve_9.2-1.iso — \.iso$ anchored right after
+                # the version number so it can't accidentally swallow the
+                # "-arm64" suffix (there's no in-between it could match).
+                pattern = r'(proxmox-ve_(\d+\.\d+(?:-\d+)?)\.iso)(?!\w)'
+            matches = re.findall(pattern, resp.text)
+            # The HTML repeats each filename several times (link, size,
+            # date) — deduplicated here rather than trusting a single pass.
             seen = set()
             results = []
             for filename, version in matches:
-                if filename in seen or "arm" in filename.lower():
+                if filename in seen:
                     continue
                 seen.add(filename)
                 checksum = fetch_sha256sums(self.INDEX_URL + filename + ".sha256", filename)
@@ -44,7 +48,7 @@ class ProxmoxChecker(BaseChecker):
                     checksum_type="sha256",
                     release_notes_url="https://pve.proxmox.com/wiki/Roadmap",
                     variant_label="Proxmox VE",
-                    arch="amd64",
+                    arch=self.arch,
                 ))
             # Descending sort by version
             from packaging.version import Version

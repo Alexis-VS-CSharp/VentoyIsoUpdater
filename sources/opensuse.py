@@ -2,6 +2,11 @@
 openSUSE Leap and Tumbleweed. Source: download.opensuse.org (see
 https://en.opensuse.org/SDB:Download_help#Checksums).
 
+Tumbleweed publishes a real, generic aarch64 ISO too (via the "ports"
+subdomain — download.opensuse.org/ports/aarch64/tumbleweed/iso/). Leap
+does not currently have an aarch64 build at the equivalent path, so this
+checker stays x86_64-only for the "leap" variant.
+
 The mirrors.edge.kernel.org mirror used previously does list the
 "Current.iso" files in its index, but those are dead links (404) on that
 specific mirror — for both the ISO and its ".sha256". download.opensuse.org
@@ -40,7 +45,10 @@ def _fetch_current_sha256(sha256_url: str) -> Optional[str]:
 class OpenSUSEChecker(BaseChecker):
     # variant: 'leap' or 'tumbleweed'
     LEAP_URL = "https://download.opensuse.org/distribution/leap/"
-    TW_URL   = "https://download.opensuse.org/tumbleweed/iso/"
+    TW_URL_BY_ARCH = {
+        "amd64": "https://download.opensuse.org/tumbleweed/iso/",
+        "arm64": "https://download.opensuse.org/ports/aarch64/tumbleweed/iso/",
+    }
 
     def get_latest_version(self) -> Optional[VersionInfo]:
         versions = self.get_all_versions()
@@ -95,27 +103,30 @@ class OpenSUSEChecker(BaseChecker):
             return []
 
     def _fetch_tumbleweed(self) -> list[VersionInfo]:
+        arch_dir = "aarch64" if self.arch == "arm64" else "x86_64"
+        tw_url = self.TW_URL_BY_ARCH.get(self.arch, self.TW_URL_BY_ARCH["amd64"])
         try:
-            resp = requests.get(self.TW_URL, timeout=10)
+            resp = requests.get(tw_url, timeout=10)
             resp.raise_for_status()
             isos = re.findall(
-                r'(openSUSE-Tumbleweed-DVD-x86_64-[^"]+\.iso)',
+                rf'(openSUSE-Tumbleweed-DVD-{arch_dir}-[^"]+\.iso)',
                 resp.text
             )
             results = []
             for filename in isos[:3]:
-                m = re.search(r'Tumbleweed-DVD-x86_64-(\d+)', filename)
+                m = re.search(rf'Tumbleweed-DVD-{arch_dir}-(\d+)', filename)
                 version = m.group(1) if m else "latest"
-                checksum = _fetch_current_sha256(self.TW_URL + filename + ".sha256")
+                checksum = _fetch_current_sha256(tw_url + filename + ".sha256")
                 results.append(VersionInfo(
                     version=version,
-                    download_url=self.TW_URL + filename,
+                    download_url=tw_url + filename,
                     filename=filename,
                     checksum=checksum,
                     checksum_type="sha256",
                     release_notes_url="https://opensuse.github.io/openSUSE-release-tools/tumbleweed-review.html",
                     variant_label="Tumbleweed (Rolling)",
                     stable=False,
+                    arch=self.arch,
                 ))
             return results
         except Exception as _exc:
@@ -123,5 +134,8 @@ class OpenSUSEChecker(BaseChecker):
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:
+        m = re.search(r"openSUSE-(?:Leap|Tumbleweed)-DVD-(?:x86_64|aarch64)-([\d.]+)", filename, re.IGNORECASE)
+        if m:
+            return m.group(1)
         m = re.search(r"openSUSE-(?:Leap|Tumbleweed)[^-]*-([\d.]+)", filename, re.IGNORECASE)
         return m.group(1) if m else None

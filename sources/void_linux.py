@@ -1,6 +1,8 @@
 """
 Version checker for Void Linux.
 Source: https://repo-default.voidlinux.org/live/current/
+Publishes a real, generic ISO for both x86_64 and aarch64 (musl and glibc
+variants exist for both).
 """
 
 import re
@@ -9,6 +11,8 @@ from typing import Optional
 from sources.base import BaseChecker, VersionInfo
 from sources._checksum import fetch_bsd_sha256
 from core.logger import logger
+
+_ARCH_DIR = {"amd64": "x86_64", "arm64": "aarch64"}
 
 
 class VoidLinuxChecker(BaseChecker):
@@ -20,6 +24,7 @@ class VoidLinuxChecker(BaseChecker):
 
     def get_all_versions(self) -> list[VersionInfo]:
         variant = self.variant or "glibc"
+        arch_dir = _ARCH_DIR.get(self.arch, "x86_64")
         try:
             resp = requests.get(self.BASE_URL, timeout=10)
             resp.raise_for_status()
@@ -27,12 +32,12 @@ class VoidLinuxChecker(BaseChecker):
             if variant == "musl":
                 # New naming: "musl" precedes the date (e.g. void-live-
                 # x86_64-musl-20250202-base.iso), plus the old -date-musl.iso
-                pattern = r"(void-live-x86_64-musl-(\d+)(?:-(?:base|xfce))?\.iso)"
+                pattern = rf"(void-live-{arch_dir}-musl-(\d+)(?:-(?:base|xfce))?\.iso)"
             else:
                 # void-live-x86_64-20250202-base.iso or
                 # void-live-x86_64-20250202-xfce.iso or
                 # void-live-x86_64-20250202.iso (old format)
-                pattern = r"(void-live-x86_64-(\d+)(?:-(?:base|xfce|mate|cinnamon|enlightenment|lxde|lxqt))?\.iso)"
+                pattern = rf"(void-live-{arch_dir}-(\d+)(?:-(?:base|xfce|mate|cinnamon|enlightenment|lxde|lxqt))?\.iso)"
 
             matches = re.findall(pattern, resp.text)
             seen_dates = set()
@@ -49,6 +54,7 @@ class VoidLinuxChecker(BaseChecker):
                     checksum=checksum,
                     checksum_type="sha256",
                     variant_label=variant,
+                    arch=self.arch,
                 ))
             results.sort(key=lambda x: x.version, reverse=True)
             return results
@@ -57,5 +63,5 @@ class VoidLinuxChecker(BaseChecker):
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:
-        m = re.search(r"void-live-x86_64-(\d+)", filename)
+        m = re.search(r"void-live-(?:x86_64|aarch64)-(?:musl-)?(\d+)", filename)
         return m.group(1) if m else None

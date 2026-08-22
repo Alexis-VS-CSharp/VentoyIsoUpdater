@@ -1,6 +1,8 @@
 """
 Version checker for AlmaLinux.
 Source: https://repo.almalinux.org/almalinux/
+Publishes a real, generic ISO for both x86_64 and aarch64 — same repo
+layout, only the "isos/<arch>/" path segment and filename change.
 """
 
 import re
@@ -9,6 +11,8 @@ from typing import Optional
 from sources.base import BaseChecker, VersionInfo
 from sources._checksum import fetch_bsd_sha256
 from core.logger import logger
+
+_ARCH_DIR = {"amd64": "x86_64", "arm64": "aarch64"}
 
 
 class AlmaLinuxChecker(BaseChecker):
@@ -28,12 +32,13 @@ class AlmaLinuxChecker(BaseChecker):
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
-        iso_url = f"https://repo.almalinux.org/almalinux/{version}/isos/x86_64/"
+        arch_dir = _ARCH_DIR.get(self.arch, "x86_64")
+        iso_url = f"https://repo.almalinux.org/almalinux/{version}/isos/{arch_dir}/"
         try:
             resp = requests.get(iso_url, timeout=10)
             resp.raise_for_status()
             isos = re.findall(
-                rf'(AlmaLinux-{re.escape(version)}-x86_64-(dvd|minimal)\.iso)',
+                rf'(AlmaLinux-{re.escape(version)}-{arch_dir}-(dvd|minimal)\.iso)',
                 resp.text
             )
             if not isos:
@@ -50,6 +55,7 @@ class AlmaLinuxChecker(BaseChecker):
                 checksum_type="sha256",
                 release_notes_url="https://almalinux.org/blog/",
                 variant_label=iso_type,
+                arch=self.arch,
             )
         except Exception as _exc:
             logger.debug("%s: failed, ignored: %s", __name__, _exc)

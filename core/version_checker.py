@@ -192,12 +192,13 @@ def _check_one(iso: IsoEntry, distros_db: dict) -> CheckResult:
 
     checker_id = distro_cfg.get("checker")
     variant = distro_cfg.get("checker_variant")
+    arch = distro_cfg.get("checker_arch", "amd64")
 
     checker_cls = _CHECKER_REGISTRY.get(checker_id)
     if checker_cls is None:
         return CheckResult(iso=iso, status=UpdateStatus.UNKNOWN)
 
-    checker = checker_cls(variant=variant)
+    checker = checker_cls(variant=variant, arch=arch)
 
     # Distros with no public API -> manual check
     if checker_id in ("windows",):

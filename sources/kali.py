@@ -1,6 +1,8 @@
 """
 Version checker for Kali Linux.
 Source: https://cdimage.kali.org/
+Publishes a real, generic installer ISO for both amd64 and arm64 (not just
+device-specific ARM images — a proper installer/live ISO exists for arm64 too).
 """
 
 import re
@@ -20,7 +22,7 @@ class KaliChecker(BaseChecker):
             resp = requests.get(self.CURRENT_URL, timeout=10)
             resp.raise_for_status()
             matches = re.findall(
-                r'(kali-linux-(\d{4}\.\d+)-installer-amd64\.iso)', resp.text
+                rf'(kali-linux-(\d{{4}}\.\d+)-installer-{self.arch}\.iso)', resp.text
             )
             if not matches:
                 return None
@@ -34,6 +36,7 @@ class KaliChecker(BaseChecker):
                 checksum_type="sha256",
                 release_notes_url="https://www.kali.org/news/",
                 variant_label="Installer",
+                arch=self.arch,
             )
         except Exception as _exc:
             logger.debug("%s: failed, ignored: %s", __name__, _exc)
@@ -53,7 +56,7 @@ class KaliChecker(BaseChecker):
                     r2 = requests.get(url, timeout=8)
                     r2.raise_for_status()
                     matches = re.findall(
-                        r'(kali-linux-(\d{4}\.\d+)-installer-amd64\.iso)', r2.text
+                        rf'(kali-linux-(\d{{4}}\.\d+)-installer-{self.arch}\.iso)', r2.text
                     )
                     for filename, version in matches:
                         checksum = fetch_sha256sums(url + "SHA256SUMS", filename)
@@ -65,6 +68,7 @@ class KaliChecker(BaseChecker):
                             checksum_type="sha256",
                             release_notes_url="https://www.kali.org/news/",
                             variant_label="Installer",
+                            arch=self.arch,
                         ))
                 except Exception as _exc:
                     logger.debug("%s: failed, ignored: %s", __name__, _exc)

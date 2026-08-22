@@ -7,7 +7,7 @@ A desktop GUI for managing Ventoy USB keys: checks for ISO updates, downloads wi
 ## Features
 
 - **Automatic detection** of mounted Ventoy drives (Linux and Windows)
-- **Version checking** across 64 distribution checkers (108 registered variants: editions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc.
+- **Version checking** across 64 distribution checkers (123 registered variants: editions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc. x86_64 is the priority target; 13 distros that publish a genuine, generic ARM64 ISO (not a device-specific SBC image) get a separate, clearly labeled "(ARM64)" entry — see the supported distributions list below.
 - **ISO downloads** with a progress bar and **real checksum verification** (SHA256/SHA512/MD5/SHA1, whichever the upstream source publishes — not just a checkbox)
 - **Version browser**: pick a specific version to download
 - **Automatic `ventoy.json` updates**: new folders are registered as `menu_class` entries

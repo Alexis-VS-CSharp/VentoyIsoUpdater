@@ -7,7 +7,7 @@ Interface graphique pour gérer vos clés USB Ventoy : vérification des mises �
 ## Fonctionnalités
 
 - **Détection automatique** des clés Ventoy montées (Linux et Windows)
-- **Vérification des versions** pour 64 vérificateurs de distributions (108 variantes enregistrées : éditions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc.
+- **Vérification des versions** pour 64 vérificateurs de distributions (123 variantes enregistrées : éditions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc. x86_64 reste la cible prioritaire ; 13 distributions qui publient un vrai ISO ARM64 générique (pas une image spécifique à une carte SBC) ont une entrée séparée, clairement étiquetée « (ARM64) » — voir la liste des distributions supportées ci-dessous.
 - **Téléchargement d'ISO** avec barre de progression et **vérification d'empreinte réelle** (SHA256/SHA512/MD5/SHA1 selon ce que publie chaque source — pas une simple case cochée)
 - **Navigateur de versions** : choisissez une version spécifique à télécharger
 - **Mise à jour automatique de ventoy.json** : les nouveaux dossiers sont enregistrés comme `menu_class`

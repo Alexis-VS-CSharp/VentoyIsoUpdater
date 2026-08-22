@@ -32,6 +32,22 @@
       "grub_class": "ubuntu"
     },
     {
+      "id": "ubuntu_server_arm64",
+      "name": "Ubuntu Server (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "(?<![a-zA-Z])ubuntu-[\\d.]+-(?:live-)?server-arm64\\.iso"
+      ],
+      "version_regex": "ubuntu-([\\d.]+)-(?:live-)?server",
+      "checker": "ubuntu",
+      "checker_variant": "server",
+      "logo_filename": "ubuntu.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "homepage": "https://ubuntu.com/download/server",
+      "grub_class": "ubuntu",
+      "checker_arch": "arm64"
+    },
+    {
       "id": "debian",
       "name": "Debian",
       "category": "linux",
@@ -45,6 +61,22 @@
       "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/debian.png",
       "homepage": "https://www.debian.org/distrib/netinst",
       "grub_class": "debian"
+    },
+    {
+      "id": "debian_arm64",
+      "name": "Debian (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "debian-[\\d.]+-arm64-(?:netinst|DVD-1)\\.iso"
+      ],
+      "version_regex": "debian-([\\d.]+)-",
+      "checker": "debian",
+      "checker_variant": null,
+      "logo_filename": "debian.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/debian.png",
+      "homepage": "https://www.debian.org/distrib/netinst",
+      "grub_class": "debian",
+      "checker_arch": "arm64"
     },
     {
       "id": "fedora_workstation",
@@ -229,6 +261,22 @@
       "grub_class": "opensuse"
     },
     {
+      "id": "opensuse_tumbleweed_arm64",
+      "name": "openSUSE Tumbleweed (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "openSUSE-Tumbleweed-DVD-aarch64[^.]*\\.iso"
+      ],
+      "version_regex": "Tumbleweed-DVD-aarch64-(\\d+)",
+      "checker": "opensuse",
+      "checker_variant": "tumbleweed",
+      "logo_filename": "opensuse.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/suse.png",
+      "homepage": "https://get.opensuse.org/tumbleweed/",
+      "grub_class": "opensuse",
+      "checker_arch": "arm64"
+    },
+    {
       "id": "popos_intel",
       "name": "Pop!_OS (Intel/AMD)",
       "category": "linux",
@@ -348,6 +396,22 @@
       "grub_class": "kali"
     },
     {
+      "id": "kali_arm64",
+      "name": "Kali Linux (ARM64)",
+      "category": "security",
+      "filename_patterns": [
+        "kali-linux-[\\d.]+-(?:installer|live)-arm64\\.iso"
+      ],
+      "version_regex": "kali-linux-([\\d.]+)-",
+      "checker": "kali",
+      "checker_variant": null,
+      "logo_filename": "kali.png",
+      "logo_url": "https://www.kali.org/images/kali-logo.svg",
+      "homepage": "https://www.kali.org/get-kali",
+      "grub_class": "kali",
+      "checker_arch": "arm64"
+    },
+    {
       "id": "tails",
       "name": "Tails OS",
       "category": "security",
@@ -409,6 +473,22 @@
       "grub_class": "rocky"
     },
     {
+      "id": "rocky_arm64",
+      "name": "Rocky Linux (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "Rocky-[\\d.]+-aarch64-(?:dvd|minimal|boot)\\.iso"
+      ],
+      "version_regex": "Rocky-([\\d.]+)-",
+      "checker": "rocky",
+      "checker_variant": null,
+      "logo_filename": "rocky.png",
+      "logo_url": "https://rockylinux.org/favicon.png",
+      "homepage": "https://rockylinux.org/download",
+      "grub_class": "rocky",
+      "checker_arch": "arm64"
+    },
+    {
       "id": "almalinux",
       "name": "AlmaLinux",
       "category": "linux",
@@ -422,6 +502,22 @@
       "logo_url": "https://almalinux.org/images/almalinux-logo.svg",
       "homepage": "https://almalinux.org/get-almalinux",
       "grub_class": "almalinux"
+    },
+    {
+      "id": "almalinux_arm64",
+      "name": "AlmaLinux (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "AlmaLinux-[\\d.]+-aarch64-(?:dvd|minimal|boot)\\.iso"
+      ],
+      "version_regex": "AlmaLinux-([\\d.]+)-",
+      "checker": "almalinux",
+      "checker_variant": null,
+      "logo_filename": "almalinux.png",
+      "logo_url": "https://almalinux.org/images/almalinux-logo.svg",
+      "homepage": "https://almalinux.org/get-almalinux",
+      "grub_class": "almalinux",
+      "checker_arch": "arm64"
     },
     {
       "id": "garuda_dr460nized",
@@ -589,6 +685,22 @@
       "grub_class": "freebsd"
     },
     {
+      "id": "freebsd_arm64",
+      "name": "FreeBSD (ARM64)",
+      "category": "bsd",
+      "filename_patterns": [
+        "FreeBSD-[\\d.]+-RELEASE-arm64-aarch64-(?:dvd\\d?|disc1|bootonly|memstick)\\.iso"
+      ],
+      "version_regex": "FreeBSD-([\\d.]+-RELEASE)",
+      "checker": "freebsd",
+      "checker_variant": null,
+      "logo_filename": "freebsd.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/freebsd.png",
+      "homepage": "https://www.freebsd.org/where/",
+      "grub_class": "freebsd",
+      "checker_arch": "arm64"
+    },
+    {
       "id": "bazzite",
       "name": "Bazzite",
       "category": "gaming",
@@ -677,6 +789,22 @@
       "logo_url": "local:proxmox.png",
       "homepage": "https://www.proxmox.com/en/downloads",
       "grub_class": "proxmox"
+    },
+    {
+      "id": "proxmox_arm64",
+      "name": "Proxmox VE (ARM64)",
+      "category": "server",
+      "filename_patterns": [
+        "proxmox-ve_[\\d.]+-[\\d]+-arm64\\.iso"
+      ],
+      "version_regex": "proxmox-ve_([\\d.]+-[\\d]+)",
+      "checker": "proxmox",
+      "checker_variant": null,
+      "logo_filename": "proxmox.png",
+      "logo_url": "local:proxmox.png",
+      "homepage": "https://www.proxmox.com/en/downloads",
+      "grub_class": "proxmox",
+      "checker_arch": "arm64"
     },
     {
       "id": "truenas_scale",
@@ -1199,7 +1327,7 @@
       "name": "Void Linux (glibc)",
       "category": "linux",
       "filename_patterns": [
-        "void-live-x86_64-\\d+\\.iso"
+        "void-live-x86_64-\\d+(?:-(?:base|xfce|mate|cinnamon|enlightenment|lxde|lxqt))?\\.iso"
       ],
       "version_regex": "void-live-x86_64-(\\d+)",
       "checker": "void_linux",
@@ -1208,6 +1336,22 @@
       "logo_url": "https://voidlinux.org/assets/img/void_linux_logo_only.png",
       "homepage": "https://voidlinux.org/download/",
       "grub_class": "void"
+    },
+    {
+      "id": "void_glibc_arm64",
+      "name": "Void Linux (glibc) (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "void-live-aarch64-\\d+(?:-(?:base|xfce|mate|cinnamon|enlightenment|lxde|lxqt))?\\.iso"
+      ],
+      "version_regex": "void-live-aarch64-(\\d+)",
+      "checker": "void_linux",
+      "checker_variant": "glibc",
+      "logo_filename": "void.png",
+      "logo_url": "https://voidlinux.org/assets/img/void_linux_logo_only.png",
+      "homepage": "https://voidlinux.org/download/",
+      "grub_class": "void",
+      "checker_arch": "arm64"
     },
     {
       "id": "void_musl",
@@ -1224,6 +1368,23 @@
       "logo_url": "https://voidlinux.org/assets/img/void_linux_logo_only.png",
       "homepage": "https://voidlinux.org/download/",
       "grub_class": "void"
+    },
+    {
+      "id": "void_musl_arm64",
+      "name": "Void Linux (musl) (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "void-live-aarch64-\\d+-musl\\.iso",
+        "void-live-aarch64-musl-\\d+(?:-(?:base|xfce))?\\.iso"
+      ],
+      "version_regex": "void-live-aarch64-(?:musl-)?(\\d+)(?:-musl)?",
+      "checker": "void_linux",
+      "checker_variant": "musl",
+      "logo_filename": "void.png",
+      "logo_url": "https://voidlinux.org/assets/img/void_linux_logo_only.png",
+      "homepage": "https://voidlinux.org/download/",
+      "grub_class": "void",
+      "checker_arch": "arm64"
     },
     {
       "id": "slackware",
@@ -1254,6 +1415,22 @@
       "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/gentoo.png",
       "homepage": "https://www.gentoo.org/downloads/",
       "grub_class": "gentoo"
+    },
+    {
+      "id": "gentoo_arm64",
+      "name": "Gentoo (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "install-arm64-minimal-[\\d]+T[\\d]+Z\\.iso"
+      ],
+      "version_regex": "install-arm64-minimal-(\\d+T\\d+Z)",
+      "checker": "gentoo",
+      "checker_variant": null,
+      "logo_filename": "gentoo.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/gentoo.png",
+      "homepage": "https://www.gentoo.org/downloads/",
+      "grub_class": "gentoo",
+      "checker_arch": "arm64"
     },
     {
       "id": "vanillaos",
@@ -1362,6 +1539,22 @@
       "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/alpine.png",
       "homepage": "https://alpinelinux.org/downloads/",
       "grub_class": "alpine"
+    },
+    {
+      "id": "alpine_standard_arm64",
+      "name": "Alpine Linux (ARM64)",
+      "category": "linux",
+      "filename_patterns": [
+        "alpine-standard-[\\d.]+-aarch64\\.iso"
+      ],
+      "version_regex": "alpine-standard-([\\d.]+)-aarch64",
+      "checker": "alpine",
+      "checker_variant": "standard",
+      "logo_filename": "alpine.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/alpine.png",
+      "homepage": "https://alpinelinux.org/downloads/",
+      "grub_class": "alpine",
+      "checker_arch": "arm64"
     },
     {
       "id": "alpine_extended",
@@ -1490,7 +1683,7 @@
       "name": "CentOS Stream 9",
       "category": "server",
       "filename_patterns": [
-        "CentOS-Stream-9[^.]*\\.iso"
+        "CentOS-Stream-9[^.]*x86_64[^.]*\\.iso"
       ],
       "version_regex": "CentOS-Stream-(\\d+)",
       "checker": "centos_stream",
@@ -1501,11 +1694,27 @@
       "grub_class": "centos"
     },
     {
+      "id": "centos_stream_9_arm64",
+      "name": "CentOS Stream 9 (ARM64)",
+      "category": "server",
+      "filename_patterns": [
+        "CentOS-Stream-9[^.]*aarch64[^.]*\\.iso"
+      ],
+      "version_regex": "CentOS-Stream-(\\d+)",
+      "checker": "centos_stream",
+      "checker_variant": "9",
+      "logo_filename": "centos.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/centos.png",
+      "homepage": "https://www.centos.org/centos-stream/",
+      "grub_class": "centos",
+      "checker_arch": "arm64"
+    },
+    {
       "id": "centos_stream_10",
       "name": "CentOS Stream 10",
       "category": "server",
       "filename_patterns": [
-        "CentOS-Stream-10[^.]*\\.iso"
+        "CentOS-Stream-10[^.]*x86_64[^.]*\\.iso"
       ],
       "version_regex": "CentOS-Stream-(\\d+)",
       "checker": "centos_stream",
@@ -1514,6 +1723,22 @@
       "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/centos.png",
       "homepage": "https://www.centos.org/centos-stream/",
       "grub_class": "centos"
+    },
+    {
+      "id": "centos_stream_10_arm64",
+      "name": "CentOS Stream 10 (ARM64)",
+      "category": "server",
+      "filename_patterns": [
+        "CentOS-Stream-10[^.]*aarch64[^.]*\\.iso"
+      ],
+      "version_regex": "CentOS-Stream-(\\d+)",
+      "checker": "centos_stream",
+      "checker_variant": "10",
+      "logo_filename": "centos.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/centos.png",
+      "homepage": "https://www.centos.org/centos-stream/",
+      "grub_class": "centos",
+      "checker_arch": "arm64"
     },
     {
       "id": "oracle_linux",
@@ -1529,6 +1754,22 @@
       "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/oracle.png",
       "homepage": "https://yum.oracle.com/oracle-linux-isos.html",
       "grub_class": "oracle"
+    },
+    {
+      "id": "oracle_linux_arm64",
+      "name": "Oracle Linux (ARM64)",
+      "category": "server",
+      "filename_patterns": [
+        "OracleLinux-R[\\d]+-U[\\d]+-(?:Server-)?aarch64-dvd\\.iso"
+      ],
+      "version_regex": "OracleLinux-R(\\d+)-U(\\d+)",
+      "checker": "oracle_linux",
+      "checker_variant": null,
+      "logo_filename": "oracle.png",
+      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/oracle.png",
+      "homepage": "https://yum.oracle.com/oracle-linux-isos.html",
+      "grub_class": "oracle",
+      "checker_arch": "arm64"
     },
     {
       "id": "pfsense",
