@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour OpenBSD.
-Source : https://cdn.openbsd.org/pub/OpenBSD/
+Version checker for OpenBSD.
+Source: https://cdn.openbsd.org/pub/OpenBSD/
 """
 
 import re
@@ -18,15 +18,15 @@ class OpenBSDChecker(BaseChecker):
         try:
             resp = requests.get(self.BASE_URL, timeout=10)
             resp.raise_for_status()
-            # \d+ en tête : exclut le lien "dossier parent" (href="../") que
-            # [\d.]+ capturerait aussi ('..' est fait uniquement de points).
+            # Leading \d+: excludes the "parent folder" link (href="../")
+            # which [\d.]+ would also capture ('..' is made only of dots).
             versions = re.findall(r'href="(\d+(?:\.\d+)*)/?"', resp.text)
             from packaging.version import Version
             unique = list(dict.fromkeys(versions))
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -48,7 +48,7 @@ class OpenBSDChecker(BaseChecker):
                     variant_label="amd64",
                 )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
         return None
 

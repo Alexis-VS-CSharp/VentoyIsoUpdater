@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Debian.
-Source : https://cdimage.debian.org/debian-cd/
+Version checker for Debian.
+Source: https://cdimage.debian.org/debian-cd/
 """
 
 import re
@@ -36,7 +36,7 @@ class DebianChecker(BaseChecker):
                     variant_label=f"{variant_label} ({iso_type})",
                 ))
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
         return results
 
@@ -50,10 +50,10 @@ class DebianChecker(BaseChecker):
     def get_all_versions(self) -> list[VersionInfo]:
         results = []
 
-        # Version stable courante
+        # Current stable version
         results.extend(self._parse_iso_list(self.CURRENT_URL, "Stable"))
 
-        # Archives : debian 10, 11, 12, etc.
+        # Archives: debian 10, 11, 12, etc.
         try:
             resp = requests.get(self.ARCHIVE_URL, timeout=10)
             resp.raise_for_status()
@@ -62,14 +62,14 @@ class DebianChecker(BaseChecker):
             archive_versions = sorted(
                 set(archive_versions), key=lambda v: Version(v), reverse=True
             )
-            for av in archive_versions[:12]:  # Dernières 12 versions archivées
+            for av in archive_versions[:12]:  # Last 12 archived versions
                 url = f"{self.ARCHIVE_URL}{av}/amd64/iso-cd/"
                 results.extend(self._parse_iso_list(url, f"Archive {av}"))
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
-        # Déduplique par version+filename
+        # Deduplicate by version+filename
         seen = set()
         unique = []
         for r in results:

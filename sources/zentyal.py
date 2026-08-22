@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Zentyal.
-Source : SourceForge project zentyal/files/
+Version checker for Zentyal.
+Source: SourceForge project zentyal/files/
 """
 
 import re
@@ -11,7 +11,7 @@ from core.logger import logger
 
 
 def _fetch_md5(url: str, filename: str) -> Optional[str]:
-    """Récupère une empreinte MD5 depuis un sidecar '<fichier>.md5' SourceForge."""
+    """Fetches an MD5 checksum from a SourceForge '<file>.md5' sidecar."""
     try:
         resp = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
         resp.raise_for_status()
@@ -60,7 +60,7 @@ class ZentyalChecker(BaseChecker):
             results.sort(key=lambda x: Version(x.version), reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

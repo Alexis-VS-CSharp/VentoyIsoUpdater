@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour LMDE (Linux Mint Debian Edition).
-Source : miroirs officiels Linux Mint (ISO/debian/)
+Version checker for LMDE (Linux Mint Debian Edition).
+Source: official Linux Mint mirrors (ISO/debian/)
 """
 
 import re
@@ -10,7 +10,7 @@ from sources.base import BaseChecker, VersionInfo
 from sources._checksum import fetch_sha256sums
 from core.logger import logger
 
-# Plusieurs miroirs à essayer
+# Several mirrors to try
 MIRRORS = [
     "https://mirror.ufscar.br/mint-cd/debian/",
     "https://muug.ca/mirror/linuxmint/iso/debian/",
@@ -25,8 +25,8 @@ class LMDEChecker(BaseChecker):
         try:
             resp = requests.get(mirror_url, timeout=10)
             resp.raise_for_status()
-            # Cherche les ISOs LMDE directement ou dans des sous-dossiers
-            # Format: lmde-7-cinnamon-64bit.iso ou LMDE-6-cinnamon-64bit.iso
+            # Looks for LMDE ISOs directly or in subfolders
+            # Format: lmde-7-cinnamon-64bit.iso or LMDE-6-cinnamon-64bit.iso
             isos = re.findall(
                 r'((?:lmde|LMDE)-(\d+)-cinnamon-64bit\.iso)',
                 resp.text, re.IGNORECASE
@@ -49,7 +49,7 @@ class LMDEChecker(BaseChecker):
                 ))
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def get_latest_version(self) -> Optional[VersionInfo]:
@@ -69,7 +69,7 @@ class LMDEChecker(BaseChecker):
                 results.sort(key=sort_key, reverse=True)
                 return results
 
-        # Fallback : essai direct linuxmint.com pour LMDE 7
+        # Fallback: direct attempt at linuxmint.com for LMDE 7
         try:
             for ver, filename in [
                 ("7", "lmde-7-cinnamon-64bit.iso"),
@@ -86,7 +86,7 @@ class LMDEChecker(BaseChecker):
                         variant_label="Cinnamon",
                     )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
         return []

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-VentoyIsoUpdater — Point d'entrée principal
+VentoyIsoUpdater — main entry point
 """
 
 import sys
 import os
 
-# Permet d'importer les modules depuis la racine du projet,
-# que ce soit en dev ou en exécutable PyInstaller
+# Allows importing modules from the project root,
+# whether running in dev or as a PyInstaller executable
 if getattr(sys, "frozen", False):
     BASE_DIR = sys._MEIPASS
 else:
@@ -21,14 +21,14 @@ import core.preferences as prefs
 
 
 def main():
-    # Doit être fait avant toute construction de widget : tous les textes de
-    # l'UI sont écrits en français dans le code et passent par gui.i18n.t()
-    # pour être traduits à la volée si la langue active n'est pas "fr".
+    # Must happen before any widget is built: every UI string is written
+    # in French in the code and goes through gui.i18n.t() to be translated
+    # on the fly if the active language isn't "fr".
     i18n.set_language(prefs.get("language"))
 
     app = VentoyIsoUpdaterApp()
 
-    # Icône dans la taskbar / gestionnaire de fenêtres
+    # Icon in the taskbar / window manager
     icon_path = os.path.join(BASE_DIR, "assets", "icon.png")
     if os.path.isfile(icon_path):
         try:
@@ -36,7 +36,7 @@ def main():
             _img   = Image.open(icon_path).convert("RGBA")
             _photo = ImageTk.PhotoImage(_img)
             app.wm_iconphoto(True, _photo)
-            app._icon_ref = _photo   # empêche le garbage collector de libérer la référence
+            app._icon_ref = _photo   # prevents the garbage collector from freeing the reference
         except Exception:
             try:
                 import tkinter as tk

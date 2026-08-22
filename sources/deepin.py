@@ -1,9 +1,9 @@
 """
-Vérificateur de version pour Deepin.
-Source : https://cdimage.deepin.com/releases/ — le CDN officiel du projet,
-qui liste versions, ISO et SHA256SUMS directement (contrairement à
-SourceForge, utilisé seulement comme lien de téléchargement alternatif sur
-la page deepin.org/download/, ce CDN n'est pas soumis aux mêmes blocages).
+Version checker for Deepin.
+Source: https://cdimage.deepin.com/releases/ — the project's official CDN,
+which lists versions, ISOs and SHA256SUMS directly (unlike SourceForge,
+used only as an alternate download link on the deepin.org/download/ page,
+this CDN isn't subject to the same blocking).
 """
 
 import re
@@ -34,7 +34,7 @@ class DeepinChecker(BaseChecker):
             unique.sort(key=sort_key, reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -54,7 +54,7 @@ class DeepinChecker(BaseChecker):
                 variant_label="Desktop",
             )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:

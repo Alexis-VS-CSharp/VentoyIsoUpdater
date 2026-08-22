@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Rocky Linux.
-Source : https://download.rockylinux.org/pub/rocky/
+Version checker for Rocky Linux.
+Source: https://download.rockylinux.org/pub/rocky/
 """
 
 import re
@@ -24,7 +24,7 @@ class RockyChecker(BaseChecker):
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -38,10 +38,10 @@ class RockyChecker(BaseChecker):
             )
             if not isos:
                 return None
-            # Préfère DVD, sinon minimal
+            # Prefers DVD, falls back to minimal
             filename = next((f for f, t in isos if t == "dvd"), isos[0][0])
             iso_type = "DVD" if "dvd" in filename else "Minimal"
-            # Chaque ISO a son propre fichier <nom>.CHECKSUM (format BSD)
+            # Each ISO has its own <name>.CHECKSUM file (BSD format)
             checksum = fetch_bsd_sha256(iso_url + filename + ".CHECKSUM", filename)
             return VersionInfo(
                 version=version,
@@ -53,7 +53,7 @@ class RockyChecker(BaseChecker):
                 variant_label=iso_type,
             )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:

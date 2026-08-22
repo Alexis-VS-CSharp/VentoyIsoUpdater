@@ -1,6 +1,6 @@
 """
-Utilitaires pour créer/installer Ventoy sur une clé USB vierge.
-Compatible Linux et Windows.
+Utilities for creating/installing Ventoy onto a blank USB drive.
+Linux and Windows compatible.
 """
 
 import os
@@ -24,8 +24,8 @@ from typing import Optional, Callable
 class UsbDrive:
     def __init__(self, device: str, name: str, size_bytes: int,
                  label: str = "", mountpoints: list = None):
-        self.device = device          # ex: /dev/sdb  ou  E:\
-        self.name = name              # nom court    ex: sdb
+        self.device = device          # e.g.: /dev/sdb  or  E:\
+        self.name = name              # short name    e.g.: sdb
         self.size_bytes = size_bytes
         self.label = label
         self.mountpoints = mountpoints or []
@@ -43,11 +43,11 @@ class UsbDrive:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Détection des clés USB disponibles
+#  Detecting available USB drives
 # ──────────────────────────────────────────────────────────────────────────────
 
 def find_usb_drives(exclude_ventoy: bool = True) -> list[UsbDrive]:
-    """Retourne les clés USB amovibles (non Ventoy si exclude_ventoy=True)."""
+    """Returns removable USB drives (non-Ventoy ones if exclude_ventoy=True)."""
     system = platform.system()
     if system == "Linux":
         return _find_usb_linux(exclude_ventoy)
@@ -74,7 +74,7 @@ def _find_usb_linux(exclude_ventoy: bool) -> list[UsbDrive]:
             device = f"/dev/{dev['name']}"
             size = int(dev.get("size") or 0)
             label = dev.get("label") or ""
-            # Collecte tous les points de montage des partitions
+            # Collects all mount points of the partitions
             mountpoints = []
             for child in dev.get("children", []):
                 for mp in (child.get("mountpoints") or []):
@@ -117,7 +117,7 @@ def _find_usb_windows(exclude_ventoy: bool) -> list[UsbDrive]:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Recherche de Ventoy déjà installé
+#  Finding an already-installed Ventoy
 # ──────────────────────────────────────────────────────────────────────────────
 
 _LINUX_CANDIDATES = [
@@ -133,14 +133,14 @@ _LINUX_PATHS = [
 
 def find_ventoy_binary() -> Optional[str]:
     """
-    Retourne le chemin de ventoy2disk.sh ou ventoy, ou None si non trouvé.
+    Returns the path to ventoy2disk.sh or ventoy, or None if not found.
 
-    Les emplacements d'installation standard (_LINUX_PATHS) sont vérifiés en
-    priorité : ce sont des chemins absolus fixes, non influençables par
-    l'environnement de l'utilisateur. La recherche dans $PATH via shutil.which
-    n'intervient qu'en repli, car ce binaire est ensuite exécuté avec les
-    droits root (pkexec/sudo) — un exécutable malveillant placé plus tôt dans
-    $PATH ne doit pas pouvoir prendre la priorité sur une installation connue.
+    The standard install locations (_LINUX_PATHS) are checked first: these
+    are fixed absolute paths that the user's environment can't influence.
+    Searching $PATH via shutil.which only happens as a fallback, since this
+    binary is later executed with root privileges (pkexec/sudo) — a
+    malicious executable placed earlier in $PATH must not be able to take
+    priority over a known installation.
     """
     for path in _LINUX_PATHS:
         if os.path.isfile(path):
@@ -153,12 +153,12 @@ def find_ventoy_binary() -> Optional[str]:
 
 
 def find_ventoy_in_dir(directory: str) -> Optional[str]:
-    """Cherche ventoy2disk.sh dans un répertoire extrait."""
+    """Looks for ventoy2disk.sh in an extracted directory."""
     for fname in ["ventoy2disk.sh", "Ventoy2Disk.exe"]:
         candidate = os.path.join(directory, fname)
         if os.path.isfile(candidate):
             return candidate
-    # Cherche récursivement un niveau plus profond
+    # Searches one level deeper, recursively
     for entry in os.scandir(directory):
         if entry.is_dir():
             candidate = os.path.join(entry.path, "ventoy2disk.sh")
@@ -168,11 +168,11 @@ def find_ventoy_in_dir(directory: str) -> Optional[str]:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Téléchargement de Ventoy depuis GitHub
+#  Downloading Ventoy from GitHub
 # ──────────────────────────────────────────────────────────────────────────────
 
 def get_ventoy_latest_version() -> Optional[str]:
-    """Récupère la dernière version de Ventoy depuis GitHub."""
+    """Fetches the latest Ventoy version from GitHub."""
     try:
         resp = requests.get(
             "https://api.github.com/repos/ventoy/Ventoy/releases/latest",
@@ -187,10 +187,10 @@ def get_ventoy_latest_version() -> Optional[str]:
 
 def _fetch_ventoy_checksum(version: str, archive_name: str) -> Optional[str]:
     """
-    Récupère l'empreinte SHA256 officielle publiée par le projet Ventoy pour
-    cette release (asset ``sha256.txt`` de la release GitHub) et retourne
-    celle qui correspond à ``archive_name``. Retourne None si le fichier est
-    injoignable ou ne contient pas d'entrée pour cette archive.
+    Fetches the official SHA256 checksum published by the Ventoy project for
+    this release (the GitHub release's ``sha256.txt`` asset) and returns the
+    one matching ``archive_name``. Returns None if the file is unreachable
+    or has no entry for this archive.
     """
     url = f"https://github.com/ventoy/Ventoy/releases/download/v{version}/sha256.txt"
     try:
@@ -206,7 +206,7 @@ def _fetch_ventoy_checksum(version: str, archive_name: str) -> Optional[str]:
 
 
 def _sha256_file(path: str) -> str:
-    """Calcule l'empreinte SHA256 d'un fichier local, par blocs."""
+    """Computes the SHA256 checksum of a local file, block by block."""
     h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
@@ -216,10 +216,10 @@ def _sha256_file(path: str) -> str:
 
 def _safe_member_target(dest_dir: str, member_name: str) -> Optional[str]:
     """
-    Résout le chemin de destination d'un membre d'archive et vérifie qu'il
-    reste strictement contenu dans dest_dir. Protection contre les chemins
-    de type ``../../`` ou absolus (zip slip / tar slip). Retourne le chemin
-    résolu si sûr, None sinon.
+    Resolves an archive member's destination path and checks that it stays
+    strictly contained within dest_dir. Protects against ``../../`` or
+    absolute paths (zip slip / tar slip). Returns the resolved path if
+    safe, None otherwise.
     """
     dest_root = os.path.realpath(dest_dir)
     target = os.path.realpath(os.path.join(dest_root, member_name))
@@ -229,32 +229,32 @@ def _safe_member_target(dest_dir: str, member_name: str) -> Optional[str]:
 
 
 def _safe_extract_tar(archive_path: str, dest_dir: str) -> None:
-    """Extrait une archive .tar.gz en rejetant tout membre dont le chemin
-    sortirait de dest_dir, ainsi que les liens (symboliques ou durs)."""
+    """Extracts a .tar.gz archive, rejecting any member whose path would
+    escape dest_dir, as well as any link (symbolic or hard)."""
     with tarfile.open(archive_path, "r:gz") as tar:
         members = tar.getmembers()
         for member in members:
             if member.issym() or member.islnk():
-                raise ValueError(f"Archive Ventoy refusée : lien suspect '{member.name}'")
+                raise ValueError(f"Ventoy archive rejected: suspicious link '{member.name}'")
             if _safe_member_target(dest_dir, member.name) is None:
-                raise ValueError(f"Archive Ventoy refusée : chemin suspect '{member.name}'")
+                raise ValueError(f"Ventoy archive rejected: suspicious path '{member.name}'")
         try:
-            # filter="data" (Python ≥ 3.12) : refuse en plus les métadonnées
-            # dangereuses (device files, permissions setuid, etc.)
+            # filter="data" (Python >= 3.12): also rejects dangerous
+            # metadata (device files, setuid permissions, etc.)
             tar.extractall(dest_dir, members=members, filter="data")
         except TypeError:
-            # Python < 3.12 : le paramètre filter n'existe pas encore ;
-            # la validation manuelle ci-dessus reste la protection effective.
+            # Python < 3.12: the filter parameter doesn't exist yet;
+            # the manual validation above remains the effective protection.
             tar.extractall(dest_dir, members=members)
 
 
 def _safe_extract_zip(archive_path: str, dest_dir: str) -> None:
-    """Extrait une archive .zip en rejetant tout membre dont le chemin
-    sortirait de dest_dir."""
+    """Extracts a .zip archive, rejecting any member whose path would
+    escape dest_dir."""
     with zipfile.ZipFile(archive_path) as z:
         for name in z.namelist():
             if _safe_member_target(dest_dir, name) is None:
-                raise ValueError(f"Archive Ventoy refusée : chemin suspect '{name}'")
+                raise ValueError(f"Ventoy archive rejected: suspicious path '{name}'")
         z.extractall(dest_dir)
 
 
@@ -264,16 +264,16 @@ def download_ventoy(
     on_progress: Optional[Callable] = None,
 ) -> Optional[str]:
     """
-    Télécharge et extrait Ventoy dans dest_dir.
+    Downloads and extracts Ventoy into dest_dir.
 
-    L'archive est vérifiée par rapport à l'empreinte SHA256 officielle
-    publiée par le projet Ventoy avant toute extraction, et les chemins de
-    ses membres sont validés pour empêcher toute écriture hors de dest_dir.
-    Si l'empreinte ne peut pas être récupérée ou ne correspond pas, le
-    téléchargement est refusé (fail-closed : cette archive est ensuite
-    exécutée avec les droits root via install_ventoy()).
+    The archive is checked against the official SHA256 checksum published
+    by the Ventoy project before any extraction, and its members' paths
+    are validated to prevent any write outside dest_dir. If the checksum
+    can't be fetched or doesn't match, the download is rejected
+    (fail-closed: this archive is later executed with root privileges via
+    install_ventoy()).
 
-    Retourne le chemin du dossier extrait, ou None en cas d'erreur.
+    Returns the path of the extracted folder, or None on error.
     """
     system = platform.system()
     if system == "Linux":
@@ -289,7 +289,7 @@ def download_ventoy(
     archive_path = os.path.join(dest_dir, archive_name)
 
     try:
-        # timeout=(connect, read) : 30 s pour la connexion, 300 s max pour la lecture
+        # timeout=(connect, read): 30s for the connection, 300s max for reading
         resp = requests.get(url, stream=True, timeout=(30, 300))
         resp.raise_for_status()
         total = int(resp.headers.get("content-length", 0))
@@ -303,7 +303,7 @@ def download_ventoy(
                     if on_progress and total:
                         on_progress(done, total)
 
-        # Vérification d'intégrité — obligatoire avant toute extraction/exécution
+        # Integrity check — mandatory before any extraction/execution
         expected = _fetch_ventoy_checksum(version, archive_name)
         if expected is None:
             os.remove(archive_path)
@@ -312,17 +312,17 @@ def download_ventoy(
             os.remove(archive_path)
             return None
 
-        # Extraction (chemins des membres validés, protège contre tar/zip slip)
+        # Extraction (member paths validated, protects against tar/zip slip)
         if archive_name.endswith(".tar.gz"):
             _safe_extract_tar(archive_path, dest_dir)
         elif archive_name.endswith(".zip"):
             _safe_extract_zip(archive_path, dest_dir)
 
-        # Cherche le dossier extrait
+        # Looks for the extracted folder
         extracted = os.path.join(dest_dir, f"ventoy-{version}")
         if os.path.isdir(extracted):
             return extracted
-        # Fallback : prend le premier dossier créé
+        # Fallback: takes the first folder created
         for entry in os.scandir(dest_dir):
             if entry.is_dir() and entry.name.startswith("ventoy"):
                 return entry.path
@@ -333,7 +333,7 @@ def download_ventoy(
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Installation de Ventoy
+#  Installing Ventoy
 # ──────────────────────────────────────────────────────────────────────────────
 
 def install_ventoy(
@@ -343,22 +343,22 @@ def install_ventoy(
     on_output: Optional[Callable[[str], None]] = None,
 ) -> tuple[bool, str]:
     """
-    Installe Ventoy sur le périphérique device.
-    Utilise pkexec si disponible (GUI sudo), sinon retourne une commande sudo.
+    Installs Ventoy onto the device.
+    Uses pkexec if available (GUI sudo), otherwise returns a sudo command.
 
-    Retourne (succès: bool, message: str).
+    Returns (success: bool, message: str).
     """
     system = platform.system()
     flag = "-u" if overwrite else "-i"
 
     if system == "Linux":
-        # Rend le script exécutable
+        # Makes the script executable
         try:
             os.chmod(ventoy_script, 0o755)
         except Exception:
             pass
 
-        # Choisit l'outil d'élévation
+        # Picks the elevation tool
         if shutil.which("pkexec"):
             cmd = ["pkexec", ventoy_script, flag, device]
         elif shutil.which("sudo"):
@@ -384,7 +384,7 @@ def install_ventoy(
             return False, str(e)
 
     elif system == "Windows":
-        # Sur Windows, Ventoy2Disk.exe doit être lancé avec élévation
+        # On Windows, Ventoy2Disk.exe must be launched with elevation
         try:
             import ctypes
             if not ctypes.windll.shell32.IsUserAnAdmin():

@@ -1,8 +1,8 @@
 """
-Vérificateur de version pour antiX Linux.
-Source : https://antixlinux.com/download/ — la page officielle donne la
-version courante, les liens SourceForge et les empreintes SHA256/MD5 en
-clair (pas besoin d'atteindre les sidecars SourceForge pour ça).
+Version checker for antiX Linux.
+Source: https://antixlinux.com/download/ — the official page gives the
+current version, SourceForge links, and SHA256/MD5 checksums in plain
+text (no need to reach the SourceForge sidecars for that).
 """
 
 import re
@@ -29,10 +29,10 @@ class AntiXChecker(BaseChecker):
                 headers={"User-Agent": "Mozilla/5.0"},
             )
             resp.raise_for_status()
-            # Bloc "sha256:" liste "<empreinte> <fichier>" pour chaque variante —
-            # la version vient du nom de fichier lui-même : une recherche
-            # "antiX-\d+" sur toute la page attrape aussi des nombres sans
-            # rapport (ex: "100%" ailleurs dans le texte).
+            # The "sha256:" block lists "<checksum> <file>" for each variant —
+            # the version comes from the filename itself: a page-wide search
+            # for "antiX-\d+" would also catch unrelated numbers
+            # (e.g. "100%" elsewhere in the text).
             sha_block_m = re.search(r"sha256:</p>\s*<p>(.*?)</p>", resp.text, re.DOTALL)
             if not sha_block_m:
                 return []
@@ -43,7 +43,7 @@ class AntiXChecker(BaseChecker):
             results = []
             for checksum, filename, version in pairs:
                 if "386" in filename:
-                    continue  # ce projet ne gère que l'amd64
+                    continue  # this project only handles amd64
                 dl_url = f"{_SF_BASE}antiX-{version}/{filename}/download"
                 suffix = "full" if "full" in filename else "core"
                 results.append(VersionInfo(
@@ -56,7 +56,7 @@ class AntiXChecker(BaseChecker):
                 ))
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

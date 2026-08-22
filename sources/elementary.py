@@ -1,9 +1,9 @@
 """
-Vérificateur de version pour elementary OS.
-Source : https://elementary.io/ — les releases GitHub (elementary/os)
-n'ont plus aucun asset ISO attaché (distribution "pay what you want" via
-leur propre site), le lien réel est sur la page d'accueil elle-même.
-Aucune empreinte n'est publiée par le projet à ce jour.
+Version checker for elementary OS.
+Source: https://elementary.io/ — the GitHub releases (elementary/os) no
+longer have any ISO asset attached ("pay what you want" distribution via
+their own site instead), the real link is on the homepage itself.
+No checksum is published by the project as of this writing.
 """
 
 import re
@@ -45,7 +45,7 @@ class ElementaryChecker(BaseChecker):
                 variant_label="amd64",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

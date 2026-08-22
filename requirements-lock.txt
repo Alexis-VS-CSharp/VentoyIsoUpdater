@@ -1,15 +1,15 @@
-# Verrouillage reproductible des dépendances d'exécution (HARD-4 de l'audit).
+# Reproducible lock of runtime dependencies (audit HARD-4).
 #
-# requirements.txt reste la source de vérité (plages de versions volontairement
-# larges, pour rester compatible avec les distributions qui packagent l'app).
-# Ce fichier fige des versions exactes connues pour fonctionner ensemble —
-# utile pour des builds reproductibles (CI, packaging) et pour que
-# `pip-audit` ait des versions précises à vérifier.
+# requirements.txt remains the source of truth (deliberately wide version
+# ranges, to stay compatible with distros that package the app).
+# This file pins exact versions known to work together — useful for
+# reproducible builds (CI, packaging) and so `pip-audit` has precise
+# versions to check.
 #
-# Régénération : dans un venv propre avec les dépendances de requirements.txt
-# installées,
+# Regeneration: in a clean venv with requirements.txt's dependencies
+# installed,
 #   pip freeze | grep -iE "customtkinter|pillow|requests|packaging|darkdetect|certifi|charset|idna|urllib3"
-# ou, si pip-tools est disponible :
+# or, if pip-tools is available:
 #   pip-compile requirements.txt -o requirements-lock.txt
 
 customtkinter==5.2.2
@@ -18,7 +18,7 @@ pillow==12.3.0
 requests==2.33.0
 packaging==24.2
 
-# Dépendances transitives de requests
+# Transitive dependencies of requests
 certifi==2026.1.4
 charset-normalizer==3.4.4
 idna==3.15

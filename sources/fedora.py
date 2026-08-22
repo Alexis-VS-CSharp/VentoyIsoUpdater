@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Fedora (Workstation et Server).
-Source : https://dl.fedoraproject.org/pub/fedora/linux/releases/
+Version checker for Fedora (Workstation and Server).
+Source: https://dl.fedoraproject.org/pub/fedora/linux/releases/
 """
 
 import re
@@ -21,30 +21,30 @@ class FedoraChecker(BaseChecker):
             versions = re.findall(r'href="(\d+)/?"', resp.text)
             return sorted(set(int(v) for v in versions), reverse=True)
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
-    # Spins dans le répertoire Spins/ (KDE a son propre répertoire depuis F41+)
+    # Spins in the Spins/ directory (KDE has had its own directory since F41+)
     _SPINS = {"Xfce", "Cinnamon", "MATE", "i3", "LXQt", "Budgie", "Sway"}
-    # MATE s'appelle MATE_Compiz dans les noms de fichiers
+    # MATE is named MATE_Compiz in filenames
     _SPIN_FILENAME = {"MATE": "MATE_Compiz"}
 
-    # Répertoire de base dl.fedoraproject.org
+    # dl.fedoraproject.org base directory
     _BASE = "https://dl.fedoraproject.org/pub/fedora/linux/releases/"
 
     def _fetch_iso_for_release(self, release: int) -> Optional[VersionInfo]:
         variant = self.variant or "Workstation"
         if variant == "Workstation":
             iso_dir = f"{self._BASE}{release}/Workstation/x86_64/iso/"
-            # Nouveau format: Fedora-Workstation-Live-43-1.6.x86_64.iso
-            # Ancien format: Fedora-Workstation-Live-x86_64-42-1.1.iso
+            # New format: Fedora-Workstation-Live-43-1.6.x86_64.iso
+            # Old format: Fedora-Workstation-Live-x86_64-42-1.1.iso
             patterns = [
                 r"(Fedora-Workstation-Live-(\d+)-[\d.]+\.x86_64\.iso)",
                 r"(Fedora-Workstation-Live-x86_64-(\d+)-[\d.]+\.iso)",
             ]
             variant_label = "Workstation Live"
         elif variant == "KDE":
-            # Depuis F41 : répertoire KDE/ dédié, nom inclut "Desktop"
+            # Since F41: dedicated KDE/ directory, name includes "Desktop"
             iso_dir = f"{self._BASE}{release}/KDE/x86_64/iso/"
             patterns = [
                 r"(Fedora-KDE-Desktop-Live-(\d+)-[\d.]+\.x86_64\.iso)",
@@ -52,7 +52,7 @@ class FedoraChecker(BaseChecker):
             ]
             variant_label = "KDE"
         elif variant == "Silverblue":
-            # Répertoire Silverblue/ dédié (plus dans Spins/)
+            # Dedicated Silverblue/ directory (no longer under Spins/)
             iso_dir = f"{self._BASE}{release}/Silverblue/x86_64/iso/"
             patterns = [
                 r"(Fedora-Silverblue-ostree-x86_64-(\d+)-[\d.]+\.iso)",
@@ -60,7 +60,7 @@ class FedoraChecker(BaseChecker):
             ]
             variant_label = "Silverblue"
         elif variant == "Kinoite":
-            # Répertoire Kinoite/ dédié (plus dans Spins/)
+            # Dedicated Kinoite/ directory (no longer under Spins/)
             iso_dir = f"{self._BASE}{release}/Kinoite/x86_64/iso/"
             patterns = [
                 r"(Fedora-Kinoite-ostree-x86_64-(\d+)-[\d.]+\.iso)",
@@ -68,7 +68,7 @@ class FedoraChecker(BaseChecker):
             ]
             variant_label = "Kinoite"
         elif variant in self._SPINS:
-            # Spins : Xfce, Cinnamon, MATE, i3, LXQt, Budgie, Sway
+            # Spins: Xfce, Cinnamon, MATE, i3, LXQt, Budgie, Sway
             iso_dir = f"{self._BASE}{release}/Spins/x86_64/iso/"
             fname = self._SPIN_FILENAME.get(variant, variant)
             patterns = [
@@ -104,9 +104,9 @@ class FedoraChecker(BaseChecker):
                 matches = re.findall(pattern, resp.text)
                 if matches:
                     filename, ver = matches[0]
-                    # Le nom du fichier CHECKSUM varie selon la variante
-                    # (ex: "Fedora-Workstation-44-1.7-x86_64-CHECKSUM") : on le
-                    # retrouve dans le même listing plutôt que de le deviner.
+                    # The CHECKSUM filename varies by variant
+                    # (e.g. "Fedora-Workstation-44-1.7-x86_64-CHECKSUM") — it's
+                    # found in the same listing rather than guessed.
                     checksum = None
                     cm = re.search(r'href="([^"]*-CHECKSUM)"', resp.text)
                     if cm:
@@ -121,7 +121,7 @@ class FedoraChecker(BaseChecker):
                         variant_label=f"{variant_label} F{release}",
                     )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
         return None
 
@@ -143,22 +143,22 @@ class FedoraChecker(BaseChecker):
         return results
 
     def parse_local_version(self, filename: str) -> Optional[str]:
-        # Nouveau format : Fedora-KDE-Desktop-Live-43-1.6.x86_64.iso
-        #                  Fedora-Workstation-Live-43-1.6.x86_64.iso
+        # New format: Fedora-KDE-Desktop-Live-43-1.6.x86_64.iso
+        #             Fedora-Workstation-Live-43-1.6.x86_64.iso
         m = re.search(
             r"Fedora-[\w-]+-(?:Live|ostree|dvd|netinst)-(\d+)-[\d.]+\.x86_64\.iso",
             filename, re.IGNORECASE
         )
         if m:
             return m.group(1)
-        # Format ostree : Fedora-Silverblue-ostree-x86_64-42-1.1.iso
+        # ostree format: Fedora-Silverblue-ostree-x86_64-42-1.1.iso
         m = re.search(
             r"Fedora-[\w-]+-(?:ostree|dvd|netinst)-x86_64-(\d+)-[\d.]+\.iso",
             filename, re.IGNORECASE
         )
         if m:
             return m.group(1)
-        # Ancien format Live : Fedora-KDE-Live-x86_64-42-1.1.iso
+        # Old Live format: Fedora-KDE-Live-x86_64-42-1.1.iso
         m = re.search(
             r"Fedora-[\w-]+-Live-x86_64-(\d+)-[\d.]+\.iso",
             filename, re.IGNORECASE

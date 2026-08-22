@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour CentOS Stream.
-Source : https://mirror.stream.centos.org/{stream}-stream/BaseOS/x86_64/iso/
+Version checker for CentOS Stream.
+Source: https://mirror.stream.centos.org/{stream}-stream/BaseOS/x86_64/iso/
 """
 
 import re
@@ -51,7 +51,7 @@ class CentOSStreamChecker(BaseChecker):
                 ))
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

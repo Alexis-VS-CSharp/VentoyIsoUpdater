@@ -1,9 +1,9 @@
 """
-Vérificateur de version pour Linux Lite.
-Version + empreinte : https://www.linuxliteos.com/download.php (la page
-officielle affiche déjà la version, le SHA256 et le MD5 en clair pour la
-dernière release — pas besoin d'interroger SourceForge pour ça).
-Téléchargement : SourceForge project linux-lite/files/ (mêmes fichiers).
+Version checker for Linux Lite.
+Version + checksum: https://www.linuxliteos.com/download.php (the official
+page already shows the version, SHA256 and MD5 in plain text for the
+latest release — no need to query SourceForge for that).
+Download: SourceForge project linux-lite/files/ (same files).
 """
 
 import re
@@ -35,7 +35,7 @@ class LinuxLiteChecker(BaseChecker):
             if not m:
                 return []
             version = m.group(1)
-            # Le bloc SHA256 suit le titre de version dans le HTML
+            # The SHA256 block follows the version title in the HTML
             block = resp.text[m.end():m.end() + 3000]
             sum_m = re.search(r"SHA256\s*:\s*</strong>\s*<code[^>]*>([0-9a-fA-F]{64})", block)
             checksum = sum_m.group(1).lower() if sum_m else None
@@ -50,7 +50,7 @@ class LinuxLiteChecker(BaseChecker):
                 variant_label="64-bit",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

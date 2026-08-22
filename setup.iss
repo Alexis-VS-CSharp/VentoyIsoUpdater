@@ -1,22 +1,22 @@
-; Script Inno Setup — VentoyIsoUpdater
-; Génère un installateur Windows professionnel avec :
-;   - Raccourci menu Démarrer
-;   - Raccourci bureau (optionnel)
-;   - Entrée dans "Applications installées" (Ajout/Suppression de programmes)
-;   - Désinstallateur propre
+; Inno Setup script — VentoyIsoUpdater
+; Generates a professional Windows installer with:
+;   - Start menu shortcut
+;   - Desktop shortcut (optional)
+;   - Entry in "Installed Applications" (Add/Remove Programs)
+;   - Clean uninstaller
 ;
-; Prérequis : Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
-; Usage (sur Windows) : clic droit → Compile, ou iscc setup.iss
+; Requires: Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
+; Usage (on Windows): right-click -> Compile, or iscc setup.iss
 
 #define AppName      "VentoyIsoUpdater"
-; surchargeable : iscc /DAppVersion=1.2.3 setup.iss
+; overridable: iscc /DAppVersion=1.2.3 setup.iss
 #ifndef AppVersion
   #define AppVersion "1.0.0"
 #endif
 #define AppPublisher "Maxence Baffet (celmax)"
 #define AppURL       "https://github.com/celmax85"
 #define AppExeName   "VentoyIsoUpdater.exe"
-#define AppDesc      "Gestionnaire graphique de clés USB Ventoy"
+#define AppDesc      "Desktop GUI for managing Ventoy USB drives"
 
 [Setup]
 AppId={{A3F2C1D8-4B5E-4F6A-9C2D-1E3F5A7B9C0D}
@@ -30,14 +30,14 @@ AppUpdatesURL={#AppURL}
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 AllowNoIcons=yes
-; Compression maximale
+; Maximum compression
 Compression=lzma2/ultra64
 SolidCompression=yes
-; Icône de l'installateur
+; Installer icon
 WizardStyle=modern
-; L'installateur ne nécessite pas les droits admin (installe dans AppData si refusé)
+; The installer doesn't require admin rights (installs into AppData if refused)
 PrivilegesRequiredOverridesAllowed=dialog
-; Fichier de sortie
+; Output file
 OutputDir=dist\windows
 OutputBaseFilename={#AppName}-{#AppVersion}-windows-setup
 SetupIconFile=assets\icon.ico
@@ -48,26 +48,39 @@ UninstallDisplayName={#AppName}
 Name: "french";    MessagesFile: "compiler:Languages\French.isl"
 Name: "english";   MessagesFile: "compiler:Default.isl"
 
+; Custom labels below aren't part of Inno Setup's built-in translations,
+; so they're localized by hand here to follow whichever [Languages] entry
+; the user picks in the wizard.
+[CustomMessages]
+french.DesktopIconDesc=Créer un raccourci sur le bureau
+english.DesktopIconDesc=Create a desktop shortcut
+french.AdditionalIcons=Raccourcis supplémentaires :
+english.AdditionalIcons=Additional shortcuts:
+french.UninstallIconName=Désinstaller {#AppName}
+english.UninstallIconName=Uninstall {#AppName}
+french.LaunchAfterInstall=Lancer {#AppName}
+english.LaunchAfterInstall=Launch {#AppName}
+
 [Tasks]
-Name: "desktopicon";    Description: "Créer un raccourci sur le bureau";    GroupDescription: "Raccourcis supplémentaires :"; Flags: unchecked
+Name: "desktopicon";    Description: "{cm:DesktopIconDesc}";    GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; Binaire principal
+; Main binary
 Source: "dist\windows\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-; Menu Démarrer
+; Start menu
 Name: "{group}\{#AppName}";                  Filename: "{app}\{#AppExeName}"
-Name: "{group}\Désinstaller {#AppName}";     Filename: "{uninstallexe}"
-; Bureau (optionnel, coché par l'utilisateur)
+Name: "{group}\{cm:UninstallIconName}";       Filename: "{uninstallexe}"
+; Desktop (optional, checked by the user)
 Name: "{autodesktop}\{#AppName}";            Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
 
 [Run]
-; Propose de lancer l'appli à la fin de l'installation
+; Offers to launch the app at the end of installation
 Filename: "{app}\{#AppExeName}"; \
-    Description: "Lancer {#AppName}"; \
+    Description: "{cm:LaunchAfterInstall}"; \
     Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-; Supprime les fichiers de config à la désinstallation (optionnel — commenter si indésirable)
+; Removes config files on uninstall (optional — comment out if undesired)
 ; Type: filesandordirs; Name: "{userappdata}\ventoyisoupdater"

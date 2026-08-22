@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Alpine Linux.
-Source : https://dl-cdn.alpinelinux.org/alpine/
+Version checker for Alpine Linux.
+Source: https://dl-cdn.alpinelinux.org/alpine/
 """
 
 import re
@@ -24,7 +24,7 @@ class AlpineChecker(BaseChecker):
             unique.sort(key=lambda v: Version(v.lstrip("v")), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _find_iso_in_release_dir(self, major: str) -> Optional[VersionInfo]:
@@ -40,8 +40,8 @@ class AlpineChecker(BaseChecker):
             from packaging.version import Version
             matches.sort(key=lambda x: Version(x[1]), reverse=True)
             filename, version = matches[0]
-            # Alpine publie un vrai sidecar SHA256 (en plus d'une signature
-            # GPG .asc que ce projet ne vérifie pas — voir core/downloader.py)
+            # Alpine publishes a real SHA256 sidecar (in addition to a GPG
+            # .asc signature this project doesn't verify — see core/downloader.py)
             checksum = fetch_sha256sums(arch_url + filename + ".sha256", filename)
             return VersionInfo(
                 version=version,
@@ -52,7 +52,7 @@ class AlpineChecker(BaseChecker):
                 variant_label=variant.capitalize(),
             )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:

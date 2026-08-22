@@ -1,6 +1,6 @@
 """
-Logging centralisé de l'application.
-Fichier de log : ~/.config/ventoyisoupdater/ventoyisoupdater.log
+Centralized application logging.
+Log file: ~/.config/ventoyisoupdater/ventoyisoupdater.log
 """
 
 import logging
@@ -9,7 +9,7 @@ from pathlib import Path
 
 _LOG_DIR  = Path.home() / ".config" / "ventoyisoupdater"
 _LOG_FILE = _LOG_DIR / "ventoyisoupdater.log"
-_MAX_BYTES = 5 * 1024 * 1024  # 5 MB par fichier
+_MAX_BYTES = 5 * 1024 * 1024  # 5 MB per file
 
 def _setup() -> logging.Logger:
     log = logging.getLogger("ventoyisoupdater")

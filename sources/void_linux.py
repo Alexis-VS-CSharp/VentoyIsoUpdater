@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Void Linux.
-Source : https://repo-default.voidlinux.org/live/current/
+Version checker for Void Linux.
+Source: https://repo-default.voidlinux.org/live/current/
 """
 
 import re
@@ -25,13 +25,13 @@ class VoidLinuxChecker(BaseChecker):
             resp.raise_for_status()
 
             if variant == "musl":
-                # Nouveau nommage : "musl" précède la date (ex: void-live-
-                # x86_64-musl-20250202-base.iso), plus l'ancien -date-musl.iso
+                # New naming: "musl" precedes the date (e.g. void-live-
+                # x86_64-musl-20250202-base.iso), plus the old -date-musl.iso
                 pattern = r"(void-live-x86_64-musl-(\d+)(?:-(?:base|xfce))?\.iso)"
             else:
-                # void-live-x86_64-20250202-base.iso ou
-                # void-live-x86_64-20250202-xfce.iso ou
-                # void-live-x86_64-20250202.iso (ancien format)
+                # void-live-x86_64-20250202-base.iso or
+                # void-live-x86_64-20250202-xfce.iso or
+                # void-live-x86_64-20250202.iso (old format)
                 pattern = r"(void-live-x86_64-(\d+)(?:-(?:base|xfce|mate|cinnamon|enlightenment|lxde|lxqt))?\.iso)"
 
             matches = re.findall(pattern, resp.text)
@@ -53,7 +53,7 @@ class VoidLinuxChecker(BaseChecker):
             results.sort(key=lambda x: x.version, reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

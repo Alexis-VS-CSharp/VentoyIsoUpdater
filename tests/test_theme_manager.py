@@ -75,15 +75,15 @@ class TestSaveVentoyJson:
         assert os.path.isfile(backup)
 
     def test_restores_backup_on_write_failure(self, ventoy_json):
-        """En cas d'échec d'écriture, save retourne False et le backup existe."""
+        """On a write failure, save returns False and the backup exists."""
         from unittest.mock import patch
         original = load_ventoy_json(ventoy_json)
         with patch("json.dump", side_effect=IOError("disk full")):
             result = save_ventoy_json(ventoy_json, {"menu_class": []})
         assert result is False
-        # Le backup doit exister (créé avant la tentative d'écriture)
+        # The backup must exist (created before the write attempt)
         assert os.path.isfile(ventoy_json + ".bak")
-        # Le contenu original doit être restauré depuis le backup
+        # The original content must be restored from the backup
         restored = load_ventoy_json(ventoy_json)
         assert restored == original
 

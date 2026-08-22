@@ -1,6 +1,6 @@
 @echo off
-REM Build un exécutable standalone Windows avec PyInstaller
-REM Usage : build.bat
+REM Builds a standalone Windows executable with PyInstaller
+REM Usage: build.bat
 
 setlocal
 
@@ -12,20 +12,20 @@ if exist ".venv\Scripts\pip.exe" (
     set PYINSTALLER=pyinstaller
 )
 
-echo =^> Installation des dépendances...
+echo =^> Installing dependencies...
 %PIP% install -q -r requirements.txt pyinstaller
 if errorlevel 1 (
-    echo ERREUR : installation des dépendances échouée.
+    echo ERROR: dependency installation failed.
     pause & exit /b 1
 )
 
-REM Génère icon.ico si absent
+REM Generates icon.ico if missing
 if not exist "assets\icon.ico" (
-    echo =^> Génération de assets\icon.ico...
+    echo =^> Generating assets\icon.ico...
     python tools\generate_ico.py
 )
 
-REM Génère les --hidden-import pour tous les modules sources/
+REM Generates the --hidden-import flags for every module in sources/
 set HIDDEN=
 for %%f in (sources\*.py) do (
     if not "%%~nf"=="__init__" (
@@ -35,7 +35,7 @@ for %%f in (sources\*.py) do (
 
 if not exist "dist\windows" mkdir "dist\windows"
 
-echo =^> Build de l'exécutable Windows...
+echo =^> Building the Windows executable...
 %PYINSTALLER% ^
     --onefile ^
     --windowed ^
@@ -55,14 +55,14 @@ echo =^> Build de l'exécutable Windows...
     main.py
 
 if errorlevel 1 (
-    echo ERREUR : build échoué.
+    echo ERROR: build failed.
     pause & exit /b 1
 )
 
 echo.
-echo =^> Exécutable généré : dist\windows\VentoyIsoUpdater.exe
+echo =^> Executable generated: dist\windows\VentoyIsoUpdater.exe
 echo.
-echo     Packages disponibles :
-echo     package_zip_win.bat          → dist\windows\*-portable.zip
-echo     package_installer_win.bat    → dist\windows\*-setup.exe
+echo     Available packages:
+echo     package_zip_win.bat          -> dist\windows\*-portable.zip
+echo     package_installer_win.bat    -> dist\windows\*-setup.exe
 pause

@@ -1,6 +1,6 @@
 """
-Helper générique pour récupérer des releases ISO depuis GitHub.
-Utilisé par plusieurs sources (Bazzite, EndeavourOS, ChimeraOS, Batocera, etc.)
+Generic helper for fetching ISO releases from GitHub.
+Used by several sources (Bazzite, EndeavourOS, ChimeraOS, Batocera, etc.)
 """
 
 import re
@@ -19,15 +19,15 @@ def get_github_iso_releases(
     skip_prereleases: bool = True,
 ) -> list[VersionInfo]:
     """
-    Récupère les releases d'un dépôt GitHub et filtre les assets ISO.
+    Fetches releases from a GitHub repo and filters ISO assets.
 
     Args:
-        owner: propriétaire GitHub (ex: 'ublue-os')
-        repo: nom du dépôt (ex: 'bazzite')
-        asset_pattern: regex pour filtrer les assets (ex: r'Bazzite-.*\\.iso$')
-        variant_label: libellé affiché dans l'UI
-        max_releases: nombre max de releases à inspecter
-        skip_prereleases: ignore les pre-releases et drafts
+        owner: GitHub owner (e.g. 'ublue-os')
+        repo: repo name (e.g. 'bazzite')
+        asset_pattern: regex to filter assets (e.g. r'Bazzite-.*\\.iso$')
+        variant_label: label shown in the UI
+        max_releases: max number of releases to inspect
+        skip_prereleases: skips pre-releases and drafts
     """
     url = f"https://api.github.com/repos/{owner}/{repo}/releases"
     headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
@@ -38,7 +38,7 @@ def get_github_iso_releases(
         resp.raise_for_status()
         releases = resp.json()
     except Exception as _exc:
-        logger.debug("%s: échec ignoré : %s", __name__, _exc)
+        logger.debug("%s: failed, ignored: %s", __name__, _exc)
         return []
 
     results = []

@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Parrot OS.
-Source : https://download.parrot.sh/parrot/iso/
+Version checker for Parrot OS.
+Source: https://download.parrot.sh/parrot/iso/
 """
 
 import re
@@ -18,41 +18,41 @@ class ParrotChecker(BaseChecker):
         try:
             resp = requests.get(self.BASE_URL, timeout=10)
             resp.raise_for_status()
-            # \d+ en tête : exclut le lien "dossier parent" (href="../") que
-            # [\d.]+ capturerait aussi ('..' est fait uniquement de points).
+            # Leading \d+: excludes the "parent folder" link (href="../")
+            # which [\d.]+ would also capture ('..' is made only of dots).
             versions = re.findall(r'href="(\d+(?:\.\d+)*)/?"', resp.text)
             from packaging.version import Version
             unique = list(dict.fromkeys(versions))
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
         edition = self.variant or "home"
         dir_url = f"{self.BASE_URL}{version}/"
 
-        # Essai 1 : liste le répertoire pour trouver le bon nom de fichier
+        # Attempt 1: list the directory to find the right filename
         try:
             resp = requests.get(dir_url, timeout=10)
             resp.raise_for_status()
-            # Cherche les ISOs pour cette édition
+            # Looks for ISOs for this edition
             isos = re.findall(
                 rf"(Parrot-{re.escape(edition)}-[\d.]+[^\"'\s<>]*\.iso)",
                 resp.text, re.IGNORECASE
             )
             if not isos:
-                # Tente n'importe quel ISO contenant l'édition
+                # Tries any ISO containing the edition name
                 isos = re.findall(
                     rf"(Parrot-{re.escape(edition)}[^\"'\s<>]*_amd64\.iso)",
                     resp.text, re.IGNORECASE
                 )
             for filename in isos[:1]:
                 url = dir_url + filename
-                # Fichier signé PGP en clair, contient md5/sha256/sha512
-                # pour chaque image ; la longueur de l'empreinte suffit à
-                # cibler la bonne section.
+                # Clearsigned PGP file, contains md5/sha256/sha512 for each
+                # image; the checksum length is enough to target the right
+                # section.
                 checksum = fetch_sha256sums(dir_url + "signed-hashes.txt", filename)
                 return VersionInfo(
                     version=version,
@@ -63,10 +63,10 @@ class ParrotChecker(BaseChecker):
                     variant_label=edition.capitalize(),
                 )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
-        # Essai 2 : HEAD direct avec plusieurs patterns de noms
+        # Attempt 2: direct HEAD with several filename patterns
         candidates = [
             f"Parrot-{edition}-{version}_amd64.iso",
             f"Parrot-{edition}-{version}-amd64.iso",
@@ -87,7 +87,7 @@ class ParrotChecker(BaseChecker):
                         variant_label=edition.capitalize(),
                     )
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 continue
         return None
 

@@ -1,7 +1,7 @@
 """
 Pop!_OS — System76.
-Source : https://api.pop-os.org/builds/{version}/{channel}?arch={arch}
-L'API retourne : url, sha_sum, size, build, version, channel.
+Source: https://api.pop-os.org/builds/{version}/{channel}?arch={arch}
+The API returns: url, sha_sum, size, build, version, channel.
 """
 
 import requests
@@ -11,10 +11,10 @@ from core.logger import logger
 
 
 class PopOSChecker(BaseChecker):
-    # Versions LTS supportées, du plus récent au plus ancien
+    # Supported LTS versions, most recent first
     VERSIONS = ["24.04", "22.04"]
 
-    # Mapping variant (paramètre utilisateur) → channel API
+    # Mapping of variant (user-facing parameter) -> API channel
     CHANNEL_MAP = {
         "intel": "generic",
         "amd":   "generic",
@@ -26,7 +26,7 @@ class PopOSChecker(BaseChecker):
 
     def _fetch_release(self, version: str, channel: str, arch: str = "amd64") -> Optional[dict]:
         """
-        Appelle l'API System76 et retourne le dict JSON ou None en cas d'erreur.
+        Calls the System76 API and returns the JSON dict, or None on error.
         """
         url = f"{self.API_BASE}/{version}/{channel}?arch={arch}"
         try:
@@ -37,7 +37,7 @@ class PopOSChecker(BaseChecker):
                 return None
             return data
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:

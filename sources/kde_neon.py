@@ -1,10 +1,10 @@
 """
-Vérificateur de version pour KDE Neon.
-Source : https://files.kde.org/neon/images/desktop/user/current/
-(chemin mis à jour : KDE a inséré un niveau "desktop/" en 2026 — l'ancien
-chemin .../neon/images/user/current/ répond désormais 404).
-Le fichier courant se nomme neon-user-desktop-current.iso (redirige vers la
-version datée) ; un .sha256sum accompagne chaque ISO daté.
+Version checker for KDE Neon.
+Source: https://files.kde.org/neon/images/desktop/user/current/
+(updated path: KDE inserted a "desktop/" level in 2026 — the old
+.../neon/images/user/current/ path now returns 404).
+The current file is named neon-user-desktop-current.iso (redirects to the
+dated version); a .sha256sum accompanies each dated ISO.
 """
 
 import re
@@ -31,7 +31,7 @@ class KdeNeonChecker(BaseChecker):
                 return []
             matches = sorted(set(matches), key=lambda x: x[1], reverse=True)
             filename, build = matches[0]
-            # Le sidecar remplace ".iso" par ".sha256sum" (pas de suffixe ajouté)
+            # The sidecar replaces ".iso" with ".sha256sum" (no suffix appended)
             sums_name = filename[:-len(".iso")] + ".sha256sum"
             checksum = fetch_sha256sums(self.INDEX_URL + sums_name, filename)
             return [VersionInfo(
@@ -43,7 +43,7 @@ class KdeNeonChecker(BaseChecker):
                 variant_label="User Edition",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

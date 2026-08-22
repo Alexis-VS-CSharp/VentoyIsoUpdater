@@ -37,7 +37,7 @@ class ZorinChecker(BaseChecker):
             )
             resp.raise_for_status()
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
         # The page HTML contains mirror hrefs of the form:
@@ -63,8 +63,8 @@ class ZorinChecker(BaseChecker):
         version      = f"{base_version}.{revision}" if revision else base_version
 
         download_url = PRIMARY_MIRROR.format(filename=filename)
-        # Pas exposée sur la page de téléchargement elle-même, mais le
-        # mirroir kernel.org sert un SHA256SUMS.txt couvrant tous les fichiers.
+        # Not exposed on the download page itself, but the kernel.org
+        # mirror serves a SHA256SUMS.txt covering every file.
         sums_url = download_url.rsplit("/", 1)[0] + "/SHA256SUMS.txt"
         checksum = fetch_sha256sums(sums_url, filename)
 

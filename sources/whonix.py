@@ -1,6 +1,6 @@
 """
-Whonix — OS axé sur la confidentialité (basé sur VM).
-Source : GitHub releases Whonix/Whonix ou page de téléchargement officielle.
+Whonix — privacy-focused OS (VM-based).
+Source: Whonix/Whonix GitHub releases or the official download page.
 """
 import re
 import requests
@@ -18,7 +18,7 @@ class WhonixChecker(BaseChecker):
         return versions[0] if versions else None
 
     def get_all_versions(self) -> list[VersionInfo]:
-        # Essai 1 : GitHub releases
+        # Attempt 1: GitHub releases
         try:
             headers = {
                 "Accept": "application/vnd.github+json",
@@ -47,10 +47,10 @@ class WhonixChecker(BaseChecker):
             if results:
                 return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
-        # Essai 2 : page wiki de téléchargement
+        # Attempt 2: wiki download page
         try:
             resp = requests.get(
                 self.DL_PAGE, timeout=12,
@@ -80,7 +80,7 @@ class WhonixChecker(BaseChecker):
                 ))
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

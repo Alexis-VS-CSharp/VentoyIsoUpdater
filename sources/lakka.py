@@ -1,8 +1,8 @@
 """
-Vérificateur de version pour Lakka.
-Source : https://le.builds.lakka.tv/Generic.x86_64/ — le serveur de build
-officiel liste toutes les versions avec un sidecar .sha256 par fichier ;
-plus fiable que les releases GitHub (quota d'API partagé, pas d'empreinte).
+Version checker for Lakka.
+Source: https://le.builds.lakka.tv/Generic.x86_64/ — the official build
+server lists every version with a .sha256 sidecar per file; more reliable
+than GitHub releases (shared API quota, no checksum).
 """
 
 import re
@@ -45,7 +45,7 @@ class LakkaChecker(BaseChecker):
                 variant_label="Generic x86_64",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

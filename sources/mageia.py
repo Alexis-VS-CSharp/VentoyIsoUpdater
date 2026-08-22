@@ -1,11 +1,11 @@
 """
-Vérificateur de version pour Mageia.
-Source : https://mirrors.kernel.org/mageia/iso/ (et miroirs de repli)
+Version checker for Mageia.
+Source: https://mirrors.kernel.org/mageia/iso/ (and fallback mirrors)
 
-Mageia ne publie plus de DVD classique depuis la 9 : chaque édition (GNOME,
-Plasma, Xfce) a son propre sous-dossier contenant l'ISO et des sidecars de
-vérification (.md5, .sha3, .sha512). On essaie les éditions dans l'ordre
-GNOME → Plasma → Xfce et on utilise l'empreinte SHA512 publiée.
+Mageia no longer publishes a classic DVD since version 9: each edition
+(GNOME, Plasma, Xfce) has its own subfolder containing the ISO and
+verification sidecars (.md5, .sha3, .sha512). Editions are tried in the
+order GNOME → Plasma → Xfce, and the published SHA512 checksum is used.
 """
 
 import re
@@ -14,7 +14,7 @@ from typing import Optional
 from sources.base import BaseChecker, VersionInfo
 from core.logger import logger
 
-# Miroirs à essayer si kernel.org est indisponible
+# Mirrors to try if kernel.org is unavailable
 MIRRORS = [
     "https://mirrors.kernel.org/mageia/iso/",
     "https://mirror.accum.se/mirror/mageia/iso/",
@@ -25,7 +25,7 @@ _EDITIONS = ["GNOME", "Plasma", "Xfce"]
 
 
 def _fetch_sha512(url: str, filename: str) -> Optional[str]:
-    """Récupère une empreinte SHA512 depuis un sidecar '<fichier>.sha512'."""
+    """Fetches a SHA512 checksum from a '<file>.sha512' sidecar."""
     try:
         resp = requests.get(url, timeout=8)
         resp.raise_for_status()
@@ -44,7 +44,7 @@ class MageiaChecker(BaseChecker):
             versions = re.findall(r'href="(\d+)/?"', resp.text)
             return sorted(set(int(v) for v in versions), reverse=True)
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: int, base_url: str) -> Optional[VersionInfo]:
@@ -66,7 +66,7 @@ class MageiaChecker(BaseChecker):
                         variant_label=f"Live {edition}",
                     )
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 continue
         return None
 

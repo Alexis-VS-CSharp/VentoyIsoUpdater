@@ -1,5 +1,5 @@
 """
-Gestion des téléchargements avec progression et vérification de checksum.
+Download management with progress reporting and checksum verification.
 """
 
 import os
@@ -24,22 +24,22 @@ def download_file(
     cancel_event: Optional[threading.Event] = None,
 ) -> str:
     """
-    Télécharge un fichier vers dest_path.
+    Downloads a file to dest_path.
 
     Args:
-        url: URL source
-        dest_path: chemin de destination (fichier complet)
-        on_progress: callback(bytes_downloaded, total_bytes) appelé à chaque chunk
-        checksum: hash attendu (optionnel)
-        checksum_type: 'sha256' ou 'md5'
-        chunk_size: taille des blocs
-        cancel_event: threading.Event pour annuler le téléchargement
+        url: source URL
+        dest_path: destination path (full file path)
+        on_progress: callback(bytes_downloaded, total_bytes) called on each chunk
+        checksum: expected hash (optional)
+        checksum_type: 'sha256' or 'md5'
+        chunk_size: chunk size
+        cancel_event: threading.Event to cancel the download
 
     Returns:
-        Chemin du fichier téléchargé
+        Path of the downloaded file
 
     Raises:
-        DownloadError en cas d'échec ou d'annulation
+        DownloadError on failure or cancellation
     """
     tmp_path = dest_path + ".part"
 
@@ -63,7 +63,7 @@ def download_file(
                         if on_progress:
                             on_progress(downloaded, total)
 
-        # Vérification du checksum
+        # Checksum verification
         if checksum and hasher:
             computed = hasher.hexdigest()
             if computed.lower() != checksum.lower():
@@ -72,7 +72,7 @@ def download_file(
                     f"Checksum invalide : attendu {checksum}, obtenu {computed}"
                 )
 
-        # Renommage atomique (os.replace est atomique sur Linux, sûr sur Windows)
+        # Atomic rename (os.replace is atomic on Linux, safe on Windows)
         os.replace(tmp_path, dest_path)
         return dest_path
 
@@ -90,12 +90,12 @@ def download_logo(
     size: tuple[int, int] = (128, 128),
 ) -> tuple[bool, Optional[str]]:
     """
-    Télécharge (ou copie) un logo et le convertit en PNG redimensionné.
+    Downloads (or copies) a logo and converts it to a resized PNG.
 
-    Préfixe spécial ``local:<filename>`` : copie depuis assets/logos/ du projet
-    au lieu de télécharger depuis internet.
+    Special ``local:<filename>`` prefix: copies from the project's
+    assets/logos/ instead of downloading from the internet.
 
-    Retourne (True, None) en cas de succès, (False, "raison") en cas d'échec.
+    Returns (True, None) on success, (False, "reason") on failure.
     """
     try:
         from PIL import Image
@@ -104,11 +104,11 @@ def download_logo(
         _MAX_LOGO_BYTES = 5 * 1024 * 1024  # 5 MB
 
         if url.startswith("local:"):
-            # Fichier embarqué dans assets/logos/ du projet
+            # File embedded in the project's assets/logos/
             filename = url[len("local:"):]
             assets_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "logos")
-            # Rejette toute tentative de traversée de chemin (ex: "local:../../etc/passwd") :
-            # filename doit désigner un fichier directement dans assets_dir, sans séparateur.
+            # Rejects any path traversal attempt (e.g. "local:../../etc/passwd"):
+            # filename must name a file directly inside assets_dir, no separator.
             if not filename or "/" in filename or "\\" in filename or filename in (".", ".."):
                 return False, "Nom de fichier local invalide"
             src = os.path.join(assets_dir, filename)
@@ -122,7 +122,7 @@ def download_logo(
         else:
             resp = requests.get(url, stream=True, timeout=10)
             resp.raise_for_status()
-            # Lit avec limite de taille pour éviter une saturation mémoire
+            # Reads with a size limit to avoid memory exhaustion
             data = b""
             for chunk in resp.iter_content(chunk_size=65536):
                 data += chunk

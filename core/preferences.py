@@ -1,6 +1,6 @@
 """
-Préférences persistantes de l'application.
-Stockées dans ~/.config/ventoyisoupdater/prefs.json
+Persistent application preferences.
+Stored in ~/.config/ventoyisoupdater/prefs.json
 """
 
 import json
@@ -11,17 +11,17 @@ _PREFS_DIR = Path.home() / ".config" / "ventoyisoupdater"
 _PREFS_FILE = _PREFS_DIR / "prefs.json"
 
 _DEFAULTS: dict = {
-    "download_folder": "",          # dossier de téléchargement par défaut (vide = clé Ventoy)
-    "stable_only": True,            # filtre versions stables uniquement
-    "check_on_startup": False,      # vérifier les mises à jour au démarrage
-    "last_drive": "",               # dernier point de montage sélectionné
-    "window_geometry": "",          # géométrie de la fenêtre principale
-    "language": "fr",               # langue de l'interface : "fr" ou "en"
+    "download_folder": "",          # default download folder (empty = Ventoy drive)
+    "stable_only": True,            # filter to stable versions only
+    "check_on_startup": False,      # check for updates on startup
+    "last_drive": "",               # last selected mount point
+    "window_geometry": "",          # main window geometry
+    "language": "fr",               # UI language: "fr" or "en"
 }
 
 
 def load() -> dict:
-    """Charge les préférences depuis le fichier. Retourne les valeurs par défaut si absent."""
+    """Loads preferences from the file. Returns the defaults if absent."""
     try:
         with open(_PREFS_FILE, encoding="utf-8") as f:
             stored = json.load(f)
@@ -33,7 +33,7 @@ def load() -> dict:
 
 
 def save(prefs: dict) -> None:
-    """Sauvegarde les préférences dans le fichier."""
+    """Saves preferences to the file."""
     try:
         _PREFS_DIR.mkdir(parents=True, exist_ok=True)
         with open(_PREFS_FILE, "w", encoding="utf-8") as f:
@@ -43,12 +43,12 @@ def save(prefs: dict) -> None:
 
 
 def get(key: str):
-    """Raccourci : lit une seule clé."""
+    """Shortcut: reads a single key."""
     return load().get(key, _DEFAULTS.get(key))
 
 
 def set_key(key: str, value) -> None:
-    """Raccourci : met à jour une seule clé et sauvegarde."""
+    """Shortcut: updates a single key and saves."""
     if key not in _DEFAULTS:
         return
     prefs = load()

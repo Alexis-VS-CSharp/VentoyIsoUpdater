@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Ubuntu (Desktop et Server).
-Source : https://releases.ubuntu.com/
+Version checker for Ubuntu (Desktop and Server).
+Source: https://releases.ubuntu.com/
 """
 
 import re
@@ -15,18 +15,18 @@ class UbuntuChecker(BaseChecker):
     BASE_URL = "https://releases.ubuntu.com/"
 
     def _fetch_versions(self) -> list[str]:
-        """Récupère toutes les versions disponibles sur releases.ubuntu.com."""
+        """Fetches every version available on releases.ubuntu.com."""
         try:
             resp = requests.get(self.BASE_URL, timeout=10)
             resp.raise_for_status()
             raw = re.findall(r'href="(\d+\.\d+(?:\.\d+)?)/?"', resp.text)
             from packaging.version import Version
-            # Trie en gardant la chaîne originale (packaging normalise et casse les URLs)
-            unique = list(dict.fromkeys(raw))  # déduplique en gardant l'ordre
+            # Sorts while keeping the original string (packaging normalizes and breaks URLs)
+            unique = list(dict.fromkeys(raw))  # deduplicates while keeping order
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -43,7 +43,7 @@ class UbuntuChecker(BaseChecker):
                 (f"ubuntu-{version}-desktop-legacy-amd64.iso", "Desktop (legacy)"),
             ]
 
-        # LTS = versions xx.04 (stable), xx.10 = intermédiaires (non-LTS)
+        # LTS = xx.04 versions (stable), xx.10 = interim (non-LTS)
         minor = version.split(".")[1] if "." in version else "0"
         is_lts = minor == "04"
 
@@ -65,13 +65,13 @@ class UbuntuChecker(BaseChecker):
                         stable=is_lts,
                     )
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 continue
         return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:
         versions = self._fetch_versions()
-        # Prioritise les versions LTS (xx.04) — on les essaie en premier
+        # Prioritizes LTS versions (xx.04) — tried first
         lts = [v for v in versions if len(v.split(".")) >= 2 and v.split(".")[1] == "04"]
         for v in lts + [v for v in versions if v not in lts]:
             info = self._make_version_info(v)

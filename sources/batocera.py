@@ -1,11 +1,11 @@
 """
 Batocera — Retrogaming OS.
-Source : https://mirrors.o2switch.fr/batocera/x86_64/stable/last/
+Source: https://mirrors.o2switch.fr/batocera/x86_64/stable/last/
 
-updates.batocera.org (utilisé auparavant) est un frontal incohérent : il
-redirige correctement vers ce miroir pour l'image elle-même mais renvoie
-404 pour son sidecar .md5 — on interroge donc directement le miroir, dont
-le listing donne toujours le nom du build courant.
+updates.batocera.org (used previously) is an inconsistent front end: it
+correctly redirects to this mirror for the image itself but returns 404 for
+its .md5 sidecar — so the mirror is queried directly, whose listing always
+gives the current build's name.
 """
 import re
 import requests
@@ -17,8 +17,8 @@ _MIRROR_URL = "https://mirrors.o2switch.fr/batocera/x86_64/stable/last/"
 
 
 def _fetch_bare_md5(url: str) -> Optional[str]:
-    """Le sidecar .md5 de Batocera ne contient que l'empreinte, sans nom de
-    fichier — pas le format GNU coreutils habituel."""
+    """Batocera's .md5 sidecar contains only the checksum, without a
+    filename — not the usual GNU coreutils format."""
     try:
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
@@ -54,7 +54,7 @@ class BatoceraChecker(BaseChecker):
                 variant_label="x86_64",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

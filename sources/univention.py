@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Univention UCS.
-Source : https://updates.software-univention.de/download/ucs-cds/
+Version checker for Univention UCS.
+Source: https://updates.software-univention.de/download/ucs-cds/
 """
 
 import re
@@ -15,22 +15,22 @@ class UniventionChecker(BaseChecker):
     BASE_URL = "https://updates.software-univention.de/download/ucs-cds/"
 
     def _fetch_versions(self) -> list[tuple[str, str]]:
-        """Retourne une liste de (folder, version_label)."""
+        """Returns a list of (folder, version_label)."""
         try:
             resp = requests.get(self.BASE_URL, timeout=10)
             resp.raise_for_status()
-            # Dossiers: ucs5.2-5/, ucs5.2-4/, ucs5.0-8/, etc.
+            # Folders: ucs5.2-5/, ucs5.2-4/, ucs5.0-8/, etc.
             folders = re.findall(r'href="(ucs([\d.]+(?:-\d+)?))/"', resp.text)
-            # Trie par version décroissante
+            # Sorts by descending version
             def sort_key(item):
                 folder, ver = item
-                # ex: ucs5.2-5 → (5, 2, 5)
+                # e.g. ucs5.2-5 -> (5, 2, 5)
                 parts = re.findall(r'\d+', folder)
                 return tuple(int(p) for p in parts)
             folders_sorted = sorted(set(folders), key=sort_key, reverse=True)
             return folders_sorted
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, folder: str, ver_label: str) -> Optional[VersionInfo]:
@@ -38,7 +38,7 @@ class UniventionChecker(BaseChecker):
         try:
             resp = requests.get(dir_url, timeout=10)
             resp.raise_for_status()
-            # Cherche UCS_5.2-5-amd64.iso ou similaire
+            # Looks for UCS_5.2-5-amd64.iso or similar
             isos = re.findall(
                 r'(UCS_([\d.]+(?:-\d+)?)-amd64\.iso)',
                 resp.text, re.IGNORECASE
@@ -55,10 +55,10 @@ class UniventionChecker(BaseChecker):
                     variant_label="UCS",
                 )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
-        # Fallback : HEAD direct
+        # Fallback: direct HEAD
         m = re.search(r'ucs([\d.]+(?:-\d+)?)', folder)
         if m:
             ver = m.group(1)
@@ -75,7 +75,7 @@ class UniventionChecker(BaseChecker):
                         variant_label="UCS",
                     )
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 pass
         return None
 

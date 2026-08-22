@@ -1,17 +1,17 @@
 """
-openSUSE Leap et Tumbleweed. Source : download.opensuse.org (voir
+openSUSE Leap and Tumbleweed. Source: download.opensuse.org (see
 https://en.opensuse.org/SDB:Download_help#Checksums).
 
-Le miroir mirrors.edge.kernel.org utilisé auparavant liste bien les fichiers
-"Current.iso" dans son index, mais ce sont des liens morts (404) sur ce
-miroir précis — aussi bien l'ISO que son ".sha256". download.opensuse.org
-est le point d'entrée officiel : il redirige (302) vers un miroir qui sert
-réellement le fichier, pour l'ISO comme pour l'empreinte.
+The mirrors.edge.kernel.org mirror used previously does list the
+"Current.iso" files in its index, but those are dead links (404) on that
+specific mirror — for both the ISO and its ".sha256". download.opensuse.org
+is the official entry point: it redirects (302) to a mirror that actually
+serves the file, for both the ISO and the checksum.
 
-Le fichier <iso>.sha256 récupéré après redirection référence le nom réel du
-build (ex: "...-Build710.3-Media.iso"), pas "Current.iso" — on en extrait
-donc l'unique empreinte SHA256 qu'il contient plutôt que de chercher une
-correspondance exacte de nom de fichier.
+The <iso>.sha256 file fetched after redirection references the real build
+name (e.g. "...-Build710.3-Media.iso"), not "Current.iso" — so the single
+SHA256 checksum it contains is extracted rather than matching an exact
+filename.
 """
 import re
 import requests
@@ -22,23 +22,23 @@ from core.logger import logger
 
 def _fetch_current_sha256(sha256_url: str) -> Optional[str]:
     """
-    Récupère l'empreinte SHA256 d'un sidecar '<iso>.sha256' pointant sur
-    "Current" : le fichier ne contient qu'une seule empreinte pertinente,
-    sous son nom de build réel (ex: '...-Build710.3-Media.iso'), donc on
-    prend la première trouvée plutôt que de matcher un nom de fichier exact.
+    Fetches the SHA256 checksum from a '<iso>.sha256' sidecar pointing to
+    "Current": the file only contains a single relevant checksum, under its
+    real build name (e.g. '...-Build710.3-Media.iso'), so the first one
+    found is used rather than matching an exact filename.
     """
     try:
         resp = requests.get(sha256_url, timeout=10)
         resp.raise_for_status()
     except Exception as _exc:
-        logger.debug("%s: échec ignoré : %s", __name__, _exc)
+        logger.debug("%s: failed, ignored: %s", __name__, _exc)
         return None
     m = re.search(r"^([0-9a-fA-F]{64})\s+\*?\S+\.iso\s*$", resp.text, re.MULTILINE)
     return m.group(1).lower() if m else None
 
 
 class OpenSUSEChecker(BaseChecker):
-    # variant: 'leap' ou 'tumbleweed'
+    # variant: 'leap' or 'tumbleweed'
     LEAP_URL = "https://download.opensuse.org/distribution/leap/"
     TW_URL   = "https://download.opensuse.org/tumbleweed/iso/"
 
@@ -58,7 +58,7 @@ class OpenSUSEChecker(BaseChecker):
             resp.raise_for_status()
             versions = re.findall(r'href="(?:\./)?(\d+\.\d+)/"', resp.text)
             from packaging.version import Version as PV
-            # Exclut la branche 42.x (ancienne, < 2018) — openSUSE est passé à 15.x
+            # Excludes the 42.x branch (old, < 2018) — openSUSE moved to 15.x
             unique = [v for v in dict.fromkeys(versions) if not v.startswith("42.")]
             unique.sort(key=lambda v: PV(v), reverse=True)
 
@@ -87,11 +87,11 @@ class OpenSUSEChecker(BaseChecker):
                             stable=True,
                         ))
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _fetch_tumbleweed(self) -> list[VersionInfo]:
@@ -119,7 +119,7 @@ class OpenSUSEChecker(BaseChecker):
                 ))
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

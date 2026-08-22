@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour AlmaLinux.
-Source : https://repo.almalinux.org/almalinux/
+Version checker for AlmaLinux.
+Source: https://repo.almalinux.org/almalinux/
 """
 
 import re
@@ -24,7 +24,7 @@ class AlmaLinuxChecker(BaseChecker):
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -40,7 +40,7 @@ class AlmaLinuxChecker(BaseChecker):
                 return None
             filename = next((f for f, t in isos if t == "dvd"), isos[0][0])
             iso_type = "DVD" if "dvd" in filename else "Minimal"
-            # Un seul fichier CHECKSUM (format BSD) couvre tout le répertoire
+            # A single CHECKSUM file (BSD format) covers the whole directory
             checksum = fetch_bsd_sha256(iso_url + "CHECKSUM", filename)
             return VersionInfo(
                 version=version,
@@ -52,7 +52,7 @@ class AlmaLinuxChecker(BaseChecker):
                 variant_label=iso_type,
             )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:

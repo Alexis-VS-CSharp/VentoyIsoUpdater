@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Slackware.
-Source : https://mirrors.slackware.com/slackware/slackware-iso/
+Version checker for Slackware.
+Source: https://mirrors.slackware.com/slackware/slackware-iso/
 """
 
 import re
@@ -22,7 +22,7 @@ class SlackwareChecker(BaseChecker):
         try:
             resp = requests.get(base_url, timeout=10)
             resp.raise_for_status()
-            # Dossiers comme slackware64-15.0-iso/, slackware64-current-iso/
+            # Folders like slackware64-15.0-iso/, slackware64-current-iso/
             version_dirs = re.findall(r'href="(slackware64-([\d.]+)-iso)/?"', resp.text)
             results = []
             for folder, version in version_dirs:
@@ -41,7 +41,7 @@ class SlackwareChecker(BaseChecker):
                             variant_label="DVD",
                         ))
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
             from packaging.version import Version as PV, InvalidVersion
             def sort_key(x):
@@ -52,7 +52,7 @@ class SlackwareChecker(BaseChecker):
             results.sort(key=sort_key, reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def get_latest_version(self) -> Optional[VersionInfo]:

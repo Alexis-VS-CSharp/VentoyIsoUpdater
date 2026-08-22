@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Arch Linux (rolling release).
-Sources : miroirs officiels pkgbuild.com et rackspace.com
+Version checker for Arch Linux (rolling release).
+Sources: official pkgbuild.com and rackspace.com mirrors
 """
 
 import re
@@ -12,7 +12,7 @@ from core.logger import logger
 
 
 class ArchChecker(BaseChecker):
-    # Miroirs fiables en ordre de préférence (tous HTTP/HTTPS)
+    # Reliable mirrors in order of preference (all HTTP/HTTPS)
     MIRRORS = [
         "https://geo.mirror.pkgbuild.com/iso/",
         "https://fastly.mirror.pkgbuild.com/iso/",
@@ -21,8 +21,8 @@ class ArchChecker(BaseChecker):
 
     def _get(self, path: str, **kwargs) -> requests.Response:
         """
-        Essaie chaque miroir dans l'ordre et retourne la première réponse 200.
-        `path` est relatif à la racine du miroir (ex: 'latest/' ou '2026.03.01/').
+        Tries each mirror in order and returns the first 200 response.
+        `path` is relative to the mirror's root (e.g. 'latest/' or '2026.03.01/').
         """
         last_exc = None
         for base in self.MIRRORS:
@@ -42,9 +42,9 @@ class ArchChecker(BaseChecker):
             if not m:
                 return None
             filename, version = m.group(1), m.group(2)
-            # Utilise le miroir qui a répondu comme base de l'URL de téléchargement
+            # Uses the mirror that responded as the download URL base
             download_url = resp.url.rsplit("/", 1)[0] + "/" + filename if resp.url.endswith(filename) else resp.url.rstrip("/") + "/" + filename
-            # Simplifie : reconstruit l'URL proprement à partir de l'URL effective
+            # Simplification: cleanly rebuilds the URL from the effective URL
             base_used = next(
                 (b for b in self.MIRRORS if resp.url.startswith(b)),
                 resp.url.rsplit("latest/", 1)[0] + "iso/"
@@ -62,7 +62,7 @@ class ArchChecker(BaseChecker):
                 stable=False,
             )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
     def get_all_versions(self) -> list[VersionInfo]:
@@ -70,9 +70,9 @@ class ArchChecker(BaseChecker):
         try:
             resp = self._get("")
             dates = re.findall(r'href="(\d{4}\.\d{2}\.\d{2})/?"', resp.text)
-            dates = sorted(set(dates), reverse=True)[:12]  # 12 dernières releases
+            dates = sorted(set(dates), reverse=True)[:12]  # last 12 releases
 
-            # Détermine le miroir qui a répondu pour l'archive
+            # Determines which mirror responded, for the archive
             base_used = next(
                 (b for b in self.MIRRORS if resp.url.startswith(b)),
                 self.MIRRORS[0]
@@ -98,10 +98,10 @@ class ArchChecker(BaseChecker):
                             stable=False,
                         ))
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             latest = self.get_latest_version()
             if latest:
                 results.append(latest)

@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Gentoo (minimal install ISO).
-Source : https://distfiles.gentoo.org/releases/amd64/autobuilds/current-install-amd64-minimal/
+Version checker for Gentoo (minimal install ISO).
+Source: https://distfiles.gentoo.org/releases/amd64/autobuilds/current-install-amd64-minimal/
 """
 
 import re
@@ -45,7 +45,7 @@ class GentooChecker(BaseChecker):
             results.sort(key=lambda x: x.version, reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

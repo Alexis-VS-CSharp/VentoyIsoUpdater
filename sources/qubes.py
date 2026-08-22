@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Qubes OS.
-Source : https://mirrors.edge.kernel.org/qubes/iso/
+Version checker for Qubes OS.
+Source: https://mirrors.edge.kernel.org/qubes/iso/
 """
 
 import re
@@ -32,7 +32,7 @@ class QubesChecker(BaseChecker):
                 if filename in seen:
                     continue
                 seen.add(filename)
-                # DIGESTS liste SHA256 puis SHA512, format GNU "<hash> *<fichier>"
+                # DIGESTS lists SHA256 then SHA512, GNU format "<hash> *<file>"
                 checksum = fetch_sha256sums(self.BASE_URL + filename + ".DIGESTS", filename)
                 results.append(VersionInfo(
                     version=version,
@@ -46,7 +46,7 @@ class QubesChecker(BaseChecker):
             results.sort(key=lambda x: Version(x.version), reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

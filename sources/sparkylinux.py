@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour SparkyLinux.
-Source : https://sparkylinux.org/download/stable/
+Version checker for SparkyLinux.
+Source: https://sparkylinux.org/download/stable/
 """
 
 import re
@@ -12,9 +12,9 @@ from core.logger import logger
 
 def _fetch_archive_org_md5(url: str, filename: str) -> Optional[str]:
     """
-    Si `url` pointe vers archive.org, interroge l'API metadata de l'item
-    (qui donne systématiquement un md5/sha1 par fichier) pour récupérer
-    l'empreinte de `filename`. Retourne None pour tout autre hébergeur.
+    If `url` points to archive.org, queries the item's metadata API
+    (which systematically gives an md5/sha1 per file) to retrieve
+    `filename`'s checksum. Returns None for any other host.
     """
     m = re.match(r"https?://archive\.org/download/([^/]+)/", url)
     if not m:
@@ -67,7 +67,7 @@ class SparkyLinuxChecker(BaseChecker):
             results.sort(key=lambda x: Version(x.version), reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

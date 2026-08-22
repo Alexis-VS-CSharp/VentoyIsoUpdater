@@ -1,9 +1,9 @@
 """
-Vérificateur de version pour Peppermint OS.
-Source : https://peppermintos.com/trixie-base-downloads/ — la page officielle
-référence à la fois SourceForge et un miroir direct (OSSPlanet, non soumis
-aux blocages anti-bot occasionnels de SourceForge) avec son empreinte
-SHA512 juste à côté.
+Version checker for Peppermint OS.
+Source: https://peppermintos.com/trixie-base-downloads/ — the official page
+references both SourceForge and a direct mirror (OSSPlanet, not subject to
+SourceForge's occasional anti-bot blocking) with its SHA512 checksum right
+next to it.
 """
 
 import re
@@ -51,7 +51,7 @@ class PeppermintChecker(BaseChecker):
                 variant_label="Debian Base",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

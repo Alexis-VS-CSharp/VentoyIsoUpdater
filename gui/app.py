@@ -43,8 +43,8 @@ ctk.set_default_color_theme("blue")
 # ══════════════════════════════════════════════════════════════════════════════
 
 class LogoCache:
-    """Charge et met en cache les miniatures PNG depuis le dossier icons/ de Ventoy.
-    Thread-safe : toutes les opérations sur le cache sont protégées par un verrou.
+    """Loads and caches PNG thumbnails from Ventoy's icons/ folder.
+    Thread-safe: every cache operation is protected by a lock.
     """
 
     def __init__(self):
@@ -87,20 +87,20 @@ _logo_cache = LogoCache()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  Fenêtre principale
+#  Main window
 # ══════════════════════════════════════════════════════════════════════════════
 
 class VentoyIsoUpdaterApp(ctk.CTk):
 
     def __init__(self):
-        # className définit WM_CLASS sur X11/Wayland — nécessaire pour que
-        # le gestionnaire de fenêtres associe la bonne icône via le .desktop
+        # className sets WM_CLASS on X11/Wayland — needed so the window
+        # manager associates the right icon via the .desktop file
         super().__init__(className="VentoyIsoUpdater")
         self.title("VentoyIsoUpdater")
-        # Largeur minimum calculée : panneau gauche 250 + colonnes fixes (logo 44,
-        # dossier 104, ver×2 192, action 300, scrollbar+marges 60) = 950 + colonne
-        # ISO flex min 130 → 1080. Hauteur : toolbar 44 + en-tête 32 + 10 lignes
-        # × 40 + barre progression 46 = 522 → 580 minimum confortable.
+        # Calculated minimum width: left panel 250 + fixed columns (logo 44,
+        # folder 104, ver×2 192, action 300, scrollbar+margins 60) = 950 + ISO
+        # flex column min 130 -> 1080. Height: toolbar 44 + header 32 + 10 rows
+        # × 40 + progress bar 46 = 522 -> 580 comfortable minimum.
         self.minsize(1280, 580)
 
         self._prefs = prefs.load()
@@ -179,7 +179,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
             lbl.pack(anchor="w", pady=1)
             self.lbl_info[key] = lbl
 
-        # Séparateur logos
+        # Logos separator
         ctk.CTkLabel(left, text=t('Logos thème'),
                      font=ctk.CTkFont(size=12, weight="bold")
                      ).grid(row=5, column=0, padx=18, pady=(16, 2), sticky="w")
@@ -255,7 +255,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         self.lbl_status = ctk.CTkLabel(toolbar, text="", font=ctk.CTkFont(size=12))
         self.lbl_status.pack(side="right", padx=8)
 
-        # En-têtes tableau
+        # Table headers
         hdr = ctk.CTkFrame(right)
         hdr.grid(row=1, column=0, sticky="new")
         for col, (txt, w) in enumerate([
@@ -306,7 +306,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         self._drives = drives
         labels = [f"{d.label}  ({d.mount_point})" for d in drives]
         self.drive_combo.configure(values=labels)
-        # Restaure la dernière clé utilisée si disponible
+        # Restores the last-used drive if available
         last = self._prefs.get("last_drive", "")
         default_label = next(
             (lbl for lbl, d in zip(labels, drives) if d.mount_point == last),
@@ -431,7 +431,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
 
         if result:
             color = STATUS_COLORS.get(result.status, ("#95a5a6", "#7f8c8d"))[0]
-            ctk.CTkLabel(action_frame, text=result.status.value,
+            ctk.CTkLabel(action_frame, text=t(result.status.value),
                          fg_color=color, corner_radius=6,
                          font=ctk.CTkFont(size=10, weight="bold"),
                          padx=8, pady=2
@@ -524,7 +524,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     # ─────────────────────────── DOWNLOAD LATEST ────────────────────────────
 
     def _download_latest(self, iso: IsoEntry, result: CheckResult):
-        """Télécharge la dernière version dans le même dossier, sans supprimer l'ancienne."""
+        """Downloads the latest version into the same folder, without removing the old one."""
         if not result.latest_info or not self.current_drive:
             return
         info = result.latest_info
@@ -555,7 +555,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     # ─────────────────────────── VERSION BROWSER (par ISO) ──────────────────
 
     def _open_version_browser(self, iso: IsoEntry):
-        """Ouvre le navigateur de versions pour une ISO existante sur la clé."""
+        """Opens the version browser for an existing ISO on the drive."""
         distro_cfg = next(
             (d for d in self.distros_db.get("distros", []) if d["id"] == iso.distro_id),
             None
@@ -569,7 +569,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     # ─────────────────────────── DOWNLOAD BROWSER (global) ─────────────────
 
     def _open_download_browser(self):
-        """Ouvre le navigateur de téléchargement global (sans ISO sélectionnée)."""
+        """Opens the global download browser (with no ISO selected)."""
         if not self.current_drive:
             messagebox.showinfo("Info", t('Sélectionnez d\'abord une clé Ventoy.'))
             return
@@ -586,14 +586,14 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                      checksum: Optional[str] = None,
                      checksum_type: Optional[str] = None,
                      manual_verify_url: Optional[str] = None):
-        """Télécharge un fichier avec progression, sans bloquer l'UI."""
+        """Downloads a file with progress reporting, without blocking the UI."""
         self._show_progress(True)
         self.btn_check_all.configure(state="disabled")
-        logger.info("Début téléchargement : %s → %s", url, dest_path)
+        logger.info("Download started: %s -> %s", url, dest_path)
 
         def run():
             try:
-                # ── Vérification de l'espace disque disponible ──────────────
+                # ── Available disk space check ──────────────
                 try:
                     import requests as _req
                     head = _req.head(url, timeout=6, allow_redirects=True)
@@ -606,14 +606,14 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                             avail  = format_size(free)
                             msg = (t('Espace insuffisant sur le disque :\n  Nécessaire : ') + needed +
                                    t('\n  Disponible : ') + avail)
-                            logger.warning("Espace insuffisant : %s nécessaire, %s disponible",
+                            logger.warning("Not enough space: %s needed, %s available",
                                            needed, avail)
                             if not self._closing:
                                 self.after(0, lambda m=msg: messagebox.showerror(
                                     t('Espace insuffisant'), m))
                             return
                 except Exception as e:
-                    logger.debug("Vérification espace disque ignorée : %s", e)
+                    logger.debug("Disk space check skipped: %s", e)
 
                 def on_progress(done, total):
                     if total > 0 and not self._closing:
@@ -629,15 +629,15 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                     checksum=checksum,
                     checksum_type=checksum_type or "sha256",
                 )
-                logger.info("Téléchargement terminé : %s", os.path.basename(dest_path))
+                logger.info("Download complete: %s", os.path.basename(dest_path))
 
                 if not self._closing:
                     self.after(0, lambda: self._set_status(
                         f"{t('✓ Téléchargé : ')}{os.path.basename(dest_path)}"))
 
-                # Pas d'empreinte automatique pour cette source : invite à
-                # une vérification manuelle plutôt que de laisser croire que
-                # l'intégrité a été contrôlée.
+                # No automatic checksum for this source: invites a manual
+                # verification instead of implying the integrity was
+                # checked when it wasn't.
                 if manual_verify_url and not checksum and not self._closing:
                     self.after(0, lambda u=manual_verify_url: messagebox.showinfo(
                         t('Vérification manuelle recommandée'),
@@ -655,7 +655,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                     self.after(0, on_done)
 
             except DownloadError as e:
-                logger.warning("Échec téléchargement : %s", e)
+                logger.warning("Download failed: %s", e)
                 if not self._closing:
                     self.after(0, lambda err=str(e): messagebox.showerror(t('Erreur'), t(err)))
             except Exception as e:
@@ -672,9 +672,9 @@ class VentoyIsoUpdaterApp(ctk.CTk):
 
     def _register_iso_folder(self, distro_id: str, iso_dest_path: str):
         """
-        Enregistre le dossier de l'ISO dans ventoy.json (menu_class).
-        Appelé systématiquement après tout téléchargement réussi d'ISO.
-        Exécuté dans le thread de téléchargement.
+        Registers the ISO's folder in ventoy.json (menu_class).
+        Always called after any successful ISO download.
+        Runs on the download thread.
         """
         drive = self.current_drive
         if not drive or not drive.ventoy_json_path:
@@ -704,9 +704,9 @@ class VentoyIsoUpdaterApp(ctk.CTk):
 
     def _auto_download_logo(self, distro_id: str, iso_dest_path: str):
         """
-        Télécharge le logo de la distro dans icons/ s'il est absent.
-        Le dossier a déjà été enregistré dans ventoy.json par _register_iso_folder.
-        Exécuté dans le thread de téléchargement — n'appelle l'UI que via after().
+        Downloads the distro's logo into icons/ if it's missing.
+        The folder has already been registered in ventoy.json by _register_iso_folder.
+        Runs on the download thread — only touches the UI via after().
         """
         drive = self.current_drive
         if not drive or not drive.theme_icons_dir:
@@ -782,10 +782,10 @@ class VentoyIsoUpdaterApp(ctk.CTk):
             if fail:
                 msg += f", {fail}{t(' échec(s)')}"
 
-            # Recharge le cache après sync
+            # Reloads the cache after syncing
             _logo_cache.clear()
 
-            # Vérifie si des ISO n'ont toujours pas d'entrée menu_class
+            # Checks whether any ISOs still lack a menu_class entry
             unmatched = get_unmatched_isos(self.iso_entries, drive.ventoy_json_path)
             if unmatched:
                 names = ", ".join(e.filename for e in unmatched[:3])
@@ -801,7 +801,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
             self.after(0, lambda: self.btn_force_logos.configure(state="normal"))
             self.after(0, lambda: self._set_status(f"{t('Logos : ')}{ok} OK" + (f", {fail}{t(' échec(s)')}" if fail else "")))
             self.after(0, lambda: self._render_table())
-            # Ouvre le journal si des échecs ou des téléchargements ont eu lieu
+            # Opens the log if any failures or downloads occurred
             if fail or downloaded:
                 self.after(0, lambda r=results: SyncLogDialog(self, r))
 
@@ -814,12 +814,11 @@ class VentoyIsoUpdaterApp(ctk.CTk):
 
     def _on_language_change(self, label: str):
         """
-        Change la langue de préférence et invite à redémarrer.
-        Ne reconstruit pas l'UI à la volée : la fenêtre principale et une
-        douzaine de dialogues sont déjà instanciés avec leur texte figé au
-        moment de leur construction — les reconstruire en direct serait
-        beaucoup plus fragile qu'une simple relecture de préférence au
-        prochain lancement.
+        Changes the preferred language and invites a restart.
+        Doesn't rebuild the UI on the fly: the main window and a dozen
+        dialogs are already instantiated with their text fixed at
+        construction time — rebuilding them live would be far more
+        fragile than simply re-reading the preference on next launch.
         """
         lang = self._lang_by_label.get(label, "fr")
         prefs.set_key("language", lang)
@@ -875,13 +874,13 @@ class VentoyIsoUpdaterApp(ctk.CTk):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  Dialog : Navigateur de versions pour une distro spécifique
+#  Dialog: version browser for a specific distro
 # ══════════════════════════════════════════════════════════════════════════════
 
 class VersionBrowserDialog(ctk.CTkToplevel):
     """
-    Fenêtre affichant toutes les versions disponibles en ligne pour une distro.
-    Permet de télécharger n'importe quelle version dans le dossier voulu.
+    Window showing every version available online for a distro.
+    Lets the user download any version into the folder of their choice.
     """
 
     def __init__(self, parent, distro_cfg: dict, distros_db: dict,
@@ -966,7 +965,7 @@ class VersionBrowserDialog(ctk.CTkToplevel):
         threading.Thread(target=run, daemon=True).start()
 
     def _refresh_list(self):
-        """Ré-applique le filtre stable/tout sur la liste déjà chargée."""
+        """Re-applies the stable/all filter to the already-loaded list."""
         self._page = 0
         if self._versions:
             self._render_versions(self._versions)
@@ -1021,7 +1020,7 @@ class VersionBrowserDialog(ctk.CTkToplevel):
                 command=lambda vi=v: self._download_version(vi)
             ).grid(row=0, column=2, padx=8, pady=4)
 
-        # Barre de pagination (affichée seulement si plusieurs pages)
+        # Pagination bar (shown only when there's more than one page)
         if total_pages > 1:
             nav = ctk.CTkFrame(self.scroll, fg_color="transparent")
             nav.grid(row=len(page_items), column=0, pady=(8, 4))
@@ -1069,16 +1068,16 @@ class VersionBrowserDialog(ctk.CTkToplevel):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  Dialog : Sélection de distro + version (bouton global "Télécharger une ISO")
+#  Dialog: distro + version picker (global "Download an ISO" button)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class DistroPickerDialog(ctk.CTkToplevel):
     """
-    Fenêtre de téléchargement global :
-    1. Choisir une distro dans la liste
-    2. Voir toutes les versions disponibles
-    3. Choisir le dossier de destination sur la clé
-    4. Télécharger
+    Global download window:
+    1. Pick a distro from the list
+    2. See every available version
+    3. Pick the destination folder on the drive
+    4. Download
     """
 
     def __init__(self, parent, distros_db: dict, drive: VentoyDrive,
@@ -1099,7 +1098,7 @@ class DistroPickerDialog(ctk.CTkToplevel):
 
         self._build()
 
-    # Ordre et libellés des catégories
+    # Category order and labels
     _CAT_ORDER  = ["linux", "bsd", "security", "gaming", "server", "windows", "other"]
     _CAT_LABELS = {
         "linux":    "Linux",
@@ -1199,7 +1198,7 @@ class DistroPickerDialog(ctk.CTkToplevel):
     # ── Scroll molette : forward tous les events vers le canvas interne ──────
 
     def _bind_scroll_to(self, widget, canvas):
-        """Propage récursivement la molette vers le canvas donné."""
+        """Recursively forwards the mouse wheel to the given canvas."""
         widget.bind("<MouseWheel>",
                     lambda e: canvas.yview_scroll(-int(e.delta / 60), "units"),
                     add="+")
@@ -1292,11 +1291,11 @@ class DistroPickerDialog(ctk.CTkToplevel):
                 row_idx += 1
 
     def _select_distro(self, distro_cfg: dict):
-        # ── Mise à jour visuelle de la sélection ────────────────────────────
+        # ── Visual update of the selection ────────────────────────────
         prev_id = self._selected_id
         new_id  = distro_cfg["id"]
 
-        # Remet l'ancien bouton à son état normal
+        # Resets the old button to its normal state
         if prev_id and prev_id in self._distro_btns:
             inst = prev_id in self._installed_ids
             fg, hov = self._COL["installed" if inst else "normal"]
@@ -1311,7 +1310,7 @@ class DistroPickerDialog(ctk.CTkToplevel):
                 text_color=tc, text=prefix + prev_name
             )
 
-        # Met le nouveau bouton en état sélectionné
+        # Puts the new button in the selected state
         self._selected_id = new_id
         if new_id in self._distro_btns:
             inst = new_id in self._installed_ids
@@ -1327,7 +1326,7 @@ class DistroPickerDialog(ctk.CTkToplevel):
         for w in self.versions_frame.winfo_children():
             w.destroy()
 
-        # Met à jour le dossier de destination suggéré pour cette distro
+        # Updates the suggested destination folder for this distro
         suggested = suggest_dest_folder(
             self.drive.mount_point, distro_cfg, self._iso_entries
         )
@@ -1440,15 +1439,15 @@ class DistroPickerDialog(ctk.CTkToplevel):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  Dialog : Créer / installer Ventoy sur une clé USB vierge
+#  Dialog: create / install Ventoy on a blank USB drive
 # ══════════════════════════════════════════════════════════════════════════════
 
 class VentoySetupDialog(ctk.CTkToplevel):
     """
-    Guide l'utilisateur pour créer une clé Ventoy depuis zéro :
-    1. Détecte les clés USB disponibles
-    2. Télécharge la dernière version de Ventoy si nécessaire
-    3. Lance l'installation (pkexec/sudo sur Linux)
+    Guides the user through creating a Ventoy drive from scratch:
+    1. Detects available USB drives
+    2. Downloads the latest Ventoy version if needed
+    3. Runs the installation (pkexec/sudo on Linux)
     """
 
     def __init__(self, parent, on_done: callable = None):
@@ -1475,7 +1474,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
-        # ── En-tête ──────────────────────────────────────────────────────────
+        # ── Header ──────────────────────────────────────────────────────────
         header = ctk.CTkFrame(self, fg_color="#2c1654", corner_radius=0)
         header.grid(row=0, column=0, sticky="ew")
         ctk.CTkLabel(
@@ -1488,7 +1487,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=11), text_color="#c9a8f0"
         ).pack(padx=18, pady=(0, 12), anchor="w")
 
-        # ── Sélection de la clé USB ───────────────────────────────────────────
+        # ── USB drive selection ───────────────────────────────────────────────
         usb_frame = ctk.CTkFrame(self)
         usb_frame.grid(row=1, column=0, sticky="ew", padx=16, pady=(12, 6))
         usb_frame.grid_columnconfigure(1, weight=1)
@@ -1764,7 +1763,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
 # ══════════════════════════════════════════════════════════════════════════════
 
 class SyncLogDialog(ctk.CTkToplevel):
-    """Affiche le résultat détaillé de la synchronisation des logos."""
+    """Shows the detailed result of the logo sync."""
 
     def __init__(self, parent, results: dict):
         super().__init__(parent)
@@ -1777,7 +1776,7 @@ class SyncLogDialog(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        # En-tête
+        # Header
         ok   = sum(1 for v in results.values() if v["success"])
         fail = sum(1 for v in results.values() if not v["success"])
         dl   = sum(1 for v in results.values() if not v["skipped"] and v["success"])
@@ -1800,7 +1799,7 @@ class SyncLogDialog(ctk.CTkToplevel):
         scroll.grid(row=1, column=0, sticky="nsew", padx=10, pady=4)
         scroll.grid_columnconfigure(1, weight=1)
 
-        # Trier : échecs en premier, puis succès téléchargés, puis skipped
+        # Sort: failures first, then downloaded successes, then skipped
         def sort_key(item):
             v = item[1]
             if not v["success"]:
@@ -1815,7 +1814,7 @@ class SyncLogDialog(ctk.CTkToplevel):
             row.grid(row=i, column=0, sticky="ew", padx=2, pady=1)
             row.grid_columnconfigure(1, weight=1)
 
-            # Icône statut
+            # Status icon
             if info["success"] and not info["skipped"]:
                 icon, color = "⬇", "#2ecc71"
             elif info["success"]:
@@ -1837,7 +1836,7 @@ class SyncLogDialog(ctk.CTkToplevel):
                          text_color="gray60", anchor="w"
                          ).grid(row=0, column=2, padx=8, pady=6, sticky="w")
 
-            # Raison d'échec
+            # Failure reason
             if info["error"]:
                 ctk.CTkLabel(row, text=info["error"],
                              font=ctk.CTkFont(size=10), text_color="#e67e22",
@@ -1849,16 +1848,16 @@ class SyncLogDialog(ctk.CTkToplevel):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  Dialog : Éditeur complet du thème Ventoy
+#  Dialog: full Ventoy theme editor
 # ══════════════════════════════════════════════════════════════════════════════
 
 class ThemeEditorDialog(ctk.CTkToplevel):
     """
-    Éditeur complet du thème Ventoy sur la clé USB.
-    3 onglets :
-      1. theme.txt  — éditeur de texte avec sauvegarde + backup automatique
-      2. Images     — PNG décoratifs du thème (fond, boutons, etc.)
-      3. Icônes     — logos des distros (dossier icons/)
+    Full editor for the Ventoy theme on the USB drive.
+    3 tabs:
+      1. theme.txt  — text editor with automatic save + backup
+      2. Images     — decorative theme PNGs (background, buttons, etc.)
+      3. Icons      — distro logos (icons/ folder)
     """
 
     _THUMB_SIZE  = (64, 64)    # miniatures pour les icônes distros
@@ -1887,7 +1886,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
         self._icon_thumb_cache: dict[str, object] = {}
         self._img_thumb_cache: dict[str, object]  = {}
 
-        # Variable de recherche pour l'onglet Icônes
+        # Search variable for the Icons tab
         self._icon_search_var = ctk.StringVar()
         self._icon_search_var.trace_add("write", lambda *_: self._icons_refresh())
 
@@ -1896,7 +1895,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
     # ─────────────────────────── SCROLL HELPER ──────────────────────────────
 
     def _bind_scroll_to(self, widget, canvas):
-        """Propage récursivement la molette de tous les enfants vers le canvas donné."""
+        """Recursively forwards the mouse wheel from all children to the given canvas."""
         widget.bind("<MouseWheel>",
                     lambda e: canvas.yview_scroll(int(-e.delta / 120), "units"), add="+")
         widget.bind("<Button-4>",
@@ -1963,7 +1962,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=10), text_color="gray50", anchor="w"
         ).grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 2))
 
-        # ── Éditeur de texte ────────────────────────────────────────────────
+        # ── Text editor ────────────────────────────────────────────────
         self._txt_box = ctk.CTkTextbox(
             frame, font=ctk.CTkFont(family="Monospace", size=12),
             wrap="none", activate_scrollbars=True
@@ -2018,7 +2017,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
             messagebox.showerror(t('Erreur'), t(str(e)), parent=self)
             self._txt_status.configure(text=f"{t('Échec : ')}{e}", text_color="#e74c3c")
 
-    # ══════════════════════ ONGLET 2 — Images du thème ══════════════════════
+    # ══════════════════════ TAB 2 — Theme images ══════════════════════
 
     def _build_img_tab(self, frame: ctk.CTkFrame):
         frame.grid_columnconfigure(0, weight=1)
@@ -2052,7 +2051,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
         self._img_refresh()
 
     def _list_theme_pngs(self) -> list[str]:
-        """PNG à la racine du dossier thème (pas dans icons/)."""
+        """PNGs at the theme folder's root (not in icons/)."""
         if not self._theme_dir or not os.path.isdir(self._theme_dir):
             return []
         try:
@@ -2171,7 +2170,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
         if self._on_change:
             self._on_change()
 
-    # ══════════════════════ ONGLET 3 — Icônes distros ═══════════════════════
+    # ══════════════════════ TAB 3 — Distro icons ═══════════════════════
 
     def _build_icons_tab(self, frame: ctk.CTkFrame):
         frame.grid_columnconfigure(0, weight=1)
@@ -2357,7 +2356,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                                self._on_change() if self._on_change else None)
         )
 
-    # ══════════════════════ ONGLET 4 — Aperçu du thème ══════════════════════
+    # ══════════════════════ TAB 4 — Theme preview ══════════════════════
 
     def _build_preview_tab(self, frame: ctk.CTkFrame):
         frame.grid_columnconfigure(0, weight=1)
@@ -2396,7 +2395,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
         threading.Thread(target=self._preview_build, daemon=True).start()
 
     def _on_preview_resize(self, event):
-        """Debounce le redimensionnement pour ne pas relancer le rendu à chaque pixel."""
+        """Debounces resizing so the render isn't retriggered on every pixel."""
         if self._preview_resize_job:
             try:
                 self.after_cancel(self._preview_resize_job)
@@ -2418,10 +2417,10 @@ class ThemeEditorDialog(ctk.CTkToplevel):
 
     def _parse_theme_full(self) -> tuple[dict, list[dict]]:
         """
-        Parse complet du format GRUB2 theme.txt.
-        Retourne (global_props, [composants]).
-        Chaque composant est un dict {"type": str, ...props}.
-        Gère les séparateurs ':' (global) et '=' (intérieur blocs).
+        Full parse of the GRUB2 theme.txt format.
+        Returns (global_props, [components]).
+        Each component is a dict {"type": str, ...props}.
+        Handles the ':' (global) and '=' (inside blocks) separators.
         """
         gprops: dict = {
             "desktop-color": "#000000",
@@ -2448,7 +2447,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
             if not line or line.startswith("#"):
                 continue
 
-            # Début de composant : + type_name {  (ou + type_name name {)
+            # Start of a component: + type_name {  (or + type_name name {)
             if line.startswith("+"):
                 parts = line.split()
                 ctype = parts[1] if len(parts) > 1 else "unknown"
@@ -2460,7 +2459,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                 current = None
                 continue
 
-            # Propriété : accepte 'key: val', 'key = val', 'key: "val"'
+            # Property: accepts 'key: val', 'key = val', 'key: "val"'
             m = _re.match(r'^([\w\-]+)\s*[=:]\s*"?([^"]*)"?\s*;?$', line)
             if not m:
                 continue
@@ -2476,12 +2475,12 @@ class ThemeEditorDialog(ctk.CTkToplevel):
 
     def _resolve(self, val: str, total: int, default: int = 0) -> int:
         """
-        Résout une coordonnée GRUB2 en pixels :
-          '15%'        → 15 % de total
-          'c'          → total // 2
-          'c+50'       → total // 2 + 50
-          '100%-200'   → total - 200
-          '320'        → 320
+        Resolves a GRUB2 coordinate into pixels:
+          '15%'        -> 15% of total
+          'c'          -> total // 2
+          'c+50'       -> total // 2 + 50
+          '100%-200'   -> total - 200
+          '320'        -> 320
         """
         import re as _re
         s = str(val).strip()
@@ -2505,7 +2504,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
     # ── Rendu PIL en thread ──────────────────────────────────────────────────
 
     def _preview_build(self):
-        """Construit l'image PIL du thème, puis l'affiche sur le canvas (thread bg)."""
+        """Builds the theme's PIL image, then displays it on the canvas (bg thread)."""
         if not self.winfo_exists():
             return
         try:
@@ -2566,10 +2565,10 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                     paste_png(os.path.join(self._theme_dir, file_), x, y, w, h)
 
             elif ctype == "boot_menu":
-                boot_menu_comp = comp   # rendu après les autres couches
+                boot_menu_comp = comp   # rendered after the other layers
 
             elif ctype == "label":
-                # Texte superposé
+                # Overlaid text
                 text  = comp.get("text", "").strip('"')
                 if not text:
                     continue
@@ -2582,7 +2581,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                 except Exception:
                     pass
 
-        # ── Rendu de la zone boot_menu (par-dessus tout) ─────────────────────
+        # ── Rendering the boot_menu area (on top of everything) ─────────────────────
         if boot_menu_comp:
             bm = boot_menu_comp
             mx = self._resolve(bm.get("left",   "15%"), cw)
@@ -2597,16 +2596,16 @@ class ThemeEditorDialog(ctk.CTkToplevel):
             item_color   = bm.get("item_color",          "#cccccc")
             sel_color    = bm.get("selected_item_color", "#ffffff")
 
-            # Surbrillance sélection : item_pixmap_style="select_*.png"
+            # Selection highlight: item_pixmap_style="select_*.png"
             sel_pixmap = bm.get("item_pixmap_style", "")
             sel_png_path: Optional[str] = None
             if sel_pixmap and self._theme_dir:
-                # Cherche le fichier "select_c.png" ou la variante _c
+                # Looks for the "select_c.png" file or the _c variant
                 import re as _re, glob as _glob
                 pattern = sel_pixmap.replace("*", "*")
                 candidates = _glob.glob(
                     os.path.join(self._theme_dir, sel_pixmap.replace("*", "*")))
-                # Préfère _c (centre) pour remplir toute la largeur
+                # Prefers _c (center) to fill the entire width
                 for suffix in ("_c", "c", ""):
                     pat = sel_pixmap.replace("*", suffix)
                     p = os.path.join(self._theme_dir, pat)
@@ -2616,11 +2615,11 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                 if not sel_png_path and candidates:
                     sel_png_path = candidates[0]
 
-            # Zone de fond du menu (semi-transparente)
+            # Menu background area (semi-transparent)
             overlay = Image.new("RGBA", (mw, mh), (0, 0, 0, 120))
             base.alpha_composite(overlay, dest=(mx, my))
 
-            # Entrées
+            # Entries
             entries = self._get_preview_entries()
             max_visible = max(1, mh // item_h)
             draw = ImageDraw.Draw(base)
@@ -2629,7 +2628,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                 iy = my + idx * item_h
                 selected = (idx == 0)
 
-                # Fond de sélection
+                # Selection background
                 if selected:
                     if sel_png_path and os.path.isfile(sel_png_path):
                         paste_png(sel_png_path, mx, iy, mw, item_h)
@@ -2637,7 +2636,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                         sel_overlay = Image.new("RGBA", (mw, item_h), (26, 80, 130, 200))
                         base.alpha_composite(sel_overlay, dest=(mx, iy))
 
-                # Icône distro
+                # Distro icon
                 icon_x_end = padding
                 if grub_class and self._icons_dir:
                     ic_path = os.path.join(self._icons_dir, grub_class + ".png")
@@ -2653,7 +2652,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                         except Exception:
                             pass
 
-                # Texte de l'entrée (nom de fichier seulement pour ne pas surcharger)
+                # Entry text (filename only, to avoid clutter)
                 text_x = mx + icon_x_end + 4
                 text_y = iy + item_h // 2 - 7
                 try:
@@ -2688,7 +2687,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
         self.after(0, show)
 
     def _get_preview_entries(self) -> list[tuple[str, Optional[str]]]:
-        """Entrées du menu : ISO connues sur la clé, ou démo si vide."""
+        """Menu entries: known ISOs on the drive, or a demo if empty."""
         entries = []
         seen = set()
         for iso in self._iso_entries:
@@ -2713,10 +2712,10 @@ class ThemeEditorDialog(ctk.CTkToplevel):
         return entries
 
 
-#  Dialog : Navigateur du dépôt lutgaru/linux-distro-logos
+#  Dialog: browser for the lutgaru/linux-distro-logos repository
 # ══════════════════════════════════════════════════════════════════════════════
 
-# Liste complète des logos disponibles dans le dépôt (729 fichiers)
+# Full list of logos available in the repository (729 files)
 _LUTGARU_FILES = [
     "2x.png","64studio.png","absolute.png","abuledu.png","adamantix.png","adios.png",
     "admelix.png","agilia.png","alamlug.png","aleader.png","alinex.png","alinux.png",
@@ -2849,8 +2848,8 @@ _LUTGARU_RAW = "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/mas
 
 class LogoRepoBrowserDialog(ctk.CTkToplevel):
     """
-    Parcourt le dépôt lutgaru/linux-distro-logos (729 logos PNG).
-    Permet de rechercher, prévisualiser et importer des logos vers le dossier icons/.
+    Browses the lutgaru/linux-distro-logos repository (729 PNG logos).
+    Lets the user search, preview, and import logos into the icons/ folder.
     """
 
     def __init__(self, parent, icons_dir: str, on_import: callable = None):
@@ -2905,7 +2904,7 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
                                         text_color="gray55")
         self._lbl_count.grid(row=3, column=0, padx=8, pady=(2, 8))
 
-        # ── Panneau prévisualisation droite ──────────────────────────────────
+        # ── Right-hand preview panel ──────────────────────────────────
         right = ctk.CTkFrame(self, fg_color="transparent")
         right.grid(row=0, column=1, sticky="nsew", padx=(4, 8), pady=8)
         right.grid_rowconfigure(1, weight=1)
@@ -2953,7 +2952,7 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
     # ─────────────────────── LIST ────────────────────────────────────────────
 
     def _schedule_refresh(self):
-        """Debounce : attend 250 ms après la dernière frappe avant de reconstruire la liste."""
+        """Debounce: waits 250 ms after the last keystroke before rebuilding the list."""
         if self._refresh_job is not None:
             try:
                 self.after_cancel(self._refresh_job)
@@ -3068,7 +3067,7 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
                 text_color=tc, text="▶  " + filename[:-4]
             )
 
-        # ── Lance le chargement de l'aperçu ──────────────────────────────────
+        # ── Starts loading the preview ──────────────────────────────────
         name = filename[:-4]
         self._lbl_preview_name.configure(text=name)
         self._lbl_preview_img.configure(text="⏳", image=None)
@@ -3135,7 +3134,7 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
                         return
                     self._lbl_preview_status.configure(
                         text=f"{t('✓ Importé : ')}{fn}", text_color="#2ecc71")
-                    # Met à jour le bouton dans la liste sans tout reconstruire
+                    # Updates the button in the list without rebuilding everything
                     if fn in self._logo_btns:
                         fg, hov = self._COL["sel_installed"]
                         self._logo_btns[fn].configure(
@@ -3156,7 +3155,7 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
 
 
 def _read_app_version() -> str:
-    """Lit la version depuis pyproject.toml pour éviter la double source de vérité."""
+    """Reads the version from pyproject.toml to avoid a duplicate source of truth."""
     try:
         import tomllib
         base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -3167,7 +3166,7 @@ def _read_app_version() -> str:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  Dialog : À propos
+#  Dialog: About
 # ══════════════════════════════════════════════════════════════════════════════
 
 class AboutDialog(ctk.CTkToplevel):
@@ -3193,7 +3192,7 @@ class AboutDialog(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         row = 0
 
-        # ── Icône ────────────────────────────────────────────────────────────
+        # ── Icon ────────────────────────────────────────────────────────────
         icon_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "assets", "icon.png"
         )
@@ -3223,7 +3222,7 @@ class AboutDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=12), wraplength=400, justify="center",
         ).grid(row=row, column=0, padx=20, pady=(0, 12)); row += 1
 
-        # ── Séparateur auteur ────────────────────────────────────────────────
+        # ── Author separator ────────────────────────────────────────────────
         ctk.CTkFrame(self, height=1, fg_color="gray30"
                      ).grid(row=row, column=0, sticky="ew", padx=30, pady=4); row += 1
 
@@ -3231,7 +3230,7 @@ class AboutDialog(ctk.CTkToplevel):
                      font=ctk.CTkFont(size=13, weight="bold")
                      ).grid(row=row, column=0, pady=(6, 10)); row += 1
 
-        # ── Réseaux sociaux ──────────────────────────────────────────────────
+        # ── Social links ──────────────────────────────────────────────────
         socials = ctk.CTkFrame(self, fg_color="transparent")
         socials.grid(row=row, column=0, pady=(0, 6)); row += 1
 
@@ -3259,11 +3258,11 @@ class AboutDialog(ctk.CTkToplevel):
             command=lambda: webbrowser.open(self._LINKS["bmc"])
         ).grid(row=row, column=0, pady=(4, 8)); row += 1
 
-        # ── Séparateur ───────────────────────────────────────────────────────
+        # ── Separator ───────────────────────────────────────────────────────
         ctk.CTkFrame(self, height=1, fg_color="gray30"
                      ).grid(row=row, column=0, sticky="ew", padx=30, pady=4); row += 1
 
-        # ── Assistant Numérique d'Anjou ──────────────────────────────────────
+        # ── Assistant Numérique d'Anjou ────────────────────────────────────────
         ctk.CTkButton(
             self,
             text=t('Mon Assistant Numérique d\'Anjou'),

@@ -1,7 +1,7 @@
 """
-Vérificateur de version pour SystemRescue.
-Source : https://www.system-rescue.org/Download/ — la page officielle donne
-le lien Fastly direct et le sidecar .sha256 (sur son propre domaine, pas
+Version checker for SystemRescue.
+Source: https://www.system-rescue.org/Download/ — the official page gives
+the direct Fastly link and the .sha256 sidecar (on its own domain, not
 SourceForge).
 """
 
@@ -48,7 +48,7 @@ class SystemRescueChecker(BaseChecker):
                 variant_label="amd64",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

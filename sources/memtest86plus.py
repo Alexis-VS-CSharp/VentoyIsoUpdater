@@ -1,9 +1,9 @@
 """
-Vérificateur de version pour Memtest86 / Memtest86+.
-Sources :
-  - Memtest86 (PassMark) : https://www.memtest86.com/download.htm
-  - Memtest86+ (open source) : https://www.memtest.org/ (les releases GitHub
-    memtest86plus/memtest86plus n'ont plus d'ISO en asset, juste le code source)
+Version checker for Memtest86 / Memtest86+.
+Sources:
+  - Memtest86 (PassMark): https://www.memtest86.com/download.htm
+  - Memtest86+ (open source): https://www.memtest.org/ (the GitHub releases
+    at memtest86plus/memtest86plus no longer have an ISO asset, just source code)
 """
 
 import re
@@ -15,10 +15,10 @@ from core.logger import logger
 
 
 class Memtest86PlusChecker(BaseChecker):
-    # Memtest86 PassMark (commercial, gratuit)
+    # Memtest86 PassMark (commercial, free)
     PASSMARK_URL = "https://www.memtest86.com/download.htm"
-    # Memtest86+ open source — les releases GitHub n'ont plus d'assets ISO
-    # attachés (que du code source) ; le vrai binaire est sur memtest.org.
+    # Memtest86+ open source — the GitHub releases no longer have ISO
+    # assets attached (source code only); the real binary is on memtest.org.
     MEMTEST_ORG_URL = "https://www.memtest.org/"
 
     def get_latest_version(self) -> Optional[VersionInfo]:
@@ -28,14 +28,14 @@ class Memtest86PlusChecker(BaseChecker):
     def get_all_versions(self) -> list[VersionInfo]:
         results = []
 
-        # Source 1 : Memtest86 PassMark (memtest86.com)
+        # Source 1: Memtest86 PassMark (memtest86.com)
         try:
             resp = requests.get(
                 self.PASSMARK_URL, timeout=10,
                 headers={"User-Agent": "Mozilla/5.0"}
             )
             resp.raise_for_status()
-            # Cherche les liens de téléchargement (ZIP contenant l'ISO/image USB)
+            # Looks for download links (ZIP containing the ISO/USB image)
             links = re.findall(
                 r'href="([^"]*memtest86[^"]*(?:usb|iso)\.zip)"',
                 resp.text, re.IGNORECASE
@@ -54,11 +54,11 @@ class Memtest86PlusChecker(BaseChecker):
                     release_notes_url="https://www.memtest86.com/whats-new.htm",
                 ))
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
-        # Source 2 : Memtest86+ open source (memtest.org — la page d'accueil
-        # référence toujours le lien de la dernière version stable)
+        # Source 2: Memtest86+ open source (memtest.org — the homepage
+        # always references the latest stable version's link)
         try:
             resp = requests.get(
                 self.MEMTEST_ORG_URL, timeout=10,
@@ -86,7 +86,7 @@ class Memtest86PlusChecker(BaseChecker):
                     variant_label="Memtest86+",
                 ))
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
         return results

@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
-# Construit un paquet .deb pour Debian/Ubuntu/Mint/PopOS…
-# Usage : ./package_deb.sh
+# Builds a .deb package for Debian/Ubuntu/Mint/PopOS…
+# Usage: ./package_deb.sh
 
 set -e
 
 APP_NAME="VentoyIsoUpdater"
 PKG_NAME="ventoy-iso-updater"
 APP_ID="com.github.celmax85.ventoyisoupdater"
-VERSION="${VERSION:-1.0.0}"   # surchargeable : VERSION=1.2.3 ./package_deb.sh
+VERSION="${VERSION:-1.0.0}"   # overridable: VERSION=1.2.3 ./package_deb.sh
 ARCH="amd64"
 MAINTAINER="Maxence Baffet <celomaxge85@gmail.com>"
-DESCRIPTION="Gestionnaire graphique de clés USB Ventoy"
+DESCRIPTION="Desktop GUI for managing Ventoy USB drives"
 BINARY="dist/linux/$APP_NAME"
 
 if [ ! -f "$BINARY" ]; then
-    echo "ERREUR : $BINARY introuvable. Lancez ./build.sh d'abord."
+    echo "ERROR: $BINARY not found. Run ./build.sh first."
     exit 1
 fi
 
-echo "==> Construction du paquet .deb..."
+echo "==> Building the .deb package..."
 
 PKG_DIR="build/deb/${PKG_NAME}_${VERSION}_${ARCH}"
 rm -rf "$PKG_DIR"
 
-# ── Binaire ───────────────────────────────────────────────────────────────────
+# ── Binary ───────────────────────────────────────────────────────────────────
 
 mkdir -p "$PKG_DIR/usr/bin"
 cp "$BINARY" "$PKG_DIR/usr/bin/$APP_NAME"
 chmod 755 "$PKG_DIR/usr/bin/$APP_NAME"
 
-# ── Icônes multi-résolution ───────────────────────────────────────────────────
+# ── Multi-resolution icons ───────────────────────────────────────────────────
 
 for size in 16 32 48 64 128 256; do
     mkdir -p "$PKG_DIR/usr/share/icons/hicolor/${size}x${size}/apps"
@@ -45,9 +45,9 @@ done
 mkdir -p "$PKG_DIR/usr/share/pixmaps"
 cp "assets/icon.png" "$PKG_DIR/usr/share/pixmaps/$APP_NAME.png"
 
-# ── Fichier .desktop ──────────────────────────────────────────────────────────
-# BAMF_DESKTOP_FILE_HINT : indique explicitement à GNOME/Unity quel .desktop
-# associer à la fenêtre → icône correcte dans la taskbar/dock.
+# ── .desktop file ──────────────────────────────────────────────────────────────
+# BAMF_DESKTOP_FILE_HINT: explicitly tells GNOME/Unity which .desktop file
+# to associate with the window -> correct icon in the taskbar/dock.
 
 mkdir -p "$PKG_DIR/usr/share/applications"
 cat > "$PKG_DIR/usr/share/applications/$APP_NAME.desktop" << EOF
@@ -55,7 +55,7 @@ cat > "$PKG_DIR/usr/share/applications/$APP_NAME.desktop" << EOF
 Version=1.0
 Type=Application
 Name=$APP_NAME
-GenericName=Gestionnaire de clé Ventoy
+GenericName=Ventoy Drive Manager
 Comment=$DESCRIPTION
 Exec=env BAMF_DESKTOP_FILE_HINT=/usr/share/applications/$APP_NAME.desktop /usr/bin/$APP_NAME
 Icon=$APP_NAME
@@ -68,8 +68,8 @@ EOF
 chmod 644 "$PKG_DIR/usr/share/applications/$APP_NAME.desktop"
 
 # ── AppStream metainfo ────────────────────────────────────────────────────────
-# Nécessaire pour que GNOME Software / Ubuntu Software Center affiche
-# l'icône et la description lors de l'installation du paquet.
+# Needed so GNOME Software / Ubuntu Software Center shows the icon and
+# description when installing the package.
 
 mkdir -p "$PKG_DIR/usr/share/metainfo"
 cat > "$PKG_DIR/usr/share/metainfo/$APP_ID.metainfo.xml" << EOF
@@ -80,9 +80,9 @@ cat > "$PKG_DIR/usr/share/metainfo/$APP_ID.metainfo.xml" << EOF
   <summary>$DESCRIPTION</summary>
   <description>
     <p>
-      VentoyIsoUpdater est une interface graphique pour gérer vos clés USB Ventoy.
-      Vérifiez les mises à jour de vos ISO, téléchargez les nouvelles versions
-      et gérez les thèmes directement depuis l'application.
+      VentoyIsoUpdater is a desktop GUI for managing your Ventoy USB drives.
+      Check for ISO updates, download new versions, and manage themes
+      directly from the app.
     </p>
   </description>
   <icon type="stock">$APP_NAME</icon>
@@ -124,8 +124,8 @@ Architecture: $ARCH
 Installed-Size: $INSTALLED_SIZE
 Maintainer: $MAINTAINER
 Description: $DESCRIPTION
- VentoyIsoUpdater est une interface graphique pour gérer les clés USB Ventoy.
- Vérification des mises à jour ISO, téléchargement, gestion des thèmes.
+ VentoyIsoUpdater is a desktop GUI for managing Ventoy USB drives.
+ ISO update checks, downloads, theme management.
 EOF
 
 # ── postinst / postrm ─────────────────────────────────────────────────────────
@@ -166,6 +166,6 @@ OUTPUT="dist/linux/${PKG_NAME}_${VERSION}_${ARCH}.deb"
 dpkg-deb --build --root-owner-group "$PKG_DIR" "$OUTPUT"
 
 echo ""
-echo "==> Paquet .deb généré : $OUTPUT"
+echo "==> .deb package generated: $OUTPUT"
 echo "    sudo dpkg -i $OUTPUT"
-echo "    Désinstall : sudo apt remove $PKG_NAME"
+echo "    Uninstall: sudo apt remove $PKG_NAME"

@@ -67,7 +67,7 @@ class TestCheckOne:
         assert result.status == UpdateStatus.UNKNOWN
 
     def test_returns_error_on_network_exception(self):
-        """L'exception doit être levée par get_latest_version(), pas par l'instanciation."""
+        """The exception must be raised by get_latest_version(), not by instantiation."""
         _load_checkers()
         db = {"distros": [{"id": "ubuntu", "checker": "ubuntu", "name": "Ubuntu",
                             "filename_patterns": [], "checker_variant": None}]}

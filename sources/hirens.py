@@ -1,6 +1,6 @@
 """
-Hiren's BootCD PE — outil de diagnostic/récupération Windows PE.
-Source : https://www.hirensbootcd.org/download/
+Hiren's BootCD PE — Windows PE diagnostic/recovery tool.
+Source: https://www.hirensbootcd.org/download/
 """
 import re
 import requests
@@ -25,7 +25,7 @@ class HirensChecker(BaseChecker):
             resp.raise_for_status()
             text = resp.text
 
-            # Cherche les liens ISO : Hirens.BootCD.1.0.2.iso ou HBCD_PE_x64.iso
+            # Looks for ISO links: Hirens.BootCD.1.0.2.iso or HBCD_PE_x64.iso
             links = re.findall(
                 r'href="([^"]+(?:Hirens\.BootCD\.[^"]+\.iso|HBCD_PE_x64\.iso))"',
                 text, re.IGNORECASE
@@ -41,8 +41,8 @@ class HirensChecker(BaseChecker):
                     url = "https://www.hirensbootcd.org" + url
                 m = re.search(r"Hirens\.BootCD\.([\d.]+)\.iso", filename, re.IGNORECASE)
                 version = m.group(1) if m else "latest"
-                # L'empreinte SHA-256 de l'ISO est écrite en dur dans le
-                # tableau de la page (pas de fichier .sha256 séparé).
+                # The ISO's SHA-256 checksum is hardcoded in the page's
+                # table (no separate .sha256 file).
                 sum_m = re.search(
                     r"ISO SHA-256</strong></td>\s*<td[^>]*>([0-9a-fA-F]{64})",
                     text, re.IGNORECASE
@@ -58,7 +58,7 @@ class HirensChecker(BaseChecker):
                     release_notes_url="https://www.hirensbootcd.org/",
                 ))
 
-            # Cherche aussi la version dans le texte si pas de lien direct
+            # Also looks for the version in the text if there's no direct link
             if not results:
                 m = re.search(r"Hirens\.BootCD\.([\d.]+)", text, re.IGNORECASE)
                 if m:
@@ -72,7 +72,7 @@ class HirensChecker(BaseChecker):
                     ))
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

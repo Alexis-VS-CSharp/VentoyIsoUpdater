@@ -28,7 +28,7 @@ def tmp_dir():
 
 @pytest.fixture
 def ventoy_mount(tmp_dir):
-    """Crée un faux point de montage Ventoy."""
+    """Creates a fake Ventoy mount point."""
     ventoy_dir = os.path.join(tmp_dir, "ventoy")
     os.makedirs(ventoy_dir)
     return tmp_dir
@@ -50,7 +50,7 @@ class TestFormatSize:
         assert format_size(1024 ** 3) == "1.0 GB"
 
     def test_large_size(self):
-        # La fonction s'arrête à GB dans l'implémentation actuelle
+        # The function tops out at GB in the current implementation
         result = format_size(1024 ** 3 * 5)  # 5 GB
         assert "5.0 GB" == result
 
@@ -163,18 +163,18 @@ class TestMatchDistro:
 
 class TestScanIsosSymlinks:
     def test_symlink_iso_is_ignored(self, tmp_dir):
-        """Les symlinks .iso ne doivent pas être listés (sécurité)."""
+        """.iso symlinks must not be listed (security)."""
         from core.ventoy_scanner import scan_isos, VentoyDrive
-        # Crée un faux point de montage Ventoy
+        # Creates a fake Ventoy mount point
         ventoy_dir = os.path.join(tmp_dir, "ventoy")
         os.makedirs(ventoy_dir)
         linux_dir = os.path.join(tmp_dir, "linux")
         os.makedirs(linux_dir)
-        # Fichier ISO réel
+        # Real ISO file
         real_iso = os.path.join(linux_dir, "real.iso")
         with open(real_iso, "wb") as f:
             f.write(b"\x00" * 1024)
-        # Symlink déguisé en ISO
+        # Symlink disguised as an ISO
         target = os.path.join(tmp_dir, "secret.txt")
         with open(target, "w") as f:
             f.write("secret")

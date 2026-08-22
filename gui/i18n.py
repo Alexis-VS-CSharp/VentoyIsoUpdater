@@ -1,18 +1,18 @@
 """
-Internationalisation minimale de l'interface graphique.
+Minimal internationalization for the GUI.
 
-Le français est la langue source : chaque chaîne affichée dans gui/app.py
-est écrite en français directement dans le code, et t("...") sert de point
-d'extension pour la traduire à la volée si la langue active n'est pas "fr".
-Ce choix (plutôt que des clés abstraites du type t("MSG_001")) garde le code
-lisible et le français fonctionnel même si une traduction manque : t() se
-contente de retourner le texte tel quel si aucune entrée ne correspond.
+French is the source language: every string displayed in gui/app.py is
+written in French directly in the code, and t("...") is the extension point
+that translates it on the fly if the active language isn't "fr". This
+choice (rather than abstract keys like t("MSG_001")) keeps the code
+readable and French functional even when a translation is missing: t()
+simply returns the text as-is if no entry matches.
 
-La langue est persistée dans les préférences (core/preferences.py) et lue au
-démarrage. La changer depuis l'application demande un redémarrage pour
-s'appliquer partout (voir AboutDialog / le sélecteur de langue) : reconstruire
-dynamiquement les ~60 fenêtres/dialogues déjà instanciés serait beaucoup plus
-fragile que de simplement relire la préférence au prochain lancement.
+The language is persisted in preferences (core/preferences.py) and read on
+startup. Changing it from within the app requires a restart to apply
+everywhere (see AboutDialog / the language selector): dynamically
+rebuilding the ~60 already-instantiated windows/dialogs would be far more
+fragile than simply re-reading the preference on next launch.
 """
 
 from typing import Optional
@@ -34,12 +34,12 @@ def get_language() -> str:
 
 def t(text: str, **kwargs) -> str:
     """
-    Traduit `text` (écrit en français dans le code appelant) vers la langue
-    active. Retourne le texte français inchangé si la langue active est le
-    français ou si aucune traduction n'est enregistrée pour ce texte.
+    Translates `text` (written in French in the calling code) into the
+    active language. Returns the French text unchanged if the active
+    language is French or if no translation is registered for this text.
 
-    kwargs : valeurs passées à str.format() après traduction, pour les
-    messages contenant des placeholders positionnels/nommés (ex.
+    kwargs: values passed to str.format() after translation, for messages
+    containing positional/named placeholders (e.g.
     t("Fichier {name} introuvable", name=filename)).
     """
     if _current_lang != "fr":
@@ -248,7 +248,14 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "🖥  Aperçu": "🖥  Preview",
         "🖼  Images": "🖼  Images",
 
-        # --- Mots courts / boutons (hors listing broad, ajoutés manuellement) --
+        # --- Short words / buttons (outside the broad listing, added manually) --
+        # core/version_checker.py::UpdateStatus values, displayed via
+        # result.status.value in the ISO list's status column.
+        "À jour": "Up to date",
+        "Mise à jour disponible": "Update available",
+        "Non reconnue": "Not recognized",
+        "Vérification manuelle": "Manual check",
+
         "Langue": "Language",
         "La langue sera appliquée au prochain démarrage de VentoyIsoUpdater.": "The language will apply the next time VentoyIsoUpdater starts.",
         "Téléchargement annulé": "Download cancelled",

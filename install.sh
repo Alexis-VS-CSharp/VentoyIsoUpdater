@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Installe VentoyIsoUpdater pour l'utilisateur courant (pas besoin de sudo).
-# Place le binaire, l'icône, et le .desktop pour intégration complète
-# au gestionnaire de fichiers et à la taskbar.
+# Installs VentoyIsoUpdater for the current user (no sudo needed).
+# Places the binary, icon, and .desktop file for full integration
+# with the file manager and taskbar.
 #
-# Usage : ./install.sh [chemin_binaire]
-#   chemin_binaire : optionnel, par défaut dist/VentoyIsoUpdater
+# Usage: ./install.sh [binary_path]
+#   binary_path: optional, defaults to dist/VentoyIsoUpdater
 
 set -e
 
@@ -14,33 +14,33 @@ INSTALL_DIR="$HOME/.local/bin"
 ICON_DIR="$HOME/.local/share/icons/hicolor"
 DESKTOP_DIR="$HOME/.local/share/applications"
 
-# ── Vérifications ─────────────────────────────────────────────────────────────
+# ── Checks ─────────────────────────────────────────────────────────────
 
 if [ ! -f "$BINARY" ]; then
-    echo "ERREUR : binaire introuvable : $BINARY"
-    echo "Lancez d'abord : ./build.sh"
+    echo "ERROR: binary not found: $BINARY"
+    echo "Run first: ./build.sh"
     exit 1
 fi
 
 if [ ! -f "assets/icon.png" ]; then
-    echo "ERREUR : assets/icon.png introuvable."
+    echo "ERROR: assets/icon.png not found."
     exit 1
 fi
 
-# ── Installation du binaire ────────────────────────────────────────────────────
+# ── Binary installation ────────────────────────────────────────────────────
 
 mkdir -p "$INSTALL_DIR"
 cp "$BINARY" "$INSTALL_DIR/$APP_NAME"
 chmod +x "$INSTALL_DIR/$APP_NAME"
-echo "[1/4] Binaire installé : $INSTALL_DIR/$APP_NAME"
+echo "[1/4] Binary installed: $INSTALL_DIR/$APP_NAME"
 
-# ── Installation des icônes (plusieurs résolutions) ───────────────────────────
+# ── Icon installation (multiple resolutions) ───────────────────────────
 
 for size in 16 32 48 64 128 256; do
     dir="$ICON_DIR/${size}x${size}/apps"
     mkdir -p "$dir"
     if command -v convert &>/dev/null; then
-        # ImageMagick disponible : redimensionne proprement
+        # ImageMagick available: resizes cleanly
         convert "assets/icon.png" -resize "${size}x${size}" "$dir/$APP_NAME.png" 2>/dev/null \
             || cp "assets/icon.png" "$dir/$APP_NAME.png"
     else
@@ -48,12 +48,12 @@ for size in 16 32 48 64 128 256; do
     fi
 done
 
-# Icône scalable SVG (fallback = PNG 256 renommé)
+# Scalable SVG icon (fallback = renamed PNG 256)
 mkdir -p "$ICON_DIR/scalable/apps"
 cp "assets/icon.png" "$ICON_DIR/scalable/apps/$APP_NAME.png"
-echo "[2/4] Icônes installées dans $ICON_DIR"
+echo "[2/4] Icons installed in $ICON_DIR"
 
-# ── Mise à jour du cache d'icônes ─────────────────────────────────────────────
+# ── Icon cache update ─────────────────────────────────────────────
 
 if command -v gtk-update-icon-cache &>/dev/null; then
     gtk-update-icon-cache -f -t "$ICON_DIR" 2>/dev/null || true
@@ -61,9 +61,9 @@ fi
 if command -v xdg-icon-resource &>/dev/null; then
     xdg-icon-resource install --novendor --size 256 "assets/icon.png" "$APP_NAME" 2>/dev/null || true
 fi
-echo "[3/4] Cache d'icônes mis à jour"
+echo "[3/4] Icon cache updated"
 
-# ── Fichier .desktop ──────────────────────────────────────────────────────────
+# ── .desktop file ──────────────────────────────────────────────────────────
 
 mkdir -p "$DESKTOP_DIR"
 DESKTOP_FILE="$DESKTOP_DIR/$APP_NAME.desktop"
@@ -73,8 +73,8 @@ cat > "$DESKTOP_FILE" << EOF
 Version=1.0
 Type=Application
 Name=VentoyIsoUpdater
-GenericName=Gestionnaire de clé Ventoy
-Comment=Gérez vos ISO Ventoy : vérification, téléchargement, thèmes
+GenericName=Ventoy Drive Manager
+Comment=Manage your Ventoy ISOs: update checks, downloads, themes
 Exec=env BAMF_DESKTOP_FILE_HINT=$DESKTOP_FILE $INSTALL_DIR/$APP_NAME
 Icon=$APP_NAME
 Terminal=false
@@ -86,7 +86,7 @@ EOF
 
 chmod +x "$DESKTOP_FILE"
 
-# Valide et enregistre le .desktop
+# Validates and registers the .desktop file
 if command -v desktop-file-validate &>/dev/null; then
     desktop-file-validate "$DESKTOP_FILE" 2>/dev/null || true
 fi
@@ -96,23 +96,23 @@ fi
 if command -v xdg-desktop-menu &>/dev/null; then
     xdg-desktop-menu install --novendor "$DESKTOP_FILE" 2>/dev/null || true
 fi
-echo "[4/4] Fichier .desktop installé : $DESKTOP_FILE"
+echo "[4/4] .desktop file installed: $DESKTOP_FILE"
 
-# ── Résumé ────────────────────────────────────────────────────────────────────
+# ── Summary ────────────────────────────────────────────────────────────────
 
 echo ""
-echo "✓ VentoyIsoUpdater installé avec succès !"
-echo "  Binaire  : $INSTALL_DIR/$APP_NAME"
-echo "  Icône    : $ICON_DIR/256x256/apps/$APP_NAME.png"
+echo "✓ VentoyIsoUpdater installed successfully!"
+echo "  Binary   : $INSTALL_DIR/$APP_NAME"
+echo "  Icon     : $ICON_DIR/256x256/apps/$APP_NAME.png"
 echo "  .desktop : $DESKTOP_FILE"
 echo ""
-echo "  Lancez l'app : VentoyIsoUpdater"
-echo "  Ou depuis le menu application de votre bureau."
+echo "  Run the app: VentoyIsoUpdater"
+echo "  Or from your desktop's application menu."
 echo ""
 
-# Si ~/.local/bin n'est pas dans le PATH, le signaler
+# Warn if ~/.local/bin isn't in the PATH
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-    echo "⚠  $HOME/.local/bin n'est pas dans votre PATH."
-    echo "   Ajoutez cette ligne dans ~/.bashrc ou ~/.zshrc :"
+    echo "⚠  $HOME/.local/bin is not in your PATH."
+    echo "   Add this line to ~/.bashrc or ~/.zshrc:"
     echo '   export PATH="$HOME/.local/bin:$PATH"'
 fi

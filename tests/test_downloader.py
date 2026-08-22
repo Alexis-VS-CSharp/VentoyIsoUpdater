@@ -60,9 +60,9 @@ class TestDownloadLogo:
 
 
     def test_http_size_limit(self, tmp_dir):
-        """Un logo HTTP trop volumineux est rejeté sans saturer la RAM."""
+        """An oversized HTTP logo is rejected without exhausting RAM."""
         dest = os.path.join(tmp_dir, "logo.png")
-        # Simule un contenu > 5 MB retourné chunk par chunk
+        # Simulates content > 5 MB returned chunk by chunk
         big_chunk = b"x" * (6 * 1024 * 1024)
         mock_resp = MagicMock()
         mock_resp.raise_for_status = MagicMock()
@@ -74,11 +74,11 @@ class TestDownloadLogo:
         assert err is not None and "5 MB" in err
 
     def test_atomic_replace_overwrites_dest(self, tmp_dir):
-        """os.replace() écrase le fichier de destination existant."""
+        """os.replace() overwrites the existing destination file."""
         from core.downloader import download_file
         import hashlib
         dest = os.path.join(tmp_dir, "out.iso")
-        # Crée un fichier de destination existant
+        # Creates an existing destination file
         with open(dest, "wb") as f:
             f.write(b"old content")
         content = b"new content"
@@ -116,7 +116,7 @@ class TestDownloadFile:
                 download_file("http://example.com/test.iso", dest, cancel_event=cancel)
 
     def test_part_file_cleaned_on_error(self, tmp_dir):
-        """Le fichier .part est supprimé si le téléchargement échoue."""
+        """The .part file is removed if the download fails."""
         from core.downloader import download_file
         dest = os.path.join(tmp_dir, "out.iso")
         mock_resp = MagicMock()

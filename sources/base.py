@@ -1,5 +1,5 @@
 """
-Classe de base abstraite pour tous les vérificateurs de version de distro.
+Abstract base class for all distro version checkers.
 """
 
 from abc import ABC, abstractmethod
@@ -15,17 +15,17 @@ class VersionInfo:
     checksum: Optional[str] = None
     checksum_type: Optional[str] = None  # 'sha256', 'md5', etc.
     release_notes_url: Optional[str] = None
-    # Renseigné quand aucune empreinte automatique n'est disponible mais que
-    # la source publie une méthode de vérification manuelle (signature
-    # OpenPGP, vérificateur web, etc.) — l'UI invite alors l'utilisateur à
-    # vérifier lui-même via cette page plutôt que de laisser croire à une
-    # intégrité non contrôlée. Ex: Tails (uniquement une signature OpenPGP).
+    # Set when no automatic checksum is available but the source publishes a
+    # manual verification method (OpenPGP signature, web verifier, etc.) —
+    # the UI then invites the user to verify it themselves via this page
+    # rather than implying an integrity check that didn't happen.
+    # E.g.: Tails (OpenPGP signature only).
     manual_verify_url: Optional[str] = None
-    # Infos optionnelles pour le navigateur de versions
-    variant_label: Optional[str] = None   # ex: "Desktop", "Server", "Netinst"
+    # Optional info for the version browser
+    variant_label: Optional[str] = None   # e.g. "Desktop", "Server", "Netinst"
     arch: str = "amd64"
-    size_hint: Optional[str] = None       # ex: "2.5 GB" si connu
-    stable: bool = True                   # False pour les versions non-LTS, rolling, beta
+    size_hint: Optional[str] = None       # e.g. "2.5 GB" if known
+    stable: bool = True                   # False for non-LTS, rolling, beta versions
 
 
 class BaseChecker(ABC):
@@ -36,16 +36,16 @@ class BaseChecker(ABC):
     @abstractmethod
     def get_latest_version(self) -> Optional[VersionInfo]:
         """
-        Interroge la source en ligne et retourne les infos de la dernière version.
-        Retourne None en cas d'échec ou si non applicable.
+        Queries the online source and returns info for the latest version.
+        Returns None on failure or if not applicable.
         """
         pass
 
     def get_all_versions(self) -> list[VersionInfo]:
         """
-        Retourne toutes les versions disponibles en ligne pour cette distro/variante.
-        Par défaut retourne uniquement la dernière version.
-        Surcharger dans les sous-classes pour lister l'historique.
+        Returns every version available online for this distro/variant.
+        Returns only the latest version by default.
+        Override in subclasses to list the full history.
         """
         latest = self.get_latest_version()
         return [latest] if latest else []
@@ -53,19 +53,19 @@ class BaseChecker(ABC):
     @abstractmethod
     def parse_local_version(self, filename: str) -> Optional[str]:
         """
-        Extrait la version d'un nom de fichier ISO local.
-        Retourne None si le fichier n'est pas reconnu.
+        Extracts the version from a local ISO filename.
+        Returns None if the file isn't recognized.
         """
         pass
 
     def is_outdated(self, local_version: str, latest_version: str) -> bool:
         """
-        Compare deux chaînes de version.
-        Retourne True si local_version est inférieure à latest_version.
+        Compares two version strings.
+        Returns True if local_version is lower than latest_version.
         """
         from packaging.version import Version, InvalidVersion
         try:
             return Version(local_version) < Version(latest_version)
         except InvalidVersion:
-            # Fallback : comparaison lexicographique (utile pour les dates YYYY.MM.DD)
+            # Fallback: lexicographic comparison (useful for YYYY.MM.DD dates)
             return local_version < latest_version

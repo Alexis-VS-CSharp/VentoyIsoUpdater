@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Kali Linux.
-Source : https://cdimage.kali.org/
+Version checker for Kali Linux.
+Source: https://cdimage.kali.org/
 """
 
 import re
@@ -36,7 +36,7 @@ class KaliChecker(BaseChecker):
                 variant_label="Installer",
             )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
 
     def get_all_versions(self) -> list[VersionInfo]:
@@ -67,10 +67,10 @@ class KaliChecker(BaseChecker):
                             variant_label="Installer",
                         ))
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             latest = self.get_latest_version()
             if latest:
                 results.append(latest)

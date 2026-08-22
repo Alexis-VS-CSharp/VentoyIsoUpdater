@@ -1,15 +1,15 @@
 """
-Tails OS — Privacy/anonymity OS. Source : tails.net
+Tails OS — Privacy/anonymity OS. Source: tails.net
 
-Le téléchargement passe par download.tails.net, qui redirige (302) vers un
-miroir réel — l'ancien chemin "tails.net/torrents/files/<fichier>" utilisé
-ici pointait vers une page HTML (répertoire), pas le fichier lui-même.
+The download goes through download.tails.net, which redirects (302) to a
+real mirror — the old "tails.net/torrents/files/<file>" path used here
+pointed to an HTML page (directory listing), not the file itself.
 
-Tails ne publie pas d'empreinte en clair (SHA256SUMS/.sha256) : seule une
-signature OpenPGP (.sig) accompagne l'ISO. Ce projet ne vérifie pas les
-signatures OpenPGP (voir core/downloader.py) — `manual_verify_url` est donc
-renseigné pour que l'interface invite l'utilisateur à vérifier lui-même via
-la procédure officielle, plutôt que de télécharger sans aucune indication.
+Tails doesn't publish a plain-text checksum (SHA256SUMS/.sha256): only an
+OpenPGP signature (.sig) accompanies the ISO. This project doesn't verify
+OpenPGP signatures (see core/downloader.py) — `manual_verify_url` is
+therefore set so the UI invites the user to verify it themselves via the
+official procedure, rather than downloading with no indication at all.
 """
 import re
 import requests
@@ -17,13 +17,13 @@ from typing import Optional
 from sources.base import BaseChecker, VersionInfo
 from core.logger import logger
 
-_MANUAL_VERIFY_URL = "https://tails.net/install/linux/index.fr.html"
+_MANUAL_VERIFY_URL = "https://tails.net/install/linux/index.en.html"
 
 
 class TailsChecker(BaseChecker):
     DOWNLOAD_URL = "https://tails.net/install/download/"
     DOWNLOAD_BASE = "https://download.tails.net/tails/stable/"
-    # API JSON de mise à jour
+    # Update-check JSON API
     RELEASES_APIS = [
         "https://tails.net/update/v2/Tails/i386/stable/latest.json",
         "https://tails.net/update/v2/Tails/amd64/stable/latest.json",
@@ -41,7 +41,7 @@ class TailsChecker(BaseChecker):
         )
 
     def get_latest_version(self) -> Optional[VersionInfo]:
-        # Essai 1 : API JSON
+        # Attempt 1: JSON API
         for api_url in self.RELEASES_APIS:
             try:
                 resp = requests.get(api_url, timeout=10)
@@ -50,10 +50,10 @@ class TailsChecker(BaseChecker):
                 if version:
                     return self._version_info(version)
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 continue
 
-        # Essai 2 : scrape la page de téléchargement
+        # Attempt 2: scrape the download page
         try:
             resp = requests.get(
                 self.DOWNLOAD_URL,
@@ -68,7 +68,7 @@ class TailsChecker(BaseChecker):
             if versions:
                 return self._version_info(sorted(set(versions), reverse=True)[0])
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
 
         return None
 

@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour les saveurs officielles d'Ubuntu.
-Source : https://cdimage.ubuntu.com/{flavor}/releases/
+Version checker for the official Ubuntu flavors.
+Source: https://cdimage.ubuntu.com/{flavor}/releases/
 """
 
 import re
@@ -39,7 +39,7 @@ class UbuntuFlavorsChecker(BaseChecker):
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -65,13 +65,13 @@ class UbuntuFlavorsChecker(BaseChecker):
                     stable=is_lts,
                 )
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
         return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:
         versions = self._fetch_versions()
-        # Prioritise les versions LTS (xx.04)
+        # Prioritizes LTS versions (xx.04)
         lts = [v for v in versions if len(v.split(".")) >= 2 and v.split(".")[1] == "04"]
         for v in lts + [v for v in versions if v not in lts]:
             info = self._make_version_info(v)

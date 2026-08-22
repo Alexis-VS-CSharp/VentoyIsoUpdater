@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 @pytest.fixture
 def isolated_prefs(tmp_path):
-    """Patch les chemins de prefs vers un dossier temporaire isolé."""
+    """Patches the prefs paths to point to an isolated temp folder."""
     prefs_dir  = tmp_path / "config"
     prefs_file = prefs_dir / "prefs.json"
     with patch("core.preferences._PREFS_DIR",  prefs_dir), \

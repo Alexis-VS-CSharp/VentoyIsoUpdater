@@ -1,15 +1,15 @@
 """
 Bazzite — Fedora-based gaming distro.
-Source : download.bazzite.gg (téléchargement direct, nom de fichier stable)
+Source: download.bazzite.gg (direct download, stable filename)
 
-Le site officiel (bazzite.gg) est une page JS ("image picker") qui ne liste
-aucune URL statique dans son HTML ; les vrais liens sont construits par son
-script (content/themes/betheme-child/script121.js) selon le schéma :
+The official site (bazzite.gg) is a JS page ("image picker") that lists no
+static URL in its HTML; the real links are built by its script
+(content/themes/betheme-child/script121.js) following the pattern:
   https://download.bazzite.gg/<image>-stable-amd64.iso
   https://download.bazzite.gg/<image>-stable-amd64.iso-CHECKSUM
-Les releases GitHub (ublue-os/bazzite) ne sont plus utilisables : ce sont
-désormais des builds "testing" sans ISO attaché. Le nom de fichier ne
-contient pas de version — on utilise la date "Last-Modified" du fichier.
+The GitHub releases (ublue-os/bazzite) are no longer usable: they are now
+"testing" builds with no ISO attached. The filename contains no version —
+the file's "Last-Modified" date is used instead.
 """
 import re
 from datetime import datetime
@@ -57,7 +57,7 @@ class BazziteChecker(BaseChecker):
                 variant_label=imagename,
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

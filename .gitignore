@@ -4,7 +4,7 @@ __pycache__/
 *.pyo
 .pytest_cache/
 
-# Environnements virtuels
+# Virtual environments
 .venv/
 venv/
 env/
@@ -14,10 +14,10 @@ build/
 dist/
 *.spec
 
-# Outils de packaging
+# Packaging tools
 tools/appimagetool-x86_64.AppImage
 
-# Logs et config locale
+# Logs and local config
 *.log
 *.bak
 
@@ -30,7 +30,7 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Config locale et fichiers d'agents IA (chemins absolus et permissions propres à la machine)
+# Local config and AI agent files (absolute paths and machine-specific permissions)
 CLAUDE.md
 .claude/
 .cursor/

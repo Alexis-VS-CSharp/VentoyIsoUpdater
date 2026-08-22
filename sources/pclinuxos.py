@@ -1,11 +1,11 @@
 """
-Vérificateur de version pour PCLinuxOS.
-Source : miroir NLUUG ou SourceForge
+Version checker for PCLinuxOS.
+Source: NLUUG mirror or SourceForge
 
-Le chemin NLUUG contenait un segment "pclinuxos/" en trop (.../pclinuxos/
-pclinuxos/iso/, qui n'existe pas) et le nom de fichier attendu était
-l'ancien format "pclinuxos-kde-<build>-x86_64.iso" : le nommage réel est
-désormais "pclinuxos64-kde-<date>.iso", avec un sidecar ".md5sum".
+The NLUUG path contained an extra "pclinuxos/" segment (.../pclinuxos/
+pclinuxos/iso/, which doesn't exist) and the expected filename was the old
+format "pclinuxos-kde-<build>-x86_64.iso": the real naming is now
+"pclinuxos64-kde-<date>.iso", with a ".md5sum" sidecar.
 """
 
 import re
@@ -28,7 +28,7 @@ class PCLinuxOSChecker(BaseChecker):
         return versions[0] if versions else None
 
     def get_all_versions(self) -> list[VersionInfo]:
-        # Essai 1 : miroir NLUUG (listing direct)
+        # Attempt 1: NLUUG mirror (direct listing)
         try:
             mirror_url = MIRRORS[0]
             resp = requests.get(mirror_url, timeout=10)
@@ -56,10 +56,10 @@ class PCLinuxOSChecker(BaseChecker):
                 results.sort(key=lambda x: x.version, reverse=True)
                 return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
-        # Essai 2 : SourceForge (via User-Agent + HTML scraping)
+        # Attempt 2: SourceForge (via User-Agent + HTML scraping)
         try:
             sf_url = MIRRORS[1]
             resp = requests.get(
@@ -91,7 +91,7 @@ class PCLinuxOSChecker(BaseChecker):
             results.sort(key=lambda x: x.version, reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

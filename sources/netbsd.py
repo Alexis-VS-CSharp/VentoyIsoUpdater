@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour NetBSD.
-Source : https://cdn.netbsd.org/pub/NetBSD/
+Version checker for NetBSD.
+Source: https://cdn.netbsd.org/pub/NetBSD/
 """
 
 import re
@@ -24,7 +24,7 @@ class NetBSDChecker(BaseChecker):
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -44,7 +44,7 @@ class NetBSDChecker(BaseChecker):
                         variant_label="amd64",
                     )
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 continue
         return None
 

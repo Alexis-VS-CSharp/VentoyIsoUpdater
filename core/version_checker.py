@@ -1,6 +1,6 @@
 """
-Orchestre la vérification de version pour chaque ISO détectée.
-Utilise un ThreadPoolExecutor pour les checks en parallèle.
+Orchestrates the version check for each detected ISO.
+Uses a ThreadPoolExecutor to run checks in parallel.
 """
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -40,9 +40,9 @@ def _load_checkers():
     if _CHECKER_REGISTRY:
         return
     with _CHECKER_LOCK:
-        if _CHECKER_REGISTRY:   # double-check après acquisition du verrou
+        if _CHECKER_REGISTRY:   # double-check after acquiring the lock
             return
-        # Tous les imports et l'update sont dans le verrou pour éviter la race condition
+        # All the imports and the update happen inside the lock to avoid the race condition
         from sources.ubuntu import UbuntuChecker
         from sources.debian import DebianChecker
         from sources.fedora import FedoraChecker
@@ -199,7 +199,7 @@ def _check_one(iso: IsoEntry, distros_db: dict) -> CheckResult:
 
     checker = checker_cls(variant=variant)
 
-    # Distros sans API publique → vérification manuelle
+    # Distros with no public API -> manual check
     if checker_id in ("windows",):
         return CheckResult(iso=iso, status=UpdateStatus.MANUAL)
 
@@ -234,8 +234,8 @@ def check_all(
     max_workers: int = 6,
 ) -> list[CheckResult]:
     """
-    Vérifie toutes les ISO en parallèle.
-    Appelle on_result(result) pour chaque résultat dès qu'il est disponible (thread-safe).
+    Checks every ISO in parallel.
+    Calls on_result(result) for each result as soon as it's available (thread-safe).
     """
     results = []
 

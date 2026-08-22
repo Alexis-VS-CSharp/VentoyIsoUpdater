@@ -51,11 +51,11 @@ class OPNsenseChecker(BaseChecker):
                             variant_label=f"{variant.upper()} {ver}",
                         ))
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

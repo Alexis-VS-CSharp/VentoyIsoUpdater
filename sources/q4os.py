@@ -1,14 +1,14 @@
 """
-Vérificateur de version pour Q4OS.
-Source : https://www.q4os.org/downloads1.html
+Version checker for Q4OS.
+Source: https://www.q4os.org/downloads1.html
 
-Le nom de fichier réel est "q4os-<version>-x64.r<n>.iso" (pas "-x86_64-"
-comme l'ancien code l'attendait) — le téléchargement passe par un flux
-"faire un don ou passer" qui redirige finalement vers SourceForge, mais la
-page elle-même liste déjà le nom exact et son empreinte MD5 en clair dans
-sa section "Files details", donc pas besoin de suivre ce flux.
-Le WAF du site renvoie une erreur si la requête n'a pas d'en-tête
-Accept-Language — un User-Agent seul ne suffit pas.
+The real filename is "q4os-<version>-x64.r<n>.iso" (not "-x86_64-" as the
+old code expected) — the download goes through a "donate or skip" flow
+that eventually redirects to SourceForge, but the page itself already
+lists the exact name and its MD5 checksum in plain text in its "Files
+details" section, so there's no need to follow that flow.
+The site's WAF returns an error if the request has no Accept-Language
+header — a User-Agent alone isn't enough.
 """
 
 import re
@@ -36,7 +36,7 @@ class Q4OSChecker(BaseChecker):
         try:
             resp = requests.get(self.DL_PAGE, timeout=10, headers=_HEADERS)
             resp.raise_for_status()
-            # "Files details" liste "<md5>  <fichier>" pour chaque édition
+            # "Files details" lists "<md5>  <file>" for each edition
             matches = re.findall(
                 r"([0-9a-fA-F]{32})\s+(q4os-([\d.]+)-x64(?:-\w+)?\.r\d+\.iso)",
                 resp.text
@@ -62,7 +62,7 @@ class Q4OSChecker(BaseChecker):
                 results.sort(key=lambda x: Version(x.version), reverse=True)
                 return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
 
         return []
 

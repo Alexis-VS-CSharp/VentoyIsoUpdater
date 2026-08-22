@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour VanillaOS.
-Source : GitHub releases Vanilla-OS/live-iso
+Version checker for VanillaOS.
+Source: GitHub releases Vanilla-OS/live-iso
 """
 
 import re
@@ -30,7 +30,7 @@ class VanillaOSChecker(BaseChecker):
             resp.raise_for_status()
             releases = resp.json()
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
         results = []

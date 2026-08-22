@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour CachyOS.
-Source : GitHub releases CachyOS/cachyos-live-iso
+Version checker for CachyOS.
+Source: GitHub releases CachyOS/cachyos-live-iso
 """
 
 import re
@@ -19,7 +19,7 @@ class CachyOSChecker(BaseChecker):
         return versions[0] if versions else None
 
     def get_all_versions(self) -> list[VersionInfo]:
-        # Essai 1 : GitHub releases CachyOS/cachyos-live-iso
+        # Attempt 1: GitHub releases CachyOS/cachyos-live-iso
         results = get_github_iso_releases(
             owner="CachyOS",
             repo="cachyos-live-iso",
@@ -30,7 +30,7 @@ class CachyOSChecker(BaseChecker):
         if results:
             return results
 
-        # Essai 2 : GitHub releases CachyOS/CachyOS-ISO
+        # Attempt 2: GitHub releases CachyOS/CachyOS-ISO
         results = get_github_iso_releases(
             owner="CachyOS",
             repo="CachyOS-ISO",
@@ -41,9 +41,9 @@ class CachyOSChecker(BaseChecker):
         if results:
             return results
 
-        # Essai 3 : Miroir officiel — structure réelle : ISO/desktop/<YYMMDD>/
-        # (le mirroir liste des sous-dossiers datés, pas les ISO directement
-        # à la racine). Chaque ISO a un ".sha256" à côté.
+        # Attempt 3: official mirror — real structure: ISO/desktop/<YYMMDD>/
+        # (the mirror lists dated subfolders, not the ISOs directly at the
+        # root). Each ISO has a ".sha256" sidecar.
         try:
             mirror_url = "https://mirror.cachyos.org/ISO/desktop/"
             resp = requests.get(mirror_url, timeout=10,
@@ -70,10 +70,10 @@ class CachyOSChecker(BaseChecker):
                         variant_label=self.variant or "Desktop",
                     )]
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
         return []

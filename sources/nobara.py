@@ -1,11 +1,11 @@
 """
 Nobara Project — Gaming-optimized Fedora.
-Source : https://nobaraproject.org/download.html
+Source: https://nobaraproject.org/download.html
 
-Le bouton de téléchargement ne pointe plus vers GitHub releases (plus
-d'assets ISO là-bas) mais construit son lien depuis des attributs
-data-iso/data-url embarqués dans la page elle-même (nobara-images.
-nobaraproject.org). Chaque ISO a un sidecar "<iso>.sha256sum".
+The download button no longer points to GitHub releases (no ISO assets
+there anymore) but builds its link from data-iso/data-url attributes
+embedded in the page itself (nobara-images.nobaraproject.org). Each ISO
+has a "<iso>.sha256sum" sidecar.
 """
 import re
 import requests
@@ -52,7 +52,7 @@ class NobaraChecker(BaseChecker):
             results.sort(key=lambda x: x.filename, reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

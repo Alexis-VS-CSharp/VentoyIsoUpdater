@@ -1,8 +1,8 @@
 """
-Vérificateur de version pour BlackArch Linux.
-Source : https://blackarch.org/downloads.html — la page officielle liste
-l'ISO "Full" (URL réelle sur le miroir ftp.halifax.rwth-aachen.de) avec son
-empreinte SHA1 directement dans le tableau HTML (pas de fichier séparé).
+Version checker for BlackArch Linux.
+Source: https://blackarch.org/downloads.html — the official page lists
+the "Full" ISO (real URL on the ftp.halifax.rwth-aachen.de mirror) with its
+SHA1 checksum directly in the HTML table (no separate file).
 """
 
 import re
@@ -14,7 +14,7 @@ from core.logger import logger
 
 class BlackArchChecker(BaseChecker):
     DOWNLOADS_PAGE = "https://blackarch.org/downloads.html"
-    # Miroir de repli si la page officielle est injoignable (pas d'empreinte alors)
+    # Fallback mirror if the official page is unreachable (no checksum then)
     MIRROR_URL = "https://ftp.halifax.rwth-aachen.de/blackarch/iso/"
 
     def get_latest_version(self) -> Optional[VersionInfo]:
@@ -28,8 +28,8 @@ class BlackArchChecker(BaseChecker):
                 headers={"User-Agent": "Mozilla/5.0"},
             )
             resp.raise_for_status()
-            # Le tableau "Image | Version | Torrent | Size | SHA1sum" liste
-            # l'URL de l'ISO puis, dans la même ligne, son empreinte SHA1.
+            # The "Image | Version | Torrent | Size | SHA1sum" table lists
+            # the ISO URL then, on the same row, its SHA1 checksum.
             m = re.search(
                 r'href="([^"]*blackarch-linux-full-(\d{4}\.\d{2}\.\d{2})-x86_64\.iso)"'
                 r'.*?<td>([0-9a-fA-F]{40})</td>',
@@ -46,9 +46,9 @@ class BlackArchChecker(BaseChecker):
                     variant_label="Full",
                 )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
 
-        # Repli : listing direct du miroir (pas d'empreinte disponible ici)
+        # Fallback: direct mirror listing (no checksum available here)
         try:
             resp = requests.get(self.MIRROR_URL, timeout=10)
             resp.raise_for_status()
@@ -71,7 +71,7 @@ class BlackArchChecker(BaseChecker):
             results.sort(key=lambda x: x.version, reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

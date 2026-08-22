@@ -31,7 +31,7 @@ class ChimeraOSChecker(BaseChecker):
             resp.raise_for_status()
             releases = resp.json()
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
         results = []

@@ -1,9 +1,9 @@
 """
-Vérificateur de version pour Oracle Linux.
-Source : https://yum.oracle.com/oracle-linux-isos.html
-Empreintes : https://linux.oracle.com/security/gpg/checksum/ (voir
-https://linux.oracle.com/security/gpg/ pour la procédure officielle —
-fichier signé PGP en clair, on n'en lit que la ligne SHA256).
+Version checker for Oracle Linux.
+Source: https://yum.oracle.com/oracle-linux-isos.html
+Checksums: https://linux.oracle.com/security/gpg/checksum/ (see
+https://linux.oracle.com/security/gpg/ for the official procedure —
+clearsigned PGP file, only the SHA256 line is read).
 """
 
 import re
@@ -30,9 +30,9 @@ class OracleLinuxChecker(BaseChecker):
                 headers={"User-Agent": "Mozilla/5.0"}
             )
             resp.raise_for_status()
-            # Le nom réel ne contient PAS "-Server-" (ex: OracleLinux-R9-U8-
-            # x86_64-dvd.iso) ; seul le fichier de checksum, lui, s'appelle
-            # "...-Server-x86_64.checksum".
+            # The real filename does NOT contain "-Server-" (e.g.
+            # OracleLinux-R9-U8-x86_64-dvd.iso); only the checksum file is
+            # named "...-Server-x86_64.checksum".
             matches = re.findall(
                 r'href="([^"]+OracleLinux-R(\d+)-U(\d+)-x86_64-dvd\.iso)"',
                 resp.text
@@ -59,7 +59,7 @@ class OracleLinuxChecker(BaseChecker):
             results.sort(key=lambda x: Version(x.version), reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

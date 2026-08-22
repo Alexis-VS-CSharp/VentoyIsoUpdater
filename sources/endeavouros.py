@@ -1,4 +1,4 @@
-"""EndeavourOS — Arch-based distro. Source : endeavouros.com/latest-release/"""
+"""EndeavourOS — Arch-based distro. Source: endeavouros.com/latest-release/"""
 import re
 import requests
 from typing import Optional
@@ -18,7 +18,7 @@ class EndeavourOSChecker(BaseChecker):
     def get_all_versions(self) -> list[VersionInfo]:
         results = []
         try:
-            # Scrape la page de release pour trouver les URLs ISO directes
+            # Scrapes the release page to find direct ISO URLs
             resp = requests.get(self.RELEASE_PAGE, timeout=10)
             resp.raise_for_status()
             isos = re.findall(
@@ -33,8 +33,8 @@ class EndeavourOSChecker(BaseChecker):
                 seen.add(filename)
                 m = re.search(r'EndeavourOS[_-]?(?:\w+[_-])*(\d{4}\.\d{2}\.\d{2})', filename)
                 version = m.group(1) if m else "latest"
-                # Sidecar '<fichier>.sha512sum' (anciennes releases) ou
-                # '.sha512' (récentes) — tenté sur le miroir résolu.
+                # Sidecar '<file>.sha512sum' (older releases) or
+                # '.sha512' (recent ones) — tried against the resolved mirror.
                 base_url = url.rsplit("/", 1)[0] + "/"
                 checksum = (
                     fetch_sha512sums(base_url + filename + ".sha512sum", filename)
@@ -50,11 +50,11 @@ class EndeavourOSChecker(BaseChecker):
                     variant_label="EndeavourOS",
                 ))
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
 
         if not results:
-            # Fallback : miroir direct
+            # Fallback: direct mirror
             try:
                 resp = requests.get(self.MIRROR_BASE, timeout=10)
                 resp.raise_for_status()
@@ -62,8 +62,8 @@ class EndeavourOSChecker(BaseChecker):
                 for filename in isos[:4]:
                     m = re.search(r'(\d{4}\.\d{2}\.\d{2})', filename)
                     version = m.group(1) if m else "latest"
-                    # Sidecar '<fichier>.sha512sum' sur les releases plus
-                    # anciennes, '<fichier>.sha512' sur les plus récentes.
+                    # Sidecar '<file>.sha512sum' on older releases,
+                    # '<file>.sha512' on newer ones.
                     checksum = (
                         fetch_sha512sums(self.MIRROR_BASE + filename + ".sha512sum", filename)
                         or fetch_sha512sums(self.MIRROR_BASE + filename + ".sha512", filename)
@@ -78,7 +78,7 @@ class EndeavourOSChecker(BaseChecker):
                         variant_label="EndeavourOS",
                     ))
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 pass
 
         return results

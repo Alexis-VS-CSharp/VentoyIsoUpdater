@@ -1,12 +1,12 @@
 """
-Gestion des logos de distro pour le thème Ventoy existant.
+Manages distro logos for the existing Ventoy theme.
 
-Logique :
-- Les logos sont nommés d'après le `grub_class` de la distro (= nom de classe GRUB)
-  ex : grub_class="Zorin" → fichier "Zorin.png" dans icons/
-- ventoy.json contient des `menu_class` qui mappent dossiers → classes GRUB
-- Quand on ajoute un nouveau logo, on propose aussi d'ajouter l'entrée menu_class
-  correspondante dans ventoy.json
+Logic:
+- Logos are named after the distro's `grub_class` (= GRUB class name)
+  e.g.: grub_class="Zorin" -> file "Zorin.png" in icons/
+- ventoy.json contains `menu_class` entries that map folders -> GRUB classes
+- When a new logo is added, adding the matching menu_class entry to
+  ventoy.json is also offered
 """
 
 import os
@@ -17,10 +17,10 @@ from typing import Callable, Optional
 from core.downloader import download_logo
 
 
-# ── Lecture / écriture de ventoy.json ────────────────────────────────────────
+# ── Reading / writing ventoy.json ────────────────────────────────────────────
 
 def load_ventoy_json(ventoy_json_path: str) -> dict:
-    """Charge ventoy.json. Retourne {} si absent ou illisible."""
+    """Loads ventoy.json. Returns {} if absent or unreadable."""
     try:
         with open(ventoy_json_path, encoding="utf-8") as f:
             return json.load(f)
@@ -29,7 +29,7 @@ def load_ventoy_json(ventoy_json_path: str) -> dict:
 
 
 def save_ventoy_json(ventoy_json_path: str, data: dict) -> bool:
-    """Sauvegarde ventoy.json avec une indentation propre. Retourne True si ok."""
+    """Saves ventoy.json with clean indentation. Returns True on success."""
     backup = ventoy_json_path + ".bak"
     backup_created = False
     if os.path.isfile(ventoy_json_path):
@@ -37,25 +37,25 @@ def save_ventoy_json(ventoy_json_path: str, data: dict) -> bool:
             shutil.copy2(ventoy_json_path, backup)
             backup_created = True
         except Exception:
-            pass  # Pas de backup disponible, on continue quand même
+            pass  # No backup available, continues anyway
     try:
         with open(ventoy_json_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
         return True
     except Exception:
-        # Restaure le backup en cas d'échec d'écriture
+        # Restores the backup if the write fails
         if backup_created:
             try:
                 shutil.copy2(backup, ventoy_json_path)
             except Exception:
-                pass  # Impossible de restaurer : ventoy.json peut être corrompu
+                pass  # Cannot restore: ventoy.json may be corrupted
         return False
 
 
 def get_existing_menu_classes(ventoy_json_path: str) -> dict[str, str]:
     """
-    Retourne un dict {pattern → class} depuis les menu_class de ventoy.json.
-    pattern est soit "dir" soit "parent".
+    Returns a {pattern -> class} dict from ventoy.json's menu_class entries.
+    pattern is either "dir" or "parent".
     """
     data = load_ventoy_json(ventoy_json_path)
     result = {}
@@ -73,9 +73,9 @@ def add_menu_class_entry(
     grub_class: str,
 ) -> bool:
     """
-    Ajoute une entrée menu_class dans ventoy.json pour associer iso_folder → grub_class.
-    Ne fait rien si l'entrée existe déjà pour ce dossier.
-    Retourne True si une entrée a été ajoutée.
+    Adds a menu_class entry to ventoy.json mapping iso_folder -> grub_class.
+    Does nothing if the entry already exists for this folder.
+    Returns True if an entry was added.
     """
     if not ventoy_json_path or not os.path.isfile(ventoy_json_path):
         return False
@@ -83,19 +83,19 @@ def add_menu_class_entry(
     data = load_ventoy_json(ventoy_json_path)
     menu_class = data.get("menu_class", [])
 
-    # Normalise le chemin : doit commencer par /
+    # Normalizes the path: must start with /
     folder = "/" + iso_folder.lstrip("/\\").replace("\\", "/")
 
-    # Vérifie si ce dossier est déjà mappé
+    # Checks whether this folder is already mapped
     for entry in menu_class:
         if entry.get("dir") == folder:
-            return False  # déjà présent
+            return False  # already present
 
-    # Insère avant la règle générique /Linux (si elle existe)
+    # Inserts before the generic /Linux rule (if it exists)
     new_entry = {"dir": folder, "class": grub_class}
     insert_pos = len(menu_class)
     for i, entry in enumerate(menu_class):
-        # La règle générique (/Linux, /) doit rester en dernier
+        # The generic rule (/Linux, /) must stay last
         d = entry.get("dir", "")
         if d in ("/Linux", "/", "/Server") and d != folder:
             insert_pos = i
@@ -105,7 +105,7 @@ def add_menu_class_entry(
     return save_ventoy_json(ventoy_json_path, data)
 
 
-# ── Gestion des logos ─────────────────────────────────────────────────────────
+# ── Logo management ───────────────────────────────────────────────────────────
 
 def sync_logos(
     icons_dir: str,
@@ -116,19 +116,19 @@ def sync_logos(
     on_progress: Optional[Callable] = None,
 ) -> dict[str, dict]:
     """
-    Télécharge les logos manquants pour toutes les distros des ISO détectées.
+    Downloads missing logos for every distro among the detected ISOs.
 
-    - Le nom du fichier = grub_class + ".png" (ex: "Zorin.png", "ubuntu.png")
-    - Si ventoy_json_path fourni, propose aussi d'ajouter les entrées menu_class
-      manquantes dans ventoy.json
+    - Filename = grub_class + ".png" (e.g. "Zorin.png", "ubuntu.png")
+    - If ventoy_json_path is given, also offers to add the missing
+      menu_class entries to ventoy.json
 
-    Retourne {logo_filename: {"success": bool, "name": str, "error": str|None, "skipped": bool}}
+    Returns {logo_filename: {"success": bool, "name": str, "error": str|None, "skipped": bool}}
     """
     if not os.path.isdir(icons_dir):
         return {}
 
-    # Collecte les classes uniques des ISO présentes sur la clé
-    # On group par grub_class → (logo_url, list of iso folders)
+    # Collects the unique classes among the ISOs present on the drive
+    # Grouped by grub_class -> (logo_url, list of iso folders)
     needed: dict[str, dict] = {}
     for entry in iso_entries:
         if not entry.distro_id:
@@ -149,7 +149,7 @@ def sync_logos(
                 "name": distro_cfg["name"],
                 "folders": set(),
             }
-        # Collecte les dossiers pour la mise à jour de menu_class
+        # Collects the folders for the menu_class update
         if entry.folder and entry.folder != "/":
             needed[grub_class]["folders"].add(entry.folder)
 
@@ -160,7 +160,7 @@ def sync_logos(
         logo_filename = grub_class + ".png"
         dest_path = os.path.join(icons_dir, logo_filename)
 
-        # Déjà présent et pas de forçage : on considère OK sans retélécharger
+        # Already present and not forcing: considered OK without re-downloading
         if os.path.exists(dest_path) and not force:
             results[logo_filename] = {
                 "success": True,
@@ -183,14 +183,14 @@ def sync_logos(
 
         success = results[logo_filename]["success"]
 
-        # Mise à jour ventoy.json si demandé et logo OK
+        # Updates ventoy.json if requested and the logo succeeded
         if ventoy_json_path and success:
             class_values = set(existing_classes.values())
             if grub_class not in class_values:
-                # Ajoute une entrée par dossier d'ISO
+                # Adds one entry per ISO folder
                 for folder in info["folders"]:
                     add_menu_class_entry(ventoy_json_path, folder, grub_class)
-                # Recharge les classes après update
+                # Reloads the classes after the update
                 existing_classes = get_existing_menu_classes(ventoy_json_path)
 
         if on_progress:
@@ -201,8 +201,8 @@ def sync_logos(
 
 def get_missing_logos(icons_dir: str, iso_entries: list, distros_db: dict) -> list[str]:
     """
-    Retourne la liste des logos (grub_class.png) manquants dans icons/
-    pour les ISO présentes sur la clé.
+    Returns the list of logos (grub_class.png) missing from icons/
+    for the ISOs present on the drive.
     """
     if not os.path.isdir(icons_dir):
         return []
@@ -231,8 +231,8 @@ def get_unmatched_isos(
     ventoy_json_path: str,
 ) -> list:
     """
-    Retourne les IsoEntry dont le dossier n'est couvert par aucune règle menu_class.
-    Utile pour signaler à l'utilisateur ce qui n'a pas d'icône.
+    Returns the IsoEntry objects whose folder isn't covered by any
+    menu_class rule. Useful for telling the user which ones have no icon.
     """
     if not ventoy_json_path:
         return []

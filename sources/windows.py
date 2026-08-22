@@ -1,7 +1,7 @@
 """
-Vérificateur pour les ISO Windows.
-Microsoft ne fournit pas d'API publique pour la vérification automatique.
-→ Ce checker détecte l'ISO et signale qu'une vérification manuelle est requise.
+Checker for Windows ISOs.
+Microsoft doesn't provide a public API for automatic verification.
+-> This checker detects the ISO and signals that manual verification is required.
 """
 
 import re
@@ -18,17 +18,17 @@ class WindowsChecker(BaseChecker):
     }
 
     def get_latest_version(self) -> Optional[VersionInfo]:
-        # Pas de vérification automatique possible pour Microsoft
-        # On retourne None pour indiquer "vérification manuelle"
+        # No automatic verification possible for Microsoft
+        # Returns None to indicate "manual verification"
         return None
 
     def parse_local_version(self, filename: str) -> Optional[str]:
-        # Essaie d'extraire un numéro de build ou d'édition du nom de fichier
-        # Ex: Win10_22H2_French_x64.iso → 22H2
+        # Tries to extract a build/edition number from the filename
+        # E.g.: Win10_22H2_French_x64.iso -> 22H2
         m = re.search(r"(\d{2}H\d)", filename, re.IGNORECASE)
         if m:
             return m.group(1)
-        # Serveur : SERVER_EVAL_x64FRE_en-us_DV9.iso → pas de version claire
+        # Server: SERVER_EVAL_x64FRE_en-us_DV9.iso -> no clear version
         return None
 
     def get_homepage(self) -> str:

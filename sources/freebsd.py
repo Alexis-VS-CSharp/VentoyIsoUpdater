@@ -1,4 +1,4 @@
-"""FreeBSD. Source : download.freebsd.org"""
+"""FreeBSD. Source: download.freebsd.org"""
 import re
 import requests
 from typing import Optional
@@ -8,7 +8,7 @@ from core.logger import logger
 
 
 class FreeBSDChecker(BaseChecker):
-    # Nouveau chemin depuis FreeBSD 14+
+    # New path since FreeBSD 14+
     RELEASES_URL = "https://download.freebsd.org/releases/amd64/amd64/ISO-IMAGES/"
 
     def get_latest_version(self) -> Optional[VersionInfo]:
@@ -20,9 +20,9 @@ class FreeBSDChecker(BaseChecker):
             resp = requests.get(self.RELEASES_URL, timeout=10)
             resp.raise_for_status()
 
-            # Dossiers de versions: 14.0/, 15.0/, etc.
-            # \d+ en tête : exclut le lien "dossier parent" (href="../") que
-            # [\d.]+ capturerait aussi ('..' est fait uniquement de points).
+            # Version folders: 14.0/, 15.0/, etc.
+            # Leading \d+: excludes the "parent folder" link (href="../")
+            # which [\d.]+ would also capture ('..' is made only of dots).
             dirs = re.findall(r'href="(\d+(?:\.\d+)*)/?"', resp.text)
             from packaging.version import Version as PV
             unique = list(dict.fromkeys(dirs))
@@ -34,7 +34,7 @@ class FreeBSDChecker(BaseChecker):
                 try:
                     r2 = requests.get(iso_url, timeout=8)
                     r2.raise_for_status()
-                    # Cherche disc1.iso ou dvd1.iso
+                    # Looks for disc1.iso or dvd1.iso
                     isos = re.findall(
                         r'(FreeBSD-[\d.]+-RELEASE-amd64-(?:disc1|dvd1)\.iso)',
                         r2.text
@@ -59,11 +59,11 @@ class FreeBSDChecker(BaseChecker):
                             variant_label="disc1",
                         ))
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

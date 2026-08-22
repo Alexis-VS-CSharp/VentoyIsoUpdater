@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour pfSense CE.
-Source : https://atxfiles.netgate.com/mirror/downloads/
+Version checker for pfSense CE.
+Source: https://atxfiles.netgate.com/mirror/downloads/
 """
 
 import re
@@ -46,7 +46,7 @@ class PfSenseChecker(BaseChecker):
             results.sort(key=lambda x: Version(x.version), reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

@@ -1,6 +1,6 @@
 """
-Vérificateur de version pour Linux Mint.
-Source : https://mirrors.edge.kernel.org/linuxmint/stable/
+Version checker for Linux Mint.
+Source: https://mirrors.edge.kernel.org/linuxmint/stable/
 """
 
 import re
@@ -24,7 +24,7 @@ class LinuxMintChecker(BaseChecker):
             unique.sort(key=lambda v: Version(v), reverse=True)
             return unique
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def _make_version_info(self, version: str) -> Optional[VersionInfo]:
@@ -36,7 +36,7 @@ class LinuxMintChecker(BaseChecker):
             if r.status_code not in (200, 302):
                 return None
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return None
         checksum = fetch_sha256sums(f"{self.RELEASES_URL}{version}/sha256sum.txt", filename)
         return VersionInfo(

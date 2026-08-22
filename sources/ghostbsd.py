@@ -1,9 +1,9 @@
 """
-Vérificateur de version pour GhostBSD.
-Source : https://www.ghostbsd.org/download — la page officielle liste trois
-éditions (MATE par défaut, XFCE, GERSHWIN) avec un lien direct et son
-empreinte SHA256 écrite en clair juste en dessous (pas de fichier séparé
-à télécharger pour l'obtenir, même si un sidecar .sha256 existe aussi).
+Version checker for GhostBSD.
+Source: https://www.ghostbsd.org/download — the official page lists three
+editions (MATE by default, XFCE, GERSHWIN) with a direct link and its
+SHA256 checksum written in plain text just below (no separate file to
+download to get it, even though a .sha256 sidecar also exists).
 """
 
 import re
@@ -13,7 +13,7 @@ from sources.base import BaseChecker, VersionInfo
 from core.logger import logger
 
 _VARIANTS = {
-    "mate":     None,        # image par défaut, pas de suffixe dans le nom
+    "mate":     None,        # default image, no suffix in the name
     "xfce":     "XFCE",
     "gershwin": "GERSHWIN",
 }
@@ -21,7 +21,7 @@ _VARIANTS = {
 
 class GhostBSDChecker(BaseChecker):
     DOWNLOAD_PAGE = "https://www.ghostbsd.org/download"
-    # Repli si la page officielle est injoignable (pas d'empreinte alors)
+    # Fallback if the official page is unreachable (no checksum then)
     RELEASES_URL = "https://download.ghostbsd.org/releases/amd64/"
 
     def get_latest_version(self) -> Optional[VersionInfo]:
@@ -38,8 +38,8 @@ class GhostBSDChecker(BaseChecker):
                 headers={"User-Agent": "Mozilla/5.0"},
             )
             resp.raise_for_status()
-            # Chaque édition : lien direct vers l'ISO puis, plus loin dans le
-            # même bloc, "SHA256 Checksum: <empreinte>".
+            # Each edition: direct link to the ISO then, further down in the
+            # same block, "SHA256 Checksum: <checksum>".
             pattern = re.compile(
                 r'href="(https://download\.ghostbsd\.org/releases/amd64/[^"]+/'
                 r'GhostBSD-[^"/]+\.iso)".*?SHA256 Checksum:</b>\s*<a[^>]*>([0-9a-fA-F]{64})</a>',
@@ -47,7 +47,7 @@ class GhostBSDChecker(BaseChecker):
             )
             for url, checksum in pattern.findall(resp.text):
                 filename = url.split("/")[-1]
-                # Sans suffixe = édition par défaut (MATE) : exclut XFCE/GERSHWIN
+                # No suffix = default edition (MATE): excludes XFCE/GERSHWIN
                 if not suffix and ("-XFCE" in filename.upper() or "-GERSHWIN" in filename.upper()):
                     continue
                 if suffix and not filename.upper().endswith(f"-{suffix}.ISO"):
@@ -63,9 +63,9 @@ class GhostBSDChecker(BaseChecker):
                     variant_label=variant.upper() if suffix else "MATE",
                 )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
 
-        # Repli : listing du miroir (pas d'empreinte disponible ici)
+        # Fallback: mirror listing (no checksum available here)
         try:
             resp = requests.get(self.RELEASES_URL, timeout=10)
             resp.raise_for_status()
@@ -95,10 +95,10 @@ class GhostBSDChecker(BaseChecker):
                             variant_label=variant.upper() if suffix else "MATE",
                         )]
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
 
         return []
 

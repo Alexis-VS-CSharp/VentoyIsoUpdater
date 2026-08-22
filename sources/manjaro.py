@@ -1,7 +1,7 @@
 """
 Manjaro Linux.
-Source : https://manjaro.org/products/download/x86/_payload.json
-Les URLs directes sont exposées dans le payload Nuxt.js de la page de téléchargement.
+Source: https://manjaro.org/products/download/x86/_payload.json
+The direct URLs are exposed in the download page's Nuxt.js payload.
 """
 import re
 import json
@@ -11,7 +11,7 @@ from sources.base import BaseChecker, VersionInfo
 from sources._checksum import fetch_sha256sums
 from core.logger import logger
 
-# Correspondance variant → clé dans le payload JSON
+# Mapping of variant -> key in the JSON payload
 _VARIANT_KEY = {
     "kde":   "plasma",
     "gnome": "gnome",
@@ -25,7 +25,7 @@ class ManjaroChecker(BaseChecker):
 
     def _fetch_data(self) -> dict:
         try:
-            # Récupère d'abord la page pour obtenir l'UID du payload
+            # First fetches the page to get the payload's UID
             page = requests.get(
                 "https://manjaro.org/products/download/x86",
                 timeout=10, headers={"User-Agent": "Mozilla/5.0"}
@@ -35,13 +35,13 @@ class ManjaroChecker(BaseChecker):
             url = f"{_PAYLOAD_URL}?{m.group(1)}" if m else _PAYLOAD_URL
             resp = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
             resp.raise_for_status()
-            # Le payload est une liste JSON dont le 3e élément contient une chaîne JSON imbriquée
+            # The payload is a JSON list whose 3rd element contains a nested JSON string
             outer = resp.json()
             raw = next((x for x in outer if isinstance(x, str) and '"official"' in x), None)
             if raw:
                 return json.loads(raw)
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             pass
         return {}
 
@@ -59,7 +59,7 @@ class ManjaroChecker(BaseChecker):
             filename = url.split("/")[-1]
             m = re.search(r"manjaro-[^-]+-(\d+\.\d+(?:\.\d+)?)", filename, re.IGNORECASE)
             version = m.group(1) if m else "latest"
-            # Le payload donne directement l'URL du sidecar .sha256
+            # The payload gives the .sha256 sidecar URL directly
             checksum_url = iso_entry.get("checksum", "")
             checksum = fetch_sha256sums(checksum_url, filename) if checksum_url else None
             results.append(VersionInfo(

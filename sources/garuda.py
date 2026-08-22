@@ -1,15 +1,15 @@
 """
-Garuda Linux — performance Arch-based.
-Source : https://iso.builds.garudalinux.org/iso/garuda/{edition}/{date}/
+Garuda Linux — performance-focused, Arch-based.
+Source: https://iso.builds.garudalinux.org/iso/garuda/{edition}/{date}/
 
-10 éditions officielles : cinnamon, dr460nized, dr460nized-gaming, gnome,
-hyprland, i3, kde-lite, mokka, sway, xfce. Chaque ISO a un sidecar .sha256.
+10 official editions: cinnamon, dr460nized, dr460nized-gaming, gnome,
+hyprland, i3, kde-lite, mokka, sway, xfce. Each ISO has a .sha256 sidecar.
 
-Le raccourci ".../latest/garuda/{edition}/latest.iso" existe mais pointe par
-moments vers un build plus ancien que le dernier dossier daté réellement
-présent (constaté : latest.iso -> build de mars alors qu'un build d'août est
-disponible) — on liste donc toujours les dossiers datés et on prend le plus
-récent, plutôt que de faire confiance à ce raccourci.
+The ".../latest/garuda/{edition}/latest.iso" shortcut exists but sometimes
+points to an older build than the actual latest dated folder present
+(observed: latest.iso -> a March build while an August build is available)
+— so the dated folders are always listed and the most recent one is picked,
+rather than trusting that shortcut.
 """
 import re
 import requests
@@ -59,10 +59,10 @@ class GarudaChecker(BaseChecker):
                         variant_label=variant,
                     )]
                 except Exception as _exc:
-                    logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                    logger.debug("%s: failed, ignored: %s", __name__, _exc)
                     continue
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
 
         return []
 

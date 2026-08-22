@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build un exécutable standalone Linux avec PyInstaller
-# Usage : ./build.sh
+# Builds a standalone Linux executable with PyInstaller
+# Usage: ./build.sh
 
 set -e
 
@@ -12,16 +12,16 @@ else
     PYINSTALLER="pyinstaller"
 fi
 
-echo "==> Installation des dépendances..."
+echo "==> Installing dependencies..."
 $PIP install -q -r requirements.txt pyinstaller
 
-# Génère icon.ico pour le build Windows si absent
+# Generates icon.ico for the Windows build if missing
 if [ ! -f "assets/icon.ico" ]; then
-    echo "==> Génération de assets/icon.ico..."
+    echo "==> Generating assets/icon.ico..."
     python3 tools/generate_ico.py 2>/dev/null || true
 fi
 
-# Génère les --hidden-import pour tous les modules sources/
+# Generates the --hidden-import flags for every module in sources/
 HIDDEN=""
 for f in sources/*.py; do
     mod=$(basename "$f" .py)
@@ -29,7 +29,7 @@ for f in sources/*.py; do
     HIDDEN="$HIDDEN --hidden-import sources.$mod"
 done
 
-echo "==> Build de l'exécutable Linux..."
+echo "==> Building the Linux executable..."
 $PYINSTALLER \
     --onefile \
     --windowed \
@@ -49,12 +49,12 @@ $PYINSTALLER \
     main.py
 
 echo ""
-echo "==> Binaire généré : dist/linux/VentoyIsoUpdater"
+echo "==> Binary generated: dist/linux/VentoyIsoUpdater"
 echo ""
-echo "    Packages disponibles :"
-echo "    ./package_deb.sh        → dist/linux/*.deb"
-echo "    ./package_rpm.sh        → dist/linux/*.rpm"
-echo "    ./package_appimage.sh   → dist/linux/*.AppImage"
+echo "    Available packages:"
+echo "    ./package_deb.sh        -> dist/linux/*.deb"
+echo "    ./package_rpm.sh        -> dist/linux/*.rpm"
+echo "    ./package_appimage.sh   -> dist/linux/*.AppImage"
 echo ""
-echo "    Pour installer directement :"
+echo "    To install directly:"
 echo "    ./install.sh"

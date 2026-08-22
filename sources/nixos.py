@@ -1,13 +1,13 @@
 """
-Vérificateur de version pour NixOS.
-Source : channels.nixos.org (résolution du build exact du canal stable
-courant) + releases.nixos.org (page de build : liste les fichiers ET leur
-empreinte SHA256 directement dans le HTML — pas besoin de fichier séparé).
+Version checker for NixOS.
+Source: channels.nixos.org (resolves the exact build of the current stable
+channel) + releases.nixos.org (build page: lists files AND their SHA256
+checksum directly in the HTML — no separate file needed).
 
-NixOS ne publie plus d'ISO distincts par environnement de bureau : depuis les
-versions récentes, seuls "graphical" (bureau, GNOME par défaut) et "minimal"
-(sans interface) sont proposés. Les variantes "gnome"/"kde" de ce checker
-pointent donc toutes deux vers l'ISO "graphical".
+NixOS no longer publishes separate ISOs per desktop environment: as of
+recent versions, only "graphical" (desktop, GNOME by default) and
+"minimal" (no interface) are offered. This checker's "gnome"/"kde"
+variants therefore both point to the "graphical" ISO.
 """
 
 import re
@@ -25,10 +25,10 @@ class NixOSChecker(BaseChecker):
 
     def _candidate_channels(self, count: int = 6) -> list[str]:
         """
-        Génère les noms de canaux stables les plus récents possibles
-        (format "YY.MM", releases en mai et novembre), du plus récent au
-        plus ancien, sans dépendre d'un point d'entrée "latest" qui n'existe
-        pas chez NixOS.
+        Generates the most likely recent stable channel names
+        (format "YY.MM", releases in May and November), most recent
+        first, without depending on a "latest" entry point, which
+        doesn't exist for NixOS.
         """
         today = date.today()
         year, month = today.year, today.month
@@ -48,13 +48,13 @@ class NixOSChecker(BaseChecker):
         return out
 
     def _resolve_build(self, channel: str) -> Optional[str]:
-        """Résout 'nixos-25.05' vers l'URL exacte de la page de build courante."""
+        """Resolves 'nixos-25.05' to the exact URL of the current build page."""
         try:
             r = requests.head(self.CHANNELS_URL + channel, timeout=10, allow_redirects=True)
             if r.status_code == 200 and "/nixos/" in r.url:
                 return r.url
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
         return None
 
     def get_latest_version(self) -> Optional[VersionInfo]:
@@ -74,12 +74,12 @@ class NixOSChecker(BaseChecker):
                 resp = requests.get(build_url, timeout=10)
                 resp.raise_for_status()
             except Exception as _exc:
-                logger.debug("%s: échec ignoré : %s", __name__, _exc)
+                logger.debug("%s: failed, ignored: %s", __name__, _exc)
                 continue
 
-            # La page de build liste "<a href='.../<fichier>.iso'>...</a></td>
-            # <td>taille</td><td><tt><empreinte sha256></tt></td>" pour chaque
-            # fichier — on récupère le nom ET l'empreinte en une seule passe.
+            # The build page lists "<a href='.../<file>.iso'>...</a></td>
+            # <td>size</td><td><tt><sha256 checksum></tt></td>" for each
+            # file — the name AND checksum are captured in a single pass.
             pattern = re.compile(
                 r"href='([^']*/" + re.escape(prefix) + r"[\w.-]+-x86_64-linux\.iso)'"
                 r"[^<]*</a></td><td[^>]*>\d+</td><td><tt>([0-9a-f]{64})</tt>"

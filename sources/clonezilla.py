@@ -1,12 +1,12 @@
 """
-Vérificateur de version pour Clonezilla Live.
-Téléchargement : SourceForge project clonezilla/files/clonezilla_live_stable/
-Version + empreinte : https://clonezilla.org/downloads/stable/data/CHECKSUMS.TXT
+Version checker for Clonezilla Live.
+Download: SourceForge project clonezilla/files/clonezilla_live_stable/
+Version + checksum: https://clonezilla.org/downloads/stable/data/CHECKSUMS.TXT
 
-Ce fichier officiel (pas sur SourceForge) contient déjà le nom exact du
-fichier ISO courant dans sa section SHA256SUMS — on en tire la version et
-l'empreinte en un seul appel, sans jamais avoir besoin de lister le
-répertoire SourceForge (qui bloque parfois les requêtes automatisées).
+This official file (not on SourceForge) already contains the exact name of
+the current ISO file in its SHA256SUMS section — the version and checksum
+are extracted in a single call, without ever needing to list the
+SourceForge directory (which sometimes blocks automated requests).
 """
 import re
 import requests
@@ -30,8 +30,8 @@ class ClonezillaChecker(BaseChecker):
         try:
             resp = requests.get(self.CHECKSUMS_URL, timeout=10)
             resp.raise_for_status()
-            # Isole la section SHA256SUMS pour ne pas capturer le MD5/SHA1
-            # (mêmes noms de fichiers, empreintes de longueurs différentes)
+            # Isolates the SHA256SUMS section to avoid capturing the MD5/SHA1
+            # one (same filenames, checksums of different lengths)
             section = resp.text.split("SHA256SUMS:")[-1]
             m = re.search(
                 r"([0-9a-fA-F]{64})\s+(clonezilla-live-([\d.]+-\d+)-amd64\.iso)",
@@ -50,7 +50,7 @@ class ClonezillaChecker(BaseChecker):
                 variant_label="amd64",
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

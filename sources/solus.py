@@ -1,11 +1,11 @@
 """
-Vérificateur de version pour Solus.
-Source : https://getsol.us/download/ (résolution du lien) puis
-https://downloads.getsol.us/isos/<date>/ (fichiers réels + sidecars .sha256sum).
+Version checker for Solus.
+Source: https://getsol.us/download/ (link resolution) then
+https://downloads.getsol.us/isos/<date>/ (actual files + .sha256sum sidecars).
 
-La page de téléchargement n'expose plus que des liens magnet — le lien HTTP
-direct est présent dedans en paramètre "ws=" (webseed) : c'est celui-ci
-qu'on extrait, plutôt que le lien magnet lui-même.
+The download page now only exposes magnet links — the direct HTTP link is
+present inside them as the "ws=" (webseed) parameter: that's the one
+extracted, rather than the magnet link itself.
 """
 
 import re
@@ -34,7 +34,7 @@ class SolusChecker(BaseChecker):
             )
             resp.raise_for_status()
 
-            # Le lien HTTP réel est le paramètre ws= du magnet de cette édition
+            # The real HTTP link is the ws= parameter of this edition's magnet link
             m = re.search(
                 rf'ws=(https://downloads\.getsol\.us/isos/[^&"]+/Solus-{re.escape(edition)}-Release-[^&"]+\.iso)',
                 resp.text, re.IGNORECASE
@@ -56,7 +56,7 @@ class SolusChecker(BaseChecker):
                 variant_label=edition,
             )]
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def parse_local_version(self, filename: str) -> Optional[str]:

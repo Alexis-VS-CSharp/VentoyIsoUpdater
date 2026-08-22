@@ -1,6 +1,6 @@
 """
-Détecte les clés Ventoy montées et liste les ISO présentes.
-Compatible Linux et Windows.
+Detects mounted Ventoy drives and lists the ISOs present on them.
+Linux and Windows compatible.
 """
 
 import os
@@ -16,10 +16,10 @@ from typing import Optional
 @dataclass
 class IsoEntry:
     filename: str
-    path: str          # chemin absolu vers le fichier ISO
-    folder: str        # dossier parent sur la clé (ex: 'linux', 'windows')
+    path: str          # absolute path to the ISO file
+    folder: str        # parent folder on the drive (e.g. 'linux', 'windows')
     size_bytes: int
-    distro_id: Optional[str] = None    # id trouvé dans distros.json
+    distro_id: Optional[str] = None    # id found in distros.json
     distro_name: Optional[str] = None
     local_version: Optional[str] = None
     logo_filename: Optional[str] = None
@@ -31,13 +31,13 @@ class VentoyDrive:
     label: str
     ventoy_version: Optional[str] = None
     iso_entries: list = field(default_factory=list)
-    theme_dir: Optional[str] = None          # dossier racine du thème (ex: ventoy/M@N/)
-    theme_icons_dir: Optional[str] = None    # sous-dossier icons/ du thème
-    ventoy_json_path: Optional[str] = None   # chemin vers ventoy/ventoy.json
+    theme_dir: Optional[str] = None          # theme's root folder (e.g. ventoy/M@N/)
+    theme_icons_dir: Optional[str] = None    # theme's icons/ subfolder
+    ventoy_json_path: Optional[str] = None   # path to ventoy/ventoy.json
 
 
 def find_ventoy_drives() -> list[VentoyDrive]:
-    """Retourne la liste des clés Ventoy montées détectées."""
+    """Returns the list of detected mounted Ventoy drives."""
     drives = []
     system = platform.system()
 
@@ -50,13 +50,13 @@ def find_ventoy_drives() -> list[VentoyDrive]:
 
 
 def _is_ventoy_mount(path: str) -> bool:
-    """Vérifie si le chemin est une clé Ventoy (présence du dossier ventoy/)."""
+    """Checks whether the path is a Ventoy drive (presence of a ventoy/ folder)."""
     ventoy_dir = os.path.join(path, "ventoy")
     return os.path.isdir(ventoy_dir)
 
 
 def _get_ventoy_version(mount_point: str) -> Optional[str]:
-    """Lit la version de Ventoy depuis ventoy/ventoy_release ou ventoy.json."""
+    """Reads the Ventoy version from ventoy/ventoy_release or ventoy.json."""
     for candidate in [
         os.path.join(mount_point, "ventoy", "ventoy_release"),
         os.path.join(mount_point, "ventoy", "ventoy.json"),
@@ -75,13 +75,13 @@ def _get_ventoy_version(mount_point: str) -> Optional[str]:
 
 def _find_theme_dir(mount_point: str) -> tuple[Optional[str], Optional[str]]:
     """
-    Trouve le dossier racine du thème actif et son sous-dossier icons/.
-    Retourne (theme_dir, icons_dir) — l'un ou les deux peuvent être None.
+    Finds the active theme's root folder and its icons/ subfolder.
+    Returns (theme_dir, icons_dir) — either or both can be None.
 
-    Méthode 1 : lit ventoy/ventoy.json → theme.file → déduit le dossier parent.
-    Méthode 2/3 : recherche récursive en fallback.
+    Method 1: reads ventoy/ventoy.json -> theme.file -> derives the parent folder.
+    Method 2/3: recursive search as a fallback.
     """
-    # Méthode 1 : lire ventoy.json pour trouver le chemin du thème
+    # Method 1: read ventoy.json to find the theme's path
     ventoy_json = os.path.join(mount_point, "ventoy", "ventoy.json")
     if os.path.isfile(ventoy_json):
         try:
@@ -89,7 +89,7 @@ def _find_theme_dir(mount_point: str) -> tuple[Optional[str], Optional[str]]:
                 data = json.load(f)
             theme_file = data.get("theme", {}).get("file", "")
             if theme_file:
-                # theme_file ressemble à "/ventoy/M@N/theme.txt"
+                # theme_file looks like "/ventoy/M@N/theme.txt"
                 theme_file_local = os.path.join(
                     mount_point,
                     theme_file.lstrip("/").replace("/", os.sep)
@@ -101,14 +101,14 @@ def _find_theme_dir(mount_point: str) -> tuple[Optional[str], Optional[str]]:
         except Exception:
             pass
 
-    # Méthode 2 : recherche récursive dans ventoy/themes/
+    # Method 2: recursive search in ventoy/themes/
     themes_root = os.path.join(mount_point, "ventoy", "themes")
     if os.path.isdir(themes_root):
         for dirpath, dirnames, _ in os.walk(themes_root):
             if "icons" in dirnames:
                 return dirpath, os.path.join(dirpath, "icons")
 
-    # Méthode 3 : cherche dans tout ventoy/
+    # Method 3: searches the whole ventoy/ folder
     ventoy_dir = os.path.join(mount_point, "ventoy")
     if os.path.isdir(ventoy_dir):
         for dirpath, dirnames, _ in os.walk(ventoy_dir):
@@ -119,13 +119,13 @@ def _find_theme_dir(mount_point: str) -> tuple[Optional[str], Optional[str]]:
 
 
 def _get_drive_label_linux(mount_point: str) -> str:
-    """Retourne le label du volume ou le nom du point de montage."""
-    # Cherche via /dev/disk/by-label
+    """Returns the volume label, or the mount point's name."""
+    # Looks it up via /dev/disk/by-label
     label_dir = "/dev/disk/by-label"
     if os.path.isdir(label_dir):
         for label in os.listdir(label_dir):
             link = os.path.realpath(os.path.join(label_dir, label))
-            # vérifie si ce disque correspond au point de montage
+            # checks whether this disk matches the mount point
             try:
                 import subprocess
                 result = subprocess.run(
@@ -146,7 +146,7 @@ def _find_linux() -> list[VentoyDrive]:
     checked_paths = set()
     search_roots = []
 
-    # Source principale : /proc/mounts liste exactement les vrais points de montage
+    # Primary source: /proc/mounts lists exactly the real mount points
     try:
         with open("/proc/mounts") as f:
             for line in f:
@@ -158,8 +158,8 @@ def _find_linux() -> list[VentoyDrive]:
     except Exception:
         pass
 
-    # Fallback : scan limité à 2 niveaux de profondeur (jamais de rglob)
-    # couvre /media/LABEL, /media/user/LABEL, /run/media/user/LABEL, /mnt/LABEL
+    # Fallback: scan limited to 2 levels of depth (never rglob)
+    # covers /media/LABEL, /media/user/LABEL, /run/media/user/LABEL, /mnt/LABEL
     if not search_roots:
         for base in ["/media", "/run/media", "/mnt"]:
             if not os.path.isdir(base):
@@ -229,14 +229,14 @@ def _find_windows() -> list[VentoyDrive]:
 
 def scan_isos(drive: VentoyDrive, distros_db: dict) -> list[IsoEntry]:
     """
-    Scanne la clé Ventoy et retourne la liste des ISO trouvées.
-    Associe chaque ISO à une distro connue si possible.
+    Scans the Ventoy drive and returns the list of ISOs found.
+    Matches each ISO to a known distro when possible.
     """
     entries = []
     mount = drive.mount_point
 
     for dirpath, dirnames, filenames in os.walk(mount):
-        # Ignore le dossier ventoy/ (config interne)
+        # Ignores the ventoy/ folder (internal config)
         dirnames[:] = [
             d for d in dirnames
             if not (d.lower() == "ventoy" and dirpath == mount)
@@ -248,7 +248,7 @@ def scan_isos(drive: VentoyDrive, distros_db: dict) -> list[IsoEntry]:
 
             full_path = os.path.join(dirpath, fname)
 
-            # Ignore les symlinks (sécurité : évite de suivre des liens malveillants)
+            # Ignores symlinks (security: avoids following malicious links)
             if os.path.islink(full_path):
                 continue
             rel_folder = os.path.relpath(dirpath, mount)
@@ -270,13 +270,13 @@ def scan_isos(drive: VentoyDrive, distros_db: dict) -> list[IsoEntry]:
             _match_distro(entry, distros_db)
             entries.append(entry)
 
-    # Tri : par dossier puis par nom
+    # Sort: by folder then by name
     entries.sort(key=lambda e: (e.folder, e.filename))
     return entries
 
 
 def _match_distro(entry: IsoEntry, distros_db: dict) -> None:
-    """Tente d'associer un IsoEntry à une distro connue."""
+    """Attempts to match an IsoEntry to a known distro."""
     for distro in distros_db.get("distros", []):
         for pattern in distro.get("filename_patterns", []):
             if re.search(pattern, entry.filename, re.IGNORECASE):
@@ -293,7 +293,7 @@ def _match_distro(entry: IsoEntry, distros_db: dict) -> None:
 
 
 def format_size(size_bytes: int) -> str:
-    """Formate une taille en octets en chaîne lisible."""
+    """Formats a size in bytes into a readable string."""
     for unit in ["B", "KB", "MB", "GB"]:
         if size_bytes < 1024:
             return f"{size_bytes:.1f} {unit}"
@@ -302,7 +302,7 @@ def format_size(size_bytes: int) -> str:
 
 
 def load_distros_db(json_path: Optional[str] = None) -> dict:
-    """Charge la base de données des distros depuis distros.json."""
+    """Loads the distro database from distros.json."""
     if json_path is None:
         base = Path(__file__).parent.parent
         json_path = base / "data" / "distros.json"
