@@ -1,9 +1,9 @@
 """
-Proxmox VE — Virtualisation bare-metal.
-Source : enterprise.proxmox.com (miroir HTTPS officiel — download.proxmox.com
-ne présente pas de certificat TLS valide pour son propre nom d'hôte et n'est
-donc joignable qu'en HTTP ; enterprise.proxmox.com sert les mêmes ISO avec un
-certificat correct et une empreinte .sha256 par fichier).
+Proxmox VE — bare-metal virtualization.
+Source: enterprise.proxmox.com (official HTTPS mirror — download.proxmox.com
+doesn't present a valid TLS certificate for its own hostname and is
+therefore only reachable over HTTP; enterprise.proxmox.com serves the same
+ISOs with a correct certificate and a .sha256 checksum per file).
 """
 import re
 import requests
@@ -20,12 +20,21 @@ class ProxmoxChecker(BaseChecker):
         try:
             resp = requests.get(self.INDEX_URL, timeout=10)
             resp.raise_for_status()
+            # The directory also lists arm64 builds (e.g. proxmox-ve_9.2-1-arm64.iso) —
+            # the \.iso$ anchored right after the version number already excludes
+            # that suffix (arm64 wouldn't match it), but it's also re-checked
+            # explicitly as a safety net, and deduplicated (the HTML repeats each
+            # filename several times: link, size, date).
             matches = re.findall(
-                r'(proxmox-ve_(\d+\.\d+(?:-\d+)?)\.iso)',
+                r'(proxmox-ve_(\d+\.\d+(?:-\d+)?)\.iso)(?!\w)',
                 resp.text
             )
+            seen = set()
             results = []
             for filename, version in matches:
+                if filename in seen or "arm" in filename.lower():
+                    continue
+                seen.add(filename)
                 checksum = fetch_sha256sums(self.INDEX_URL + filename + ".sha256", filename)
                 results.append(VersionInfo(
                     version=version,
@@ -35,13 +44,14 @@ class ProxmoxChecker(BaseChecker):
                     checksum_type="sha256",
                     release_notes_url="https://pve.proxmox.com/wiki/Roadmap",
                     variant_label="Proxmox VE",
+                    arch="amd64",
                 ))
-            # Tri décroissant par version
+            # Descending sort by version
             from packaging.version import Version
             results.sort(key=lambda v: Version(v.version.replace("-", ".")), reverse=True)
             return results
         except Exception as _exc:
-            logger.debug("%s: échec ignoré : %s", __name__, _exc)
+            logger.debug("%s: failed, ignored: %s", __name__, _exc)
             return []
 
     def get_latest_version(self) -> Optional[VersionInfo]:
