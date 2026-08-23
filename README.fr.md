@@ -134,6 +134,10 @@ Ubuntu (+ Kubuntu/Xubuntu/Lubuntu/Ubuntu MATE/Budgie/Studio), Debian, LMDE, Fedo
 
 La quasi-totalité des ISO téléchargées via l'app sont vérifiées par empreinte (SHA256, SHA512, MD5 ou SHA1 selon ce que publie chaque distribution) — voir `SECURITY.md` pour le détail de ce qui est et n'est pas couvert.
 
+## Changelog
+
+Voir [CHANGELOG.fr.md](CHANGELOG.fr.md) pour l'historique des versions.
+
 ## Contribuer
 
 Voir [CONTRIBUTING.md](CONTRIBUTING.md), notamment pour ajouter une distribution.

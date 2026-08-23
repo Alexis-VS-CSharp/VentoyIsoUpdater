@@ -134,6 +134,10 @@ Ubuntu (+ Kubuntu/Xubuntu/Lubuntu/Ubuntu MATE/Budgie/Studio), Debian, LMDE, Fedo
 
 Nearly all ISOs downloaded through the app are checksum-verified (SHA256, SHA512, MD5, or SHA1, depending on what each distribution publishes) — see `SECURITY.md` for details on what is and isn't covered.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the version history.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), in particular for adding a distribution.
