@@ -5,6 +5,11 @@
 All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1] — 2026-08-23
+
+### Fixed
+- **Logo download failing for 4 distros** (Kali, AlmaLinux, Manjaro, Nobara): `logo_url` pointed to an `.svg` file, a format PIL can't decode at all — every logo sync attempt failed with a raw `cannot identify image file` error, for every user, every time. Fixed by bundling a real PNG for each under `assets/logos/` (same mechanism already used for Proxmox/Pop!_OS) instead of depending on a vector URL.
+
 ## [1.1.0] — 2026-08-22
 
 ### Added
@@ -23,5 +28,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Internal
 - Every code comment, docstring, and diagnostic log message translated to English (previously French-first). No effect on the app's UI or behavior — the French/English toggle for what the *user* sees is untouched.
 
+[1.1.1]: https://github.com/celmax85/VentoyIsoUpdater/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/celmax85/VentoyIsoUpdater/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/celmax85/VentoyIsoUpdater/compare/v1.0.0...v1.0.1
