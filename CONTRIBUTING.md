@@ -36,6 +36,15 @@ and applies regular expressions to filenames. Before opening a PR touching
   the app), but add a `logger.debug(...)` call (see `core/logger.py`) so a
   real bug stays diagnosable instead of being indistinguishable from a
   source that's simply down.
+- **`logo_url` must point to a raster image (PNG/JPG/WEBP/ICO), never
+  `.svg`.** `core/downloader.py::download_logo` opens it with PIL, which
+  can't decode vector formats — it fails with a fairly opaque
+  `cannot identify image file` error at runtime, not at review time.
+  A project's official site is often SVG-only for its logo; when that's
+  the case, use a raster alternative (favicon, GitHub org avatar at
+  `https://github.com/<org>.png`, etc.) — or if none looks good enough,
+  bundle a real PNG under `assets/logos/` and reference it with the
+  `local:<filename>` prefix, same as `proxmox.png` / `Pop!OS.png`.
 
 ## Tests
 

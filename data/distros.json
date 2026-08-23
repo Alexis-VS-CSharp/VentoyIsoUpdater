@@ -181,7 +181,7 @@
       "checker": "manjaro",
       "checker_variant": "kde",
       "logo_filename": "manjaro.png",
-      "logo_url": "https://manjaro.org/img/logo/vector/manjaro-logo-vector.svg",
+      "logo_url": "local:manjaro.png",
       "homepage": "https://manjaro.org/download/",
       "grub_class": "manjaro"
     },
@@ -196,7 +196,7 @@
       "checker": "manjaro",
       "checker_variant": "gnome",
       "logo_filename": "manjaro.png",
-      "logo_url": "https://manjaro.org/img/logo/vector/manjaro-logo-vector.svg",
+      "logo_url": "local:manjaro.png",
       "homepage": "https://manjaro.org/download/",
       "grub_class": "manjaro"
     },
@@ -211,7 +211,7 @@
       "checker": "manjaro",
       "checker_variant": "xfce",
       "logo_filename": "manjaro.png",
-      "logo_url": "https://manjaro.org/img/logo/vector/manjaro-logo-vector.svg",
+      "logo_url": "local:manjaro.png",
       "homepage": "https://manjaro.org/download/",
       "grub_class": "manjaro"
     },
@@ -391,7 +391,7 @@
       "checker": "kali",
       "checker_variant": null,
       "logo_filename": "kali.png",
-      "logo_url": "https://www.kali.org/images/kali-logo.svg",
+      "logo_url": "local:kali.png",
       "homepage": "https://www.kali.org/get-kali",
       "grub_class": "kali"
     },
@@ -406,7 +406,7 @@
       "checker": "kali",
       "checker_variant": null,
       "logo_filename": "kali.png",
-      "logo_url": "https://www.kali.org/images/kali-logo.svg",
+      "logo_url": "local:kali.png",
       "homepage": "https://www.kali.org/get-kali",
       "grub_class": "kali",
       "checker_arch": "arm64"
@@ -499,7 +499,7 @@
       "checker": "almalinux",
       "checker_variant": null,
       "logo_filename": "almalinux.png",
-      "logo_url": "https://almalinux.org/images/almalinux-logo.svg",
+      "logo_url": "local:almalinux.png",
       "homepage": "https://almalinux.org/get-almalinux",
       "grub_class": "almalinux"
     },
@@ -514,7 +514,7 @@
       "checker": "almalinux",
       "checker_variant": null,
       "logo_filename": "almalinux.png",
-      "logo_url": "https://almalinux.org/images/almalinux-logo.svg",
+      "logo_url": "local:almalinux.png",
       "homepage": "https://almalinux.org/get-almalinux",
       "grub_class": "almalinux",
       "checker_arch": "arm64"
@@ -741,7 +741,7 @@
       "checker": "nobara",
       "checker_variant": null,
       "logo_filename": "nobara.png",
-      "logo_url": "https://nobaraproject.org/wp-content/uploads/2022/01/nobara-hat-logo.svg",
+      "logo_url": "local:nobara.png",
       "homepage": "https://nobaraproject.org/download-nobara/",
       "grub_class": "nobara"
     },

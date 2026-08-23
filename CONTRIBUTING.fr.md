@@ -37,6 +37,16 @@ d'ouvrir une PR sur `sources/` ou `data/distros.json`, merci de vérifier :
   planter l'appli), mais ajoutez un `logger.debug(...)` (voir
   `core/logger.py`) pour qu'un vrai bug reste diagnosticable plutôt
   qu'indiscernable d'un site simplement indisponible.
+- **`logo_url` doit pointer vers une image matricielle (PNG/JPG/WEBP/ICO),
+  jamais un `.svg`.** `core/downloader.py::download_logo` l'ouvre avec PIL,
+  qui ne sait pas décoder les formats vectoriels — ça échoue avec une
+  erreur assez opaque (`cannot identify image file`) au moment de
+  l'exécution, pas à la revue de code. Le site officiel d'un projet n'a
+  souvent que du SVG pour son logo ; dans ce cas, utilisez une alternative
+  matricielle (favicon, avatar d'organisation GitHub sur
+  `https://github.com/<org>.png`, etc.) — ou si rien ne convient,
+  embarquez un vrai PNG dans `assets/logos/` et référencez-le avec le
+  préfixe `local:<fichier>`, comme `proxmox.png` / `Pop!OS.png`.
 
 ## Tests
 
