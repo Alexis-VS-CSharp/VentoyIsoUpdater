@@ -1455,8 +1455,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_done: callable = None):
         super().__init__(parent)
         self.title(t('Créer une clé Ventoy'))
-        self.geometry("620x520")
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.after(100, self.lift)
         self.after(150, self.focus_force)
 
@@ -1467,6 +1466,20 @@ class VentoySetupDialog(ctk.CTkToplevel):
         self._selected_device: Optional[str] = None
 
         self._build()
+
+        # Sized from the content's actual required height rather than a
+        # fixed guess: on a higher DPI/UI-scaling setting, every widget
+        # this dialog builds grows accordingly, and a fixed "620x520" could
+        # end up taller than the window itself — clipping the install
+        # button at the bottom with no way to reach it, since the dialog
+        # used to be non-resizable. Still resizable above as a fallback for
+        # any scaling this doesn't fully account for.
+        self.update_idletasks()
+        width = max(620, self.winfo_reqwidth())
+        height = min(self.winfo_reqheight() + 20, self.winfo_screenheight() - 80)
+        self.minsize(min(560, width), min(460, height))
+        self.geometry(f"{width}x{height}")
+
         self._scan_drives()
         self._check_ventoy()
 
@@ -1474,7 +1487,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
 
     def _build(self):
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(4, weight=1)  # log_frame (scrollable) absorbs extra space
 
         # ── Header ──────────────────────────────────────────────────────────
         header = ctk.CTkFrame(self, fg_color="#2c1654", corner_radius=0)
@@ -1550,7 +1563,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
 
         # ── Log de sortie ─────────────────────────────────────────────────────
         self.log_frame = ctk.CTkScrollableFrame(self, height=80)
-        self.log_frame.grid(row=4, column=0, sticky="ew", padx=16, pady=4)
+        self.log_frame.grid(row=4, column=0, sticky="nsew", padx=16, pady=4)
         self.log_frame.grid_columnconfigure(0, weight=1)
         self.lbl_log = ctk.CTkLabel(
             self.log_frame, text="", font=ctk.CTkFont(size=10, family="monospace"),
