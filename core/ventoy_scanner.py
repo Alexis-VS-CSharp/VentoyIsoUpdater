@@ -71,34 +71,104 @@ def _has_vtoyefi_sibling(mount_point: str) -> bool:
     a partition labeled "VTOYEFI" (Ventoy's own reserved label — see
     core/ventoy_installer.py, which relies on the same label to recognize
     an existing Ventoy install)."""
+    return _find_vtoyefi_partition(mount_point) is not None
+
+
+def _find_vtoyefi_partition(mount_point: str) -> Optional[str]:
+    """Returns the device path (e.g. "/dev/sdb2") of the sibling "VTOYEFI"
+    partition on the same disk as `mount_point`, or None if there isn't
+    one."""
     try:
         source = subprocess.run(
             ["findmnt", "-n", "-o", "SOURCE", mount_point],
             capture_output=True, text=True, timeout=3,
         ).stdout.strip()
         if not source:
-            return False
+            return None
         parent = subprocess.run(
             ["lsblk", "-n", "-o", "PKNAME", source],
             capture_output=True, text=True, timeout=3,
         ).stdout.strip()
         if not parent:
-            return False
+            return None
         result = subprocess.run(
             ["lsblk", "-J", "-o", "NAME,LABEL", f"/dev/{parent}"],
             capture_output=True, text=True, timeout=3,
         )
         if result.returncode != 0:
-            return False
+            return None
         data = json.loads(result.stdout)
     except Exception:
-        return False
+        return None
 
     for disk in data.get("blockdevices", []):
         for child in disk.get("children", []) or []:
             if (child.get("label") or "").upper() == "VTOYEFI":
-                return True
-    return False
+                return f"/dev/{child['name']}"
+    return None
+
+
+def _get_vtoyefi_version(mount_point: str) -> Optional[str]:
+    """
+    Reads the Ventoy version straight from the sibling VTOYEFI partition's
+    grub.cfg (a plain `set VENTOY_VERSION="x.y.z"` line in there) — this is
+    the authoritative source Ventoy's own installer reads from (see
+    get_disk_ventoy_version() in ventoy_lib.sh), unlike ventoy/ventoy.json
+    on the main partition, which only exists once a theme has actually
+    been configured.
+
+    Mounts the partition first if it isn't already, then unmounts it right
+    back — it's never meant to be presented as a manageable drive.
+    """
+    part = _find_vtoyefi_partition(mount_point)
+    if not part or not shutil.which("udisksctl"):
+        return None
+
+    try:
+        existing = subprocess.run(
+            ["lsblk", "-n", "-o", "MOUNTPOINT", part],
+            capture_output=True, text=True, timeout=3,
+        ).stdout.strip()
+    except Exception:
+        existing = ""
+
+    mounted_by_us = False
+    vtoyefi_mount = existing
+    if not vtoyefi_mount:
+        try:
+            result = subprocess.run(
+                ["udisksctl", "mount", "-b", part],
+                capture_output=True, text=True, timeout=15,
+            )
+            if result.returncode != 0:
+                return None
+            m = re.search(r"at (.+?)\.?\s*$", result.stdout.strip())
+            vtoyefi_mount = m.group(1) if m else None
+            mounted_by_us = True
+        except Exception:
+            return None
+
+    if not vtoyefi_mount:
+        return None
+
+    version = None
+    try:
+        with open(os.path.join(vtoyefi_mount, "grub", "grub.cfg"),
+                  encoding="utf-8", errors="replace") as f:
+            m = re.search(r'VENTOY_VERSION\s*=\s*"([\d.]+)"', f.read())
+            if m:
+                version = m.group(1)
+    except OSError:
+        pass
+
+    if mounted_by_us:
+        try:
+            subprocess.run(["udisksctl", "unmount", "-b", part],
+                            capture_output=True, timeout=10)
+        except Exception:
+            pass
+
+    return version
 
 
 def _is_vtoyefi_mount(path: str) -> bool:
@@ -109,7 +179,11 @@ def _is_vtoyefi_mount(path: str) -> bool:
 
 
 def _get_ventoy_version(mount_point: str) -> Optional[str]:
-    """Reads the Ventoy version from ventoy/ventoy_release or ventoy.json."""
+    """Reads the Ventoy version from ventoy/ventoy_release or ventoy.json
+    on the main partition, falling back to the sibling VTOYEFI partition's
+    grub.cfg — the only place the version is guaranteed to be found on a
+    drive that hasn't had its ventoy/ folder created yet (see
+    _get_vtoyefi_version)."""
     for candidate in [
         os.path.join(mount_point, "ventoy", "ventoy_release"),
         os.path.join(mount_point, "ventoy", "ventoy.json"),
@@ -123,7 +197,7 @@ def _get_ventoy_version(mount_point: str) -> Optional[str]:
                     return m.group(1)
             except Exception:
                 pass
-    return None
+    return _get_vtoyefi_version(mount_point)
 
 
 def _find_theme_dir(mount_point: str) -> tuple[Optional[str], Optional[str]]:
