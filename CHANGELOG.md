@@ -7,6 +7,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [1.1.2] — 2026-09-14
 
+### Added
+- **"Copy" button on the Ventoy install log**: the output of `Ventoy2Disk.sh` (or the error that stopped it) can now be copied to the clipboard directly from the "Create a Ventoy drive" wizard, instead of having to select the wrapped text by hand.
+
 ### Changed
 - **Confirmation/error/info popups now match the app's dark theme**: every one of them (~25 call sites) went through `tkinter.messagebox`, which always renders with the OS's native Tk look — light background, native buttons — clashing with the rest of the UI. Replaced with a themed `CTkToplevel`-based dialog (`gui/dialogs.py`) styled like the rest of the app, with a colored icon per severity (info/warning/error/question) and a red accent on destructive confirmations (deleting a file, wiping a USB drive).
 

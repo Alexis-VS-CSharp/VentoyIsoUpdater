@@ -7,6 +7,9 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [1.1.2] — 2026-09-14
 
+### Ajouté
+- **Bouton « Copier » sur le journal d'installation de Ventoy** : la sortie de `Ventoy2Disk.sh` (ou l'erreur qui l'a interrompu) peut désormais être copiée dans le presse-papiers directement depuis l'assistant « Créer une clé Ventoy », au lieu de devoir sélectionner le texte à la main.
+
 ### Changé
 - **Les fenêtres de confirmation/erreur/info correspondent désormais au thème sombre de l'appli** : chacune d'entre elles (~25 endroits dans le code) passait par `tkinter.messagebox`, qui s'affiche toujours avec le rendu natif de Tk (fond clair, boutons natifs) — jurant avec le reste de l'interface. Remplacées par une boîte de dialogue personnalisée basée sur `CTkToplevel` (`gui/dialogs.py`), stylée comme le reste de l'appli, avec une icône colorée selon la gravité (info/avertissement/erreur/question) et un accent rouge sur les confirmations destructrices (suppression d'un fichier, effacement d'une clé USB).
 

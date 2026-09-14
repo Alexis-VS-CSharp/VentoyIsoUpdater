@@ -1564,8 +1564,27 @@ class VentoySetupDialog(ctk.CTkToplevel):
         ).pack(padx=14, pady=10, anchor="w")
 
         # ── Log de sortie ─────────────────────────────────────────────────────
-        self.log_frame = ctk.CTkScrollableFrame(self, height=80)
-        self.log_frame.grid(row=4, column=0, sticky="nsew", padx=16, pady=4)
+        log_section = ctk.CTkFrame(self, fg_color="transparent")
+        log_section.grid(row=4, column=0, sticky="nsew", padx=16, pady=4)
+        log_section.grid_columnconfigure(0, weight=1)
+        log_section.grid_rowconfigure(1, weight=1)
+
+        log_header = ctk.CTkFrame(log_section, fg_color="transparent")
+        log_header.grid(row=0, column=0, sticky="ew", pady=(0, 4))
+        ctk.CTkLabel(
+            log_header, text=t('Journal :'),
+            font=ctk.CTkFont(size=11, weight="bold"), text_color="gray70"
+        ).pack(side="left")
+        self.btn_copy_log = ctk.CTkButton(
+            log_header, text=t('📋  Copier'), width=90, height=24,
+            font=ctk.CTkFont(size=11),
+            fg_color="#3a3a3a", hover_color="#4a4a4a",
+            command=self._copy_log,
+        )
+        self.btn_copy_log.pack(side="right")
+
+        self.log_frame = ctk.CTkScrollableFrame(log_section, height=80)
+        self.log_frame.grid(row=1, column=0, sticky="nsew")
         self.log_frame.grid_columnconfigure(0, weight=1)
         self.lbl_log = ctk.CTkLabel(
             self.log_frame, text="", font=ctk.CTkFont(size=10, family="monospace"),
@@ -1775,6 +1794,13 @@ class VentoySetupDialog(ctk.CTkToplevel):
     def _append_log(self, text: str):
         current = self.lbl_log.cget("text")
         self.lbl_log.configure(text=current + text)
+
+    def _copy_log(self):
+        self.clipboard_clear()
+        self.clipboard_append(self.lbl_log.cget("text"))
+        self.btn_copy_log.configure(text=t('✓  Copié'))
+        self.after(1500, lambda: self.winfo_exists() and
+                   self.btn_copy_log.configure(text=t('📋  Copier')))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
