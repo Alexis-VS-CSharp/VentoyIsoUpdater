@@ -52,18 +52,54 @@ def save_ventoy_json(ventoy_json_path: str, data: dict) -> bool:
         return False
 
 
+def _find_ventoy_sample_theme() -> Optional[str]:
+    """
+    Locates Ventoy's own bundled sample theme (shipped as
+    plugin/ventoy/theme/ in the official release archive — a complete,
+    ready-to-use theme with its background and menu pixmaps, not just a
+    bare theme.txt) inside the persistent Ventoy download cache,
+    downloading the latest release there first if nothing is cached yet.
+
+    Returns the theme folder's path, or None if it can't be found or
+    downloaded (offline with nothing cached, for instance) — the caller
+    falls back to a bare theme.txt in that case.
+    """
+    from core.ventoy_installer import (
+        get_ventoy_cache_dir, find_cached_ventoy, download_ventoy, get_ventoy_latest_version,
+    )
+
+    def _sample_in(ventoy_release_dir: str) -> Optional[str]:
+        candidate = os.path.join(ventoy_release_dir, "plugin", "ventoy", "theme")
+        return candidate if os.path.isfile(os.path.join(candidate, "theme.txt")) else None
+
+    cached_script = find_cached_ventoy()
+    if cached_script:
+        sample = _sample_in(os.path.dirname(cached_script))
+        if sample:
+            return sample
+
+    version = get_ventoy_latest_version()
+    if not version:
+        return None
+    extracted = download_ventoy(version=version, dest_dir=get_ventoy_cache_dir())
+    return _sample_in(extracted) if extracted else None
+
+
 def create_default_theme(mount_point: str) -> tuple[Optional[str], Optional[str], Optional[str]]:
     """
-    Bootstraps the minimal ventoy/ structure needed for theme and logo
-    management on a drive that has none yet — the normal state right
-    after installing Ventoy: nothing creates ventoy/ventoy.json until a
-    theme is actually configured (Ventoy's own grub.cfg only reads it
-    from the main partition if it's there; it never creates it itself).
+    Bootstraps the ventoy/ structure needed for theme and logo management
+    on a drive that has none yet — the normal state right after
+    installing Ventoy: nothing creates ventoy/ventoy.json until a theme
+    is actually configured (Ventoy's own grub.cfg only reads it from the
+    main partition if it's there; it never creates it itself).
 
     Creates ventoy/ventoy.json (pointing "theme.file" at the theme.txt
-    below unless it already points somewhere else), ventoy/theme/theme.txt
-    (a harmless empty template if none exists) and ventoy/theme/icons/.
-    Leaves any existing file untouched.
+    below unless it already points somewhere else) and ventoy/theme/,
+    populated with Ventoy's own bundled sample theme (background,
+    menu/scrollbar pixmaps, a handful of icons) when it can be found —
+    see _find_ventoy_sample_theme() — or with just a bare, empty
+    theme.txt and an icons/ folder otherwise. Leaves any existing
+    ventoy/theme/ or ventoy.json content untouched.
 
     Returns (ventoy_json_path, theme_dir, icons_dir), or (None, None, None)
     on failure.
@@ -74,8 +110,12 @@ def create_default_theme(mount_point: str) -> tuple[Optional[str], Optional[str]
     theme_txt_path = os.path.join(theme_dir, "theme.txt")
 
     try:
-        os.makedirs(icons_dir, exist_ok=True)
+        if not os.path.isdir(theme_dir):
+            sample = _find_ventoy_sample_theme()
+            if sample:
+                shutil.copytree(sample, theme_dir, dirs_exist_ok=True)
 
+        os.makedirs(icons_dir, exist_ok=True)
         if not os.path.isfile(theme_txt_path):
             with open(theme_txt_path, "w", encoding="utf-8") as f:
                 f.write("# Ventoy theme — created by VentoyIsoUpdater\n")
