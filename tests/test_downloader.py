@@ -147,3 +147,56 @@ class TestDownloadFile:
                     checksum="wrong_hash_here",
                     checksum_type="sha256"
                 )
+
+    def _zip_bytes(self, members: dict) -> bytes:
+        import io
+        import zipfile
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as z:
+            for name, content in members.items():
+                z.writestr(name, content)
+        return buf.getvalue()
+
+    def test_iso_zip_is_unwrapped_to_the_inner_iso(self, tmp_dir):
+        """A downloaded '<name>.iso.zip' containing a single .iso (Memtest86+'s
+        real-world shape) is replaced on disk by the extracted .iso, since
+        Ventoy can't boot a raw .zip."""
+        from core.downloader import download_file
+        content = self._zip_bytes({"memtest.iso": b"fake iso bytes"})
+        mock_response = MagicMock()
+        mock_response.__enter__ = lambda s: s
+        mock_response.__exit__ = MagicMock(return_value=False)
+        mock_response.raise_for_status = MagicMock()
+        mock_response.headers = {"content-length": str(len(content))}
+        mock_response.iter_content = MagicMock(return_value=iter([content]))
+
+        dest = os.path.join(tmp_dir, "mt86plus_8.10_x86_64.iso.zip")
+        with patch("requests.get", return_value=mock_response):
+            result = download_file("http://example.com/mt86plus.iso.zip", dest)
+
+        expected = os.path.join(tmp_dir, "mt86plus_8.10_x86_64.iso")
+        assert result == expected
+        assert os.path.isfile(expected)
+        assert not os.path.exists(dest)  # the .zip wrapper is gone
+        with open(expected, "rb") as f:
+            assert f.read() == b"fake iso bytes"
+
+    def test_zip_with_multiple_members_is_left_as_is(self, tmp_dir):
+        """A .zip that isn't just a single-image wrapper (e.g. a real
+        multi-file archive) is left untouched — only the single-image case
+        is auto-unwrapped."""
+        from core.downloader import download_file
+        content = self._zip_bytes({"readme.txt": b"hi", "disk.iso": b"data"})
+        mock_response = MagicMock()
+        mock_response.__enter__ = lambda s: s
+        mock_response.__exit__ = MagicMock(return_value=False)
+        mock_response.raise_for_status = MagicMock()
+        mock_response.headers = {"content-length": str(len(content))}
+        mock_response.iter_content = MagicMock(return_value=iter([content]))
+
+        dest = os.path.join(tmp_dir, "archive.zip")
+        with patch("requests.get", return_value=mock_response):
+            result = download_file("http://example.com/archive.zip", dest)
+
+        assert result == dest
+        assert os.path.isfile(dest)

@@ -30,6 +30,15 @@ def get_download_path(dest_folder: str, filename: str) -> str:
         return path
     # File already present -> suffix to avoid overwriting
     base, ext = os.path.splitext(filename)
+    # Compound extensions (e.g. Memtest86+'s "*.iso.zip", auto-unwrapped to
+    # "*.iso" after download — see core.downloader) need the suffix before
+    # the *real* extension, not spliced into the middle of it: without this,
+    # splitext's single-dot split turns "name.iso.zip" into "name.iso_2.zip"
+    # instead of the intended "name_2.iso.zip".
+    if ext.lower() == ".zip":
+        inner_base, inner_ext = os.path.splitext(base)
+        if inner_ext.lower() in (".iso", ".img"):
+            base, ext = inner_base, inner_ext + ext
     MAX_SUFFIX = 999
     for i in range(1, MAX_SUFFIX + 1):
         candidate = os.path.join(dest_folder, f"{base}_{i}{ext}")

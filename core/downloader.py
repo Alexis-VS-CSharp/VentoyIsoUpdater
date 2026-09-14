@@ -4,7 +4,9 @@ Download management with progress reporting and checksum verification.
 
 import os
 import hashlib
+import shutil
 import threading
+import zipfile
 from typing import Callable, Optional
 
 import requests
@@ -12,6 +14,50 @@ import requests
 
 class DownloadError(Exception):
     pass
+
+
+_IMAGE_EXTS = (".iso", ".img")
+
+
+def _unwrap_disk_image_zip(zip_path: str) -> str:
+    """
+    Some sources (Memtest86+'s open-source build on memtest.org, notably)
+    only publish their bootable image zipped up. Ventoy can only boot
+    ISO/IMG/WIM/VHD(x)/EFI files, never a raw .zip, so a freshly downloaded
+    archive whose sole member is a .iso/.img is transparently unwrapped
+    here: the inner image replaces the .zip on disk under a name Ventoy can
+    actually boot, instead of a dead file just sitting there.
+
+    Returns the new path, or the original zip path unchanged if it isn't
+    this specific single-image-file case (any other error also falls back
+    to leaving the .zip as downloaded, rather than raising).
+    """
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            members = [n for n in z.namelist() if not n.endswith("/")]
+            if len(members) != 1:
+                return zip_path
+            inner_name = members[0]
+            ext = os.path.splitext(inner_name)[1].lower()
+            if ext not in _IMAGE_EXTS:
+                return zip_path
+
+            # Prefer just stripping the trailing ".zip" ("foo.iso.zip" ->
+            # "foo.iso"); fall back to appending the inner file's own
+            # extension if that doesn't leave a recognized one.
+            stripped = os.path.splitext(zip_path)[0]
+            new_path = stripped if stripped.lower().endswith(_IMAGE_EXTS) \
+                       else stripped + ext
+
+            tmp_extract = new_path + ".part"
+            with z.open(inner_name) as src, open(tmp_extract, "wb") as dst:
+                shutil.copyfileobj(src, dst)
+    except (zipfile.BadZipFile, OSError):
+        return zip_path
+
+    os.replace(tmp_extract, new_path)
+    os.remove(zip_path)
+    return new_path
 
 
 def download_file(
@@ -74,6 +120,9 @@ def download_file(
 
         # Atomic rename (os.replace is atomic on Linux, safe on Windows)
         os.replace(tmp_path, dest_path)
+
+        if dest_path.lower().endswith(".zip"):
+            return _unwrap_disk_image_zip(dest_path)
         return dest_path
 
     except DownloadError:

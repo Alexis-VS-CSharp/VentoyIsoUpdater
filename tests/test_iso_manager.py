@@ -63,6 +63,15 @@ class TestGetDownloadPath:
         with pytest.raises(OSError):
             get_download_path(tmp_dir, "f.iso")
 
+    def test_suffix_on_compound_iso_zip_extension(self, tmp_dir):
+        """Memtest86+'s '*.iso.zip' shape: the disambiguation suffix must
+        land before the real ".iso.zip" extension, not spliced into the
+        middle of it ("name.iso_1.zip")."""
+        existing = os.path.join(tmp_dir, "mt86plus_8.10_x86_64.iso.zip")
+        open(existing, "w").close()
+        path = get_download_path(tmp_dir, "mt86plus_8.10_x86_64.iso.zip")
+        assert path == os.path.join(tmp_dir, "mt86plus_8.10_x86_64_1.iso.zip")
+
     def test_no_extension(self, tmp_dir):
         path = get_download_path(tmp_dir, "noext")
         assert path == os.path.join(tmp_dir, "noext")

@@ -12,7 +12,7 @@
       "checker": "ubuntu",
       "checker_variant": "desktop",
       "logo_filename": "ubuntu.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "logo_url": "local:ubuntu.png",
       "homepage": "https://ubuntu.com/download/desktop",
       "grub_class": "ubuntu"
     },
@@ -27,7 +27,7 @@
       "checker": "ubuntu",
       "checker_variant": "server",
       "logo_filename": "ubuntu.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "logo_url": "local:ubuntu.png",
       "homepage": "https://ubuntu.com/download/server",
       "grub_class": "ubuntu"
     },
@@ -42,7 +42,7 @@
       "checker": "ubuntu",
       "checker_variant": "server",
       "logo_filename": "ubuntu.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "logo_url": "local:ubuntu.png",
       "homepage": "https://ubuntu.com/download/server",
       "grub_class": "ubuntu",
       "checker_arch": "arm64"
@@ -58,7 +58,7 @@
       "checker": "debian",
       "checker_variant": null,
       "logo_filename": "debian.png",
-      "logo_url": "https://www.debian.org/logos/openlogo-nd-100.png",
+      "logo_url": "local:debian.png",
       "homepage": "https://www.debian.org/distrib/netinst",
       "grub_class": "debian"
     },
@@ -73,7 +73,7 @@
       "checker": "debian",
       "checker_variant": null,
       "logo_filename": "debian.png",
-      "logo_url": "https://www.debian.org/logos/openlogo-nd-100.png",
+      "logo_url": "local:debian.png",
       "homepage": "https://www.debian.org/distrib/netinst",
       "grub_class": "debian",
       "checker_arch": "arm64"
@@ -90,7 +90,7 @@
       "checker": "fedora",
       "checker_variant": "Workstation",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/workstation/download",
       "grub_class": "fedora"
     },
@@ -106,7 +106,7 @@
       "checker": "fedora",
       "checker_variant": "Server",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/server/download",
       "grub_class": "fedora"
     },
@@ -226,7 +226,7 @@
       "checker": "endeavouros",
       "checker_variant": null,
       "logo_filename": "endeavouros.png",
-      "logo_url": "https://endeavouros.com/wp-content/uploads/2021/08/cropped-endeavour-logo-1-270x270.png",
+      "logo_url": "local:endeavouros.png",
       "homepage": "https://endeavouros.com/",
       "grub_class": "endeavouros"
     },
@@ -970,7 +970,7 @@
       "checker": "ubuntu_flavors",
       "checker_variant": "ubuntu-mate",
       "logo_filename": "ubuntu-mate.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "logo_url": "local:ubuntu.png",
       "homepage": "https://ubuntu-mate.org/download/",
       "grub_class": "ubuntu-mate"
     },
@@ -985,7 +985,7 @@
       "checker": "ubuntu_flavors",
       "checker_variant": "ubuntu-budgie",
       "logo_filename": "ubuntu-budgie.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/ubuntu.png",
+      "logo_url": "local:ubuntu.png",
       "homepage": "https://ubuntubudgie.org/downloads/",
       "grub_class": "ubuntu-budgie"
     },
@@ -1015,7 +1015,7 @@
       "checker": "fedora",
       "checker_variant": "Silverblue",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/silverblue/download/",
       "grub_class": "fedora"
     },
@@ -1030,7 +1030,7 @@
       "checker": "fedora",
       "checker_variant": "Kinoite",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/kinoite/download/",
       "grub_class": "fedora"
     },
@@ -1048,7 +1048,7 @@
       "checker": "fedora",
       "checker_variant": "KDE",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/spins/kde/download/",
       "grub_class": "fedora"
     },
@@ -1064,7 +1064,7 @@
       "checker": "fedora",
       "checker_variant": "Xfce",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/spins/xfce/download/",
       "grub_class": "fedora"
     },
@@ -1080,7 +1080,7 @@
       "checker": "fedora",
       "checker_variant": "Cinnamon",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/spins/cinnamon/download/",
       "grub_class": "fedora"
     },
@@ -1096,7 +1096,7 @@
       "checker": "fedora",
       "checker_variant": "MATE",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/spins/mate/download/",
       "grub_class": "fedora"
     },
@@ -1112,7 +1112,7 @@
       "checker": "fedora",
       "checker_variant": "LXQt",
       "logo_filename": "fedora.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/fedora.png",
+      "logo_url": "local:fedora.png",
       "homepage": "https://fedoraproject.org/spins/lxqt/download/",
       "grub_class": "fedora"
     },
@@ -1144,7 +1144,7 @@
       "checker": "cachyos",
       "checker_variant": null,
       "logo_filename": "cachyos.png",
-      "logo_url": "https://cachyos.org/favicon.ico",
+      "logo_url": "local:cachyos.png",
       "homepage": "https://cachyos.org/download/",
       "grub_class": "cachyos"
     },
@@ -1819,7 +1819,7 @@
     {
       "id": "systemrescue",
       "name": "SystemRescue",
-      "category": "server",
+      "category": "tools",
       "filename_patterns": [
         "systemrescue-[\\d.]+-amd64\\.iso"
       ],
@@ -1834,7 +1834,7 @@
     {
       "id": "clonezilla",
       "name": "Clonezilla Live",
-      "category": "server",
+      "category": "tools",
       "filename_patterns": [
         "clonezilla-live-[\\d.]+-\\d+-amd64\\.iso"
       ],
@@ -1849,7 +1849,7 @@
     {
       "id": "gparted",
       "name": "GParted Live",
-      "category": "server",
+      "category": "tools",
       "filename_patterns": [
         "gparted-live-[\\d.]+-\\d+-amd64\\.iso"
       ],
@@ -1864,12 +1864,13 @@
     {
       "id": "memtest86plus",
       "name": "Memtest86+",
-      "category": "server",
+      "category": "tools",
       "filename_patterns": [
         "memtest86\\+-[\\d.]+\\.iso",
         "memtest86\\+-[\\d.]+\\.img",
         "memtest86\\+-[\\d.]+-\\d+-iso\\.zip",
-        "mt86plus_[\\d.]+_x86_64\\.iso\\.zip"
+        "mt86plus_[\\d.]+_x86_64\\.iso\\.zip",
+        "mt86plus_[\\d.]+_x86_64\\.iso"
       ],
       "version_regex": "(?:memtest86\\+-|mt86plus_)(\\d+(?:\\.\\d+)*)(?:-\\d+-iso\\.zip|_x86_64)?",
       "checker": "memtest86plus",
@@ -1882,7 +1883,7 @@
     {
       "id": "hirens",
       "name": "Hiren's BootCD PE",
-      "category": "server",
+      "category": "tools",
       "filename_patterns": [
         "Hirens\\.BootCD\\.[\\d.]+\\.iso",
         "HBCD_PE_x64\\.iso"
@@ -1891,7 +1892,7 @@
       "checker": "hirens",
       "checker_variant": null,
       "logo_filename": "hirens.png",
-      "logo_url": "https://www.hirensbootcd.org/favicon.ico",
+      "logo_url": "local:hirens.png",
       "homepage": "https://www.hirensbootcd.org/download/",
       "grub_class": "hirens"
     },

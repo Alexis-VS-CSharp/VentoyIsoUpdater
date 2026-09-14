@@ -497,13 +497,6 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                     fg_color="gray40",
                     command=lambda i=iso: self._open_version_browser(i)
                 ).pack(side="left", padx=2)
-
-            # Bouton supprimer
-            ctk.CTkButton(
-                action_frame, text="🗑", width=32, height=26,
-                fg_color="#7f1c1c", hover_color="#a93226",
-                command=lambda i=iso: self._confirm_delete(i)
-            ).pack(side="left", padx=2)
         else:
             ctk.CTkLabel(action_frame, text=t('En attente'),
                          fg_color="#444", corner_radius=6,
@@ -515,6 +508,15 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                     fg_color="gray40",
                     command=lambda i=iso: self._open_version_browser(i)
                 ).pack(side="left", padx=2)
+
+        # Bouton supprimer — toujours disponible, même avant toute vérification
+        # de mise à jour (pas besoin d'avoir cliqué "Vérifier tout" pour
+        # pouvoir retirer une ISO de la clé).
+        ctk.CTkButton(
+            action_frame, text="🗑", width=32, height=26,
+            fg_color="#7f1c1c", hover_color="#a93226",
+            command=lambda i=iso: self._confirm_delete(i)
+        ).pack(side="left", padx=2)
 
         # Propage la molette depuis tous les enfants de la ligne vers le canvas
         self._bind_table_scroll(row)
@@ -618,16 +620,38 @@ class VentoyIsoUpdaterApp(ctk.CTk):
 
     def _do_download(self, url: str, dest_path: str, label: str,
                      on_done: Optional[Callable] = None,
+                     on_error: Optional[Callable] = None,
+                     on_progress: Optional[Callable[[int, int], None]] = None,
                      distro_id: Optional[str] = None,
                      checksum: Optional[str] = None,
                      checksum_type: Optional[str] = None,
                      manual_verify_url: Optional[str] = None):
-        """Downloads a file with progress reporting, without blocking the UI."""
+        """
+        Downloads a file with progress reporting, without blocking the UI.
+        `on_error`, unlike `on_done`, fires on any failure — used by the
+        batch queue (DistroPickerDialog) to move on to the next ISO instead
+        of silently stalling when one download in the queue fails.
+        `on_progress(done, total)`, if given, is called alongside the main
+        window's own progress bar — used by the batch queue to show
+        per-item progress in its queue panel.
+        """
         self._show_progress(True)
         self.btn_check_all.configure(state="disabled")
         logger.info("Download started: %s -> %s", url, dest_path)
 
+        # Set by run() to whichever of on_done/on_error applies, and fired
+        # from the single _finish() callback below — never scheduled
+        # separately from hiding the progress bar. Queuing them as two
+        # independent self.after(0, ...) calls let the batch queue's next
+        # download show its own progress bar (from on_done, processed
+        # first) only to have this download's own "hide progress" call
+        # (processed second) immediately hide it again — the "first item's
+        # progress shows, later ones don't" bug. Bundling both in one
+        # callback makes that ordering impossible.
+        result_callback = None
+
         def run():
+            nonlocal result_callback
             try:
                 # ── Available disk space check ──────────────
                 try:
@@ -647,29 +671,36 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                             if not self._closing:
                                 self.after(0, lambda m=msg: show_error(
                                     self, t('Espace insuffisant'), m))
+                                result_callback = on_error
                             return
                 except Exception as e:
                     logger.debug("Disk space check skipped: %s", e)
 
-                def on_progress(done, total):
+                def _track_progress(done, total):
                     if total > 0 and not self._closing:
                         self.after(0, lambda: self._update_progress(
                             done / total,
                             f"{label} — {format_size(done)} / {format_size(total)}"
                         ))
+                        if on_progress:
+                            self.after(0, lambda: on_progress(done, total))
 
-                download_file(
+                # download_file() returns the final path: usually dest_path
+                # unchanged, but some sources (Memtest86+) only publish
+                # their image zipped up, and it transparently unwraps that
+                # to the actual .iso/.img Ventoy can boot.
+                final_path = download_file(
                     url=url, dest_path=dest_path,
-                    on_progress=on_progress,
+                    on_progress=_track_progress,
                     cancel_event=self._cancel_event,
                     checksum=checksum,
                     checksum_type=checksum_type or "sha256",
                 )
-                logger.info("Download complete: %s", os.path.basename(dest_path))
+                logger.info("Download complete: %s", os.path.basename(final_path))
 
                 if not self._closing:
                     self.after(0, lambda: self._set_status(
-                        f"{t('✓ Téléchargé : ')}{os.path.basename(dest_path)}"))
+                        f"{t('✓ Téléchargé : ')}{os.path.basename(final_path)}"))
 
                 # No automatic checksum for this source: invites a manual
                 # verification instead of implying the integrity was
@@ -677,32 +708,37 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                 if manual_verify_url and not checksum and not self._closing:
                     self.after(0, lambda u=manual_verify_url: show_info(
                         self, t('Vérification manuelle recommandée'),
-                        f"{os.path.basename(dest_path)}" +
+                        f"{os.path.basename(final_path)}" +
                         t(" a été téléchargé.\n\nCette source ne publie pas d'empreinte automatiquement vérifiable — pensez à contrôler l'intégrité de l'ISO vous-même avant de l'utiliser :\n\n") +
                         u
                     ))
 
                 if distro_id and self.current_drive and not self._closing:
-                    self._register_iso_folder(distro_id, dest_path)
+                    self._register_iso_folder(distro_id, final_path)
                     if self.current_drive.theme_icons_dir:
-                        self._auto_download_logo(distro_id, dest_path)
+                        self._auto_download_logo(distro_id, final_path)
 
-                if on_done and not self._closing:
-                    self.after(0, on_done)
+                result_callback = on_done
 
             except DownloadError as e:
                 logger.warning("Download failed: %s", e)
                 if not self._closing:
                     self.after(0, lambda err=str(e): show_error(self, t('Erreur'), t(err)))
+                result_callback = on_error
             except Exception as e:
                 logger.error("Erreur inattendue dans _do_download : %s", e, exc_info=True)
                 if not self._closing:
                     self.after(0, lambda err=str(e): show_error(
                         self, t('Erreur inattendue'), err))
+                result_callback = on_error
             finally:
                 if not self._closing:
-                    self.after(0, lambda: self._show_progress(False))
-                    self.after(0, lambda: self.btn_check_all.configure(state="normal"))
+                    def _finish(cb=result_callback):
+                        self._show_progress(False)
+                        self.btn_check_all.configure(state="normal")
+                        if cb:
+                            cb()
+                    self.after(0, _finish)
 
         threading.Thread(target=run, daemon=True).start()
 
@@ -1148,17 +1184,22 @@ class DistroPickerDialog(ctk.CTkToplevel):
         self.on_done = on_done
         self._versions = []
         self._stable_only = ctk.BooleanVar(value=True)
+        self._queue: list[dict] = []
+        self._batch_running = False
+        self._active_progress_label: Optional[ctk.CTkLabel] = None
 
+        self.protocol("WM_DELETE_WINDOW", self._on_request_close)
         self._build()
 
     # Category order and labels
-    _CAT_ORDER  = ["linux", "bsd", "security", "gaming", "server", "windows", "other"]
+    _CAT_ORDER  = ["linux", "bsd", "security", "gaming", "server", "tools", "windows", "other"]
     _CAT_LABELS = {
         "linux":    "Linux",
         "bsd":      "BSD",
         "security": t('Sécurité'),
         "gaming":   "Gaming",
         "server":   t('Serveur / Réseau'),
+        "tools":    t('Outils'),
         "windows":  "Windows",
         "other":    t('Autre'),
     }
@@ -1229,8 +1270,35 @@ class DistroPickerDialog(ctk.CTkToplevel):
         self.versions_frame.grid(row=1, column=0, sticky="nsew", padx=4, pady=4)
         self.versions_frame.grid_columnconfigure(0, weight=1)
 
+        # ── File d'attente (téléchargements sélectionnés) ─────────────────────
+        queue_outer = ctk.CTkFrame(right, fg_color="#1c1c2a", corner_radius=6)
+        queue_outer.grid(row=2, column=0, sticky="ew", padx=4, pady=(0, 4))
+        queue_outer.grid_columnconfigure(0, weight=1)
+
+        queue_header_bar = ctk.CTkFrame(queue_outer, fg_color="transparent")
+        queue_header_bar.grid(row=0, column=0, sticky="ew", padx=8, pady=(6, 2))
+        queue_header_bar.grid_columnconfigure(0, weight=1)
+
+        self.lbl_queue_header = ctk.CTkLabel(
+            queue_header_bar, text=t("File d'attente (0)"),
+            font=ctk.CTkFont(size=12, weight="bold")
+        )
+        self.lbl_queue_header.grid(row=0, column=0, sticky="w")
+
+        self.btn_download_queue = ctk.CTkButton(
+            queue_header_bar, text=t('⬇ Télécharger tout'), width=150,
+            fg_color="#27ae60", hover_color="#1e8449",
+            state="disabled", command=self._start_batch_download
+        )
+        self.btn_download_queue.grid(row=0, column=1, padx=(8, 0))
+
+        self.queue_list = ctk.CTkScrollableFrame(queue_outer, height=90,
+                                                  fg_color="transparent")
+        self.queue_list.grid(row=1, column=0, sticky="ew", padx=6, pady=(0, 6))
+        self.queue_list.grid_columnconfigure(0, weight=1)
+
         dest_frame = ctk.CTkFrame(right, fg_color="transparent")
-        dest_frame.grid(row=2, column=0, padx=4, pady=6, sticky="ew")
+        dest_frame.grid(row=3, column=0, padx=4, pady=6, sticky="ew")
         dest_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(dest_frame, text=t('Dossier :'), font=ctk.CTkFont(size=11)
@@ -1243,10 +1311,12 @@ class DistroPickerDialog(ctk.CTkToplevel):
                       command=self._browse_dest
                       ).grid(row=0, column=2, padx=4)
 
-        ctk.CTkButton(right, text=t('Fermer'), command=self.destroy, width=100
-                      ).grid(row=3, column=0, pady=(0, 8))
+        self.btn_close = ctk.CTkButton(right, text=t('Fermer'),
+                                       command=self._on_request_close, width=100)
+        self.btn_close.grid(row=4, column=0, pady=(0, 8))
 
         self._populate_distro_list()
+        self._render_queue()
 
     # ── Scroll molette : forward tous les events vers le canvas interne ──────
 
@@ -1462,14 +1532,21 @@ class DistroPickerDialog(ctk.CTkToplevel):
             ctk.CTkLabel(row, text=v.filename,
                          font=ctk.CTkFont(size=10), text_color="gray70",
                          anchor="w").grid(row=0, column=1, padx=6, pady=5, sticky="w")
+            already_queued = any(
+                item['distro_id'] == self._selected_id and item['version'].filename == v.filename
+                for item in self._queue
+            )
             ctk.CTkButton(
-                row, text="⬇", width=36, height=26,
-                fg_color="#27ae60", hover_color="#1e8449",
-                command=lambda vi=v: self._download_version(vi)
+                row, text=("✓" if already_queued else "➕"), width=36, height=26,
+                fg_color=("#3a3a3a" if already_queued else "#27ae60"),
+                hover_color=("#3a3a3a" if already_queued else "#1e8449"),
+                state=("disabled" if already_queued else "normal"),
+                command=lambda vi=v: self._add_to_queue(vi)
             ).grid(row=0, column=2, padx=8, pady=3)
             self._bind_versions_scroll(row)
 
-    def _download_version(self, v):
+    def _add_to_queue(self, v):
+        """Adds this version to the batch download queue instead of downloading it right away."""
         dest_folder = self.dest_var.get()
         if not os.path.isdir(dest_folder):
             try:
@@ -1479,10 +1556,162 @@ class DistroPickerDialog(ctk.CTkToplevel):
                 return
         from core.iso_manager import get_download_path
         dest_path = get_download_path(dest_folder, v.filename)
-        self.on_download(url=v.download_url, dest_path=dest_path, label=v.filename,
-                         on_done=self.on_done, distro_id=self._selected_id,
-                         checksum=v.checksum, checksum_type=v.checksum_type,
-                         manual_verify_url=v.manual_verify_url)
+        distro_name = next(
+            (d["name"] for d in self.distros_db.get("distros", []) if d["id"] == self._selected_id),
+            self._selected_id
+        )
+        self._queue.append({
+            'distro_id': self._selected_id,
+            'distro_name': distro_name,
+            'version': v,
+            'dest_path': dest_path,
+        })
+        self._render_versions()
+        self._render_queue()
+
+    def _remove_from_queue(self, index: int):
+        if 0 <= index < len(self._queue):
+            del self._queue[index]
+            self._render_versions()
+            self._render_queue()
+
+    def _bind_queue_scroll(self, widget):
+        try:
+            self._bind_scroll_to(widget, self.queue_list._parent_canvas)
+        except AttributeError:
+            pass
+
+    def _render_queue(self):
+        for w in self.queue_list.winfo_children():
+            w.destroy()
+        self._active_progress_label = None
+
+        if not self._queue:
+            ctk.CTkLabel(self.queue_list, text=t('Aucune ISO sélectionnée.'),
+                         font=ctk.CTkFont(size=11), text_color="gray60"
+                         ).grid(row=0, column=0, padx=6, pady=4, sticky="w")
+        else:
+            for i, item in enumerate(self._queue):
+                is_active = self._batch_running and i == 0
+                bg = "#274361" if is_active else "#232338"
+                row = ctk.CTkFrame(self.queue_list, fg_color=bg, corner_radius=4)
+                row.grid(row=i, column=0, sticky="ew", padx=2, pady=1)
+                row.grid_columnconfigure(1, weight=1)
+
+                ctk.CTkLabel(row, text=item['distro_name'],
+                             font=ctk.CTkFont(size=11, weight="bold"),
+                             anchor="w").grid(row=0, column=0, padx=(8, 4), pady=4, sticky="w")
+                ctk.CTkLabel(row, text=item['version'].filename,
+                             font=ctk.CTkFont(size=10), text_color="gray70",
+                             anchor="w").grid(row=0, column=1, padx=4, pady=4, sticky="w")
+
+                if is_active:
+                    lbl = ctk.CTkLabel(
+                        row, text="⏳ …", width=64,
+                        font=ctk.CTkFont(size=11, weight="bold"), text_color="#5dade2"
+                    )
+                    lbl.grid(row=0, column=2, padx=6, pady=2)
+                    self._active_progress_label = lbl
+                else:
+                    ctk.CTkButton(
+                        row, text="✕", width=24, height=22,
+                        fg_color="#8b2020", hover_color="#a52a2a",
+                        state=("disabled" if self._batch_running else "normal"),
+                        command=lambda idx=i: self._remove_from_queue(idx)
+                    ).grid(row=0, column=2, padx=6, pady=2)
+                self._bind_queue_scroll(row)
+
+        self.lbl_queue_header.configure(text=t("File d'attente") + f" ({len(self._queue)})")
+        self.btn_download_queue.configure(
+            state=("normal" if self._queue and not self._batch_running else "disabled")
+        )
+
+    def _on_queue_progress(self, done: int, total: int):
+        """Updates the progress indicator on the queue's currently downloading row."""
+        if not self.winfo_exists() or not self._active_progress_label:
+            return
+        try:
+            if not self._active_progress_label.winfo_exists():
+                return
+        except Exception:
+            return
+        pct = int(done / total * 100) if total else 0
+        self._active_progress_label.configure(text=f"⏳ {pct}%")
+
+    def _start_batch_download(self):
+        if not self._queue or self._batch_running:
+            return
+        self._batch_running = True
+        self.btn_download_queue.configure(state="disabled")
+        self.btn_close.configure(state="disabled")
+        self._render_queue()
+        self._process_next_in_queue()
+
+    def _process_next_in_queue(self):
+        if not self.winfo_exists():
+            return
+        if not self._queue:
+            self._batch_running = False
+            self.btn_close.configure(state="normal")
+            self._render_queue()
+            self._refresh_versions()
+            self._refresh_installed_state()
+            if self.on_done:
+                self.on_done()
+            return
+
+        # Left at the front of the queue (not popped yet) so it stays
+        # visible, shown as "downloading", until it actually finishes —
+        # instead of vanishing the instant it starts.
+        item = self._queue[0]
+        self._render_queue()
+        self._refresh_versions()
+        v = item['version']
+        dest_folder = os.path.dirname(item['dest_path'])
+        if not os.path.isdir(dest_folder):
+            try:
+                os.makedirs(dest_folder, exist_ok=True)
+            except Exception:
+                pass
+
+        def _advance():
+            if self._queue and self._queue[0] is item:
+                self._queue.pop(0)
+            self._process_next_in_queue()
+
+        self.on_download(
+            url=v.download_url, dest_path=item['dest_path'], label=v.filename,
+            on_done=_advance,
+            on_error=_advance,
+            on_progress=self._on_queue_progress,
+            distro_id=item['distro_id'],
+            checksum=v.checksum, checksum_type=v.checksum_type,
+            manual_verify_url=v.manual_verify_url,
+        )
+
+    def _refresh_installed_state(self):
+        """
+        Re-scans the drive right after a batch finishes, so distros just
+        downloaded immediately show up as installed (✓, highlighted) in the
+        left-hand list — without having to close and reopen this dialog to
+        see it.
+        """
+        if not self.winfo_exists() or not self.drive:
+            return
+        try:
+            from core.ventoy_scanner import scan_isos
+            self._iso_entries = scan_isos(self.drive, self.distros_db)
+        except Exception as e:
+            logger.debug("DistroPickerDialog: installed-state refresh skipped: %s", e)
+            return
+        self._installed_ids = {e.distro_id for e in self._iso_entries if e.distro_id}
+        self._populate_distro_list()
+
+    def _on_request_close(self):
+        if self._batch_running:
+            show_info(self, "Info",
+                      t("Le téléchargement de la file en cours doit se terminer avant de pouvoir fermer cette fenêtre."))
+            return
         self.destroy()
 
     def _browse_dest(self):
