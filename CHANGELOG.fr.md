@@ -14,6 +14,7 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - **L'installation de Ventoy échouait avec « /dev/sdX is already mounted, please umount it first! »** : `Ventoy2Disk.sh` refuse tout simplement de s'exécuter sur un périphérique monté, et la clé USB cible est normalement encore montée au moment où on clique sur le bouton d'installation (l'appli vient juste de la scanner). Corrigé en la démontant automatiquement au préalable (via `udisksctl` quand disponible, avec quelques tentatives — un bureau qui automonte les périphériques peut sinon la remonter aussitôt en silence). Si quelque chose la maintient encore ouverte (par exemple une fenêtre de gestionnaire de fichiers affichant la clé) et qu'elle ne peut vraiment pas être démontée, l'appli le signale désormais clairement et s'arrête là, plutôt que de lancer le script d'installation quand même et de déverser son échec brut dans le journal.
 
 ### Ajouté
+- **Omarchy** (bureau Arch Linux + Hyprland opinionné par DHH) : vérifie les releases GitHub (`omacom/omarchy`) pour la version, construit l'URL de l'ISO à partir de `iso.omarchy.org`, et la vérifie via le fichier `.sha256` officiel. 65 vérificateurs de distributions désormais, 124 variantes enregistrées.
 - **Bouton « Copier » sur le journal d'installation de Ventoy** : la sortie de `Ventoy2Disk.sh` (ou l'erreur qui l'a interrompu) peut désormais être copiée dans le presse-papiers directement depuis l'assistant « Créer une clé Ventoy », au lieu de devoir sélectionner le texte à la main.
 
 ### Changé

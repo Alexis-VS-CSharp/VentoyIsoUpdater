@@ -7,7 +7,7 @@ A desktop GUI for managing Ventoy USB keys: checks for ISO updates, downloads wi
 ## Features
 
 - **Automatic detection** of mounted Ventoy drives (Linux and Windows)
-- **Version checking** across 64 distribution checkers (123 registered variants: editions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc. x86_64 is the priority target; 13 distros that publish a genuine, generic ARM64 ISO (not a device-specific SBC image) get a separate, clearly labeled "(ARM64)" entry — see the supported distributions list below.
+- **Version checking** across 65 distribution checkers (124 registered variants: editions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc. x86_64 is the priority target; 13 distros that publish a genuine, generic ARM64 ISO (not a device-specific SBC image) get a separate, clearly labeled "(ARM64)" entry — see the supported distributions list below.
 - **ISO downloads** with a progress bar and **real checksum verification** (SHA256/SHA512/MD5/SHA1, whichever the upstream source publishes — not just a checkbox)
 - **Version browser**: pick a specific version to download
 - **Automatic `ventoy.json` updates**: new folders are registered as `menu_class` entries
@@ -49,7 +49,7 @@ python main.py
 # → dist/linux/VentoyIsoUpdater  (single executable, ~44 MB)
 ```
 
-This script bundles Python, all dependencies (`--collect-all customtkinter`) and the 64 `sources/` checkers directly into the binary — at runtime it only depends on universal system libraries (`libc`, `libz`, `libpthread`), not on an external Tk/X11 install. It therefore runs as-is on most recent x86_64 distributions regardless of which one it was built on (the only real constraint is the `glibc` version: a binary built on a very recent distro may refuse to start on a much older one — standard practice for any Linux packaging, not a limitation of this project).
+This script bundles Python, all dependencies (`--collect-all customtkinter`) and the 65 `sources/` checkers directly into the binary — at runtime it only depends on universal system libraries (`libc`, `libz`, `libpthread`), not on an external Tk/X11 install. It therefore runs as-is on most recent x86_64 distributions regardless of which one it was built on (the only real constraint is the `glibc` version: a binary built on a very recent distro may refuse to start on a much older one — standard practice for any Linux packaging, not a limitation of this project).
 
 **The produced binary is unique and identical no matter which distribution format is chosen afterward** — `.deb`, `.rpm`, `.AppImage` are *not* separate builds, they're four different ways of packaging that same executable for each distro family's package manager:
 
@@ -109,7 +109,7 @@ VentoyIsoUpdater/
 │   ├── iso_manager.py       # ISO file management
 │   ├── theme_manager.py     # GRUB2 theme management
 │   └── preferences.py       # Persistent preferences
-├── sources/                 # Per-distro version checkers (64 files)
+├── sources/                 # Per-distro version checkers (65 files)
 │   ├── base.py               # BaseChecker ABC + VersionInfo
 │   ├── _checksum.py          # Checksum-fetching helpers (GNU/BSD)
 │   ├── _github.py            # GitHub releases helper
@@ -130,7 +130,7 @@ VentoyIsoUpdater/
 
 ## Supported distributions
 
-Ubuntu (+ Kubuntu/Xubuntu/Lubuntu/Ubuntu MATE/Budgie/Studio), Debian, LMDE, Fedora (Workstation/Server/KDE/Silverblue/Kinoite/Spins), Arch, Manjaro, EndeavourOS, CachyOS, Garuda (10 editions), Linux Mint, Pop!_OS, Zorin, elementary, deepin, openSUSE, Solus, Void Linux, Slackware, Gentoo, NixOS, MX Linux, antiX, Linux Lite, Peppermint, Q4OS, PCLinuxOS, Mageia, VanillaOS, SparkyLinux, Kali, Parrot, BlackArch, Qubes, Tails, Whonix, CentOS Stream, AlmaLinux, Rocky, Oracle Linux, TrueNAS SCALE, Univention UCS, Proxmox VE, pfSense, OPNsense, FreeBSD, OpenBSD, NetBSD, DragonFlyBSD, GhostBSD (3 editions), Bazzite, Nobara, Batocera, ChimeraOS, Lakka, Windows (official ISOs, manual verification), Hirens Boot CD, Clonezilla, GParted, SystemRescue, Memtest86+, Zentyal.
+Ubuntu (+ Kubuntu/Xubuntu/Lubuntu/Ubuntu MATE/Budgie/Studio), Debian, LMDE, Fedora (Workstation/Server/KDE/Silverblue/Kinoite/Spins), Arch, Manjaro, EndeavourOS, CachyOS, Garuda (10 editions), Omarchy, Linux Mint, Pop!_OS, Zorin, elementary, deepin, openSUSE, Solus, Void Linux, Slackware, Gentoo, NixOS, MX Linux, antiX, Linux Lite, Peppermint, Q4OS, PCLinuxOS, Mageia, VanillaOS, SparkyLinux, Kali, Parrot, BlackArch, Qubes, Tails, Whonix, CentOS Stream, AlmaLinux, Rocky, Oracle Linux, TrueNAS SCALE, Univention UCS, Proxmox VE, pfSense, OPNsense, FreeBSD, OpenBSD, NetBSD, DragonFlyBSD, GhostBSD (3 editions), Bazzite, Nobara, Batocera, ChimeraOS, Lakka, Windows (official ISOs, manual verification), Hirens Boot CD, Clonezilla, GParted, SystemRescue, Memtest86+, Zentyal.
 
 Nearly all ISOs downloaded through the app are checksum-verified (SHA256, SHA512, MD5, or SHA1, depending on what each distribution publishes) — see `SECURITY.md` for details on what is and isn't covered.
 

@@ -1894,6 +1894,21 @@
       "logo_url": "https://www.hirensbootcd.org/favicon.ico",
       "homepage": "https://www.hirensbootcd.org/download/",
       "grub_class": "hirens"
+    },
+    {
+      "id": "omarchy",
+      "name": "Omarchy",
+      "category": "linux",
+      "filename_patterns": [
+        "omarchy-[\\d.]+\\.iso"
+      ],
+      "version_regex": "omarchy-([\\d.]+)\\.iso",
+      "checker": "omarchy",
+      "checker_variant": null,
+      "logo_filename": "omarchy.png",
+      "logo_url": "https://omarchy.org/brand/omarchy-logo.png",
+      "homepage": "https://omarchy.org",
+      "grub_class": "omarchy"
     }
   ]
 }

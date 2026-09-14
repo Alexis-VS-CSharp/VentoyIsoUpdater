@@ -7,7 +7,7 @@ Interface graphique pour gérer vos clés USB Ventoy : vérification des mises �
 ## Fonctionnalités
 
 - **Détection automatique** des clés Ventoy montées (Linux et Windows)
-- **Vérification des versions** pour 64 vérificateurs de distributions (123 variantes enregistrées : éditions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc. x86_64 reste la cible prioritaire ; 13 distributions qui publient un vrai ISO ARM64 générique (pas une image spécifique à une carte SBC) ont une entrée séparée, clairement étiquetée « (ARM64) » — voir la liste des distributions supportées ci-dessous.
+- **Vérification des versions** pour 65 vérificateurs de distributions (124 variantes enregistrées : éditions, architectures) — Ubuntu, Fedora, Debian, Arch, TrueNAS, Proxmox, etc. x86_64 reste la cible prioritaire ; 13 distributions qui publient un vrai ISO ARM64 générique (pas une image spécifique à une carte SBC) ont une entrée séparée, clairement étiquetée « (ARM64) » — voir la liste des distributions supportées ci-dessous.
 - **Téléchargement d'ISO** avec barre de progression et **vérification d'empreinte réelle** (SHA256/SHA512/MD5/SHA1 selon ce que publie chaque source — pas une simple case cochée)
 - **Navigateur de versions** : choisissez une version spécifique à télécharger
 - **Mise à jour automatique de ventoy.json** : les nouveaux dossiers sont enregistrés comme `menu_class`
@@ -49,7 +49,7 @@ python main.py
 # → dist/linux/VentoyIsoUpdater  (exécutable unique, ~44 Mo)
 ```
 
-Ce script embarque Python, toutes les dépendances (`--collect-all customtkinter`) et les 64 vérificateurs de `sources/` directement dans le binaire — à l'exécution, il ne dépend plus que de bibliothèques système universelles (`libc`, `libz`, `libpthread`), pas de Tk/X11 externe. Il tourne donc tel quel sur la plupart des distributions x86_64 récentes, quelle que soit celle utilisée pour le build (la seule contrainte réelle est la version de `glibc` : buildé sur une distribution trop récente, le binaire peut refuser de démarrer sur un système beaucoup plus ancien — pratique standard de tout packaging Linux, pas une limite de ce projet).
+Ce script embarque Python, toutes les dépendances (`--collect-all customtkinter`) et les 65 vérificateurs de `sources/` directement dans le binaire — à l'exécution, il ne dépend plus que de bibliothèques système universelles (`libc`, `libz`, `libpthread`), pas de Tk/X11 externe. Il tourne donc tel quel sur la plupart des distributions x86_64 récentes, quelle que soit celle utilisée pour le build (la seule contrainte réelle est la version de `glibc` : buildé sur une distribution trop récente, le binaire peut refuser de démarrer sur un système beaucoup plus ancien — pratique standard de tout packaging Linux, pas une limite de ce projet).
 
 **Le binaire produit est unique et identique quel que soit le format de diffusion choisi ensuite** — `.deb`, `.rpm`, `.AppImage` ne sont *pas* des builds séparés, ce sont quatre façons différentes d'empaqueter ce même exécutable pour le gestionnaire de paquets de chaque famille de distribution :
 
@@ -109,7 +109,7 @@ VentoyIsoUpdater/
 │   ├── iso_manager.py       # Gestion des fichiers ISO
 │   ├── theme_manager.py     # Gestion du thème GRUB2
 │   └── preferences.py       # Préférences persistantes
-├── sources/                 # Vérificateurs de version par distro (64 fichiers)
+├── sources/                 # Vérificateurs de version par distro (65 fichiers)
 │   ├── base.py               # BaseChecker ABC + VersionInfo
 │   ├── _checksum.py          # Helpers de récupération d'empreinte (GNU/BSD)
 │   ├── _github.py            # Helper GitHub releases
@@ -130,7 +130,7 @@ VentoyIsoUpdater/
 
 ## Distributions supportées
 
-Ubuntu (+ Kubuntu/Xubuntu/Lubuntu/Ubuntu MATE/Budgie/Studio), Debian, LMDE, Fedora (Workstation/Server/KDE/Silverblue/Kinoite/Spins), Arch, Manjaro, EndeavourOS, CachyOS, Garuda (10 éditions), Linux Mint, Pop!_OS, Zorin, elementary, deepin, openSUSE, Solus, Void Linux, Slackware, Gentoo, NixOS, MX Linux, antiX, Linux Lite, Peppermint, Q4OS, PCLinuxOS, Mageia, VanillaOS, SparkyLinux, Kali, Parrot, BlackArch, Qubes, Tails, Whonix, CentOS Stream, AlmaLinux, Rocky, Oracle Linux, TrueNAS SCALE, Univention UCS, Proxmox VE, pfSense, OPNsense, FreeBSD, OpenBSD, NetBSD, DragonFlyBSD, GhostBSD (3 éditions), Bazzite, Nobara, Batocera, ChimeraOS, Lakka, Windows (ISOs officielles, vérification manuelle), Hirens Boot CD, Clonezilla, GParted, SystemRescue, Memtest86+, Zentyal.
+Ubuntu (+ Kubuntu/Xubuntu/Lubuntu/Ubuntu MATE/Budgie/Studio), Debian, LMDE, Fedora (Workstation/Server/KDE/Silverblue/Kinoite/Spins), Arch, Manjaro, EndeavourOS, CachyOS, Garuda (10 éditions), Omarchy, Linux Mint, Pop!_OS, Zorin, elementary, deepin, openSUSE, Solus, Void Linux, Slackware, Gentoo, NixOS, MX Linux, antiX, Linux Lite, Peppermint, Q4OS, PCLinuxOS, Mageia, VanillaOS, SparkyLinux, Kali, Parrot, BlackArch, Qubes, Tails, Whonix, CentOS Stream, AlmaLinux, Rocky, Oracle Linux, TrueNAS SCALE, Univention UCS, Proxmox VE, pfSense, OPNsense, FreeBSD, OpenBSD, NetBSD, DragonFlyBSD, GhostBSD (3 éditions), Bazzite, Nobara, Batocera, ChimeraOS, Lakka, Windows (ISOs officielles, vérification manuelle), Hirens Boot CD, Clonezilla, GParted, SystemRescue, Memtest86+, Zentyal.
 
 La quasi-totalité des ISO téléchargées via l'app sont vérifiées par empreinte (SHA256, SHA512, MD5 ou SHA1 selon ce que publie chaque distribution) — voir `SECURITY.md` pour le détail de ce qui est et n'est pas couvert.
 

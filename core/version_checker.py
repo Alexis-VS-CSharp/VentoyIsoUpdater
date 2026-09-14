@@ -107,6 +107,7 @@ def _load_checkers():
         from sources.whonix import WhonixChecker
         from sources.hirens import HirensChecker
         from sources.elementary import ElementaryChecker
+        from sources.omarchy import OmarchyChecker
 
         _CHECKER_REGISTRY.update({
             "ubuntu":          UbuntuChecker,
@@ -173,6 +174,7 @@ def _load_checkers():
             "whonix":          WhonixChecker,
             "hirens":          HirensChecker,
             "elementary":      ElementaryChecker,
+            "omarchy":         OmarchyChecker,
         })
 
 
