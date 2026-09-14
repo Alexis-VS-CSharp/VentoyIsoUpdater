@@ -450,16 +450,23 @@ def install_ventoy(
     device: str,
     ventoy_script: str,
     overwrite: bool = False,
+    force: bool = False,
     on_output: Optional[Callable[[str], None]] = None,
 ) -> tuple[bool, str]:
     """
     Installs Ventoy onto the device.
     Uses pkexec if available (GUI sudo), otherwise returns a sudo command.
 
+    `force=True` uses Ventoy2Disk.sh's "-I" mode, which (re)installs
+    regardless of whether the device already has Ventoy on it — needed
+    since a plain "-i" install refuses outright ("already contains a
+    Ventoy ...") the moment the disk isn't blank, and there's otherwise no
+    way to redo an install from this app.
+
     Returns (success: bool, message: str).
     """
     system = platform.system()
-    flag = "-u" if overwrite else "-i"
+    flag = "-I" if force else ("-u" if overwrite else "-i")
 
     if system == "Linux":
         # Makes the script executable

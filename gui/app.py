@@ -1747,7 +1747,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
         if answer:
             self._run_install()
 
-    def _run_install(self):
+    def _run_install(self, force: bool = False):
         self.btn_install.configure(state="disabled", text=t('Installation...'))
         self._append_log(t('Démarrage de l\'installation Ventoy...\n'))
 
@@ -1767,6 +1767,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
             success, output = install_ventoy(
                 device=self._selected_device,
                 ventoy_script=script,
+                force=force,
                 on_output=_on_output,
             )
             self.after(0, lambda s=success, o=output:
@@ -1785,6 +1786,17 @@ class VentoySetupDialog(ctk.CTkToplevel):
             if self.on_done:
                 self.on_done()
             self.destroy()
+        elif "already contains a Ventoy" in output:
+            # A plain -i install refuses outright once the disk isn't
+            # blank — offer -I (force reinstall) instead of a dead end.
+            if ask_yes_no(
+                self, t('Ventoy déjà présent'),
+                t("Ce disque contient déjà une installation de Ventoy.\n\n"
+                  "Voulez-vous forcer la réinstallation ?\n"
+                  "⚠  TOUTES LES DONNÉES SERONT EFFACÉES !"),
+                danger=True,
+            ):
+                self._run_install(force=True)
         else:
             show_error(
                 self, t('Erreur'),
