@@ -58,7 +58,7 @@
       "checker": "debian",
       "checker_variant": null,
       "logo_filename": "debian.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/debian.png",
+      "logo_url": "https://www.debian.org/logos/openlogo-nd-100.png",
       "homepage": "https://www.debian.org/distrib/netinst",
       "grub_class": "debian"
     },
@@ -73,7 +73,7 @@
       "checker": "debian",
       "checker_variant": null,
       "logo_filename": "debian.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/debian.png",
+      "logo_url": "https://www.debian.org/logos/openlogo-nd-100.png",
       "homepage": "https://www.debian.org/distrib/netinst",
       "grub_class": "debian",
       "checker_arch": "arm64"
@@ -331,7 +331,7 @@
       "checker": "zorin",
       "checker_variant": "core",
       "logo_filename": "Zorin.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/zorin.png",
+      "logo_url": "https://zorin.com/apple-touch-icon.png",
       "homepage": "https://zorin.com/os/download/18/core/",
       "grub_class": "Zorin"
     },
@@ -346,7 +346,7 @@
       "checker": "zorin",
       "checker_variant": "education",
       "logo_filename": "Zorin.png",
-      "logo_url": "https://raw.githubusercontent.com/lutgaru/linux-distro-logos/master/zorin.png",
+      "logo_url": "https://zorin.com/apple-touch-icon.png",
       "homepage": "https://zorin.com/os/download/18/education/",
       "grub_class": "Zorin"
     },
