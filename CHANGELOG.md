@@ -8,6 +8,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.1.2] — 2026-09-14
 
 ### Fixed
+- **Drive list crashing with `PermissionError: [Errno 13] Permission denied: '/run/media/root'`**: the USB-drive scanner's fallback path walks two levels into `/media`, `/run/media` and `/mnt` when `/proc/mounts` doesn't have what it needs, with no guard against another user's mount subdirectory it can't read into — including one created moments earlier by a root-elevated Ventoy install run via `pkexec`, which is exactly how this got hit. Every "Actualiser" click, and the automatic rescan right after a successful Ventoy install, crashed outright. Fixed by skipping any directory this process can't access instead of letting the exception propagate.
 - **Ventoy installation failing with "/dev/sdX is already mounted, please umount it first!"**: `Ventoy2Disk.sh` refuses to run at all on a mounted device, and the target USB drive is normally still mounted right when the install button is clicked (the app just scanned it). Fixed by unmounting it automatically first (via `udisksctl` when available, with a couple of retries — an auto-mounting desktop can otherwise silently remount it right back). If something still has it open (e.g. a file manager window browsing the drive) and it truly can't be unmounted, the app now says so plainly and stops there instead of running the install script anyway and dumping its raw failure into the log.
 
 ### Added

@@ -164,16 +164,29 @@ def _find_linux() -> list[VentoyDrive]:
         for base in ["/media", "/run/media", "/mnt"]:
             if not os.path.isdir(base):
                 continue
-            base_dev = Path(base).stat().st_dev
-            for lvl1 in Path(base).iterdir():
-                if not lvl1.is_dir():
-                    continue
-                if lvl1.stat().st_dev != base_dev:
-                    search_roots.append(str(lvl1))
-                else:
+            try:
+                base_dev = Path(base).stat().st_dev
+                lvl1_entries = list(Path(base).iterdir())
+            except OSError:
+                continue
+            for lvl1 in lvl1_entries:
+                try:
+                    if not lvl1.is_dir():
+                        continue
+                    if lvl1.stat().st_dev != base_dev:
+                        search_roots.append(str(lvl1))
+                        continue
                     for lvl2 in lvl1.iterdir():
-                        if lvl2.is_dir() and lvl2.stat().st_dev != base_dev:
-                            search_roots.append(str(lvl2))
+                        try:
+                            if lvl2.is_dir() and lvl2.stat().st_dev != base_dev:
+                                search_roots.append(str(lvl2))
+                        except OSError:
+                            continue
+                except OSError:
+                    # e.g. another user's /run/media/<user> (or one created
+                    # by a root-elevated process, like a Ventoy install run
+                    # via pkexec) that this process can't read into
+                    continue
 
     for mp in search_roots:
         mp = os.path.normpath(mp)
