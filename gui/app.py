@@ -121,15 +121,30 @@ _logo_cache = LogoCache()
 
 class VentoyIsoUpdaterApp(ctk.CTk):
 
+    # Column widths shared between the header row (built once in
+    # _build_ui) and every data row (_render_row), so both stay pixel-
+    # aligned regardless of window width. Previously the header hardcoded
+    # its own separate widths while each row stretched its filename
+    # column (weight=1) to fill the remaining space — meaning every
+    # column after it (local/latest version, status) drifted out from
+    # under its header label, more so the wider the window. Order: logo,
+    # folder, filename, size, local version, latest version. The final
+    # column (status/actions) isn't listed here: it's sized to its own
+    # content and left-anchored right after these, in header and rows
+    # alike, so it never needs to match a fixed width.
+    _TABLE_COL_WIDTHS = (38, 110, 320, 90, 100, 100)
+
     def __init__(self):
         # className sets WM_CLASS on X11/Wayland — needed so the window
         # manager associates the right icon via the .desktop file
         super().__init__(className="VentoyIsoUpdater")
         self.title("VentoyIsoUpdater")
-        # Calculated minimum width: left panel 250 + fixed columns (logo 44,
-        # folder 104, ver×2 192, action 300, scrollbar+margins 60) = 950 + ISO
-        # flex column min 130 -> 1080. Height: toolbar 44 + header 32 + 10 rows
-        # × 40 + progress bar 46 = 522 -> 580 comfortable minimum.
+        # Calculated minimum width: left panel 250 + _TABLE_COL_WIDTHS's
+        # columns with their padding (46+118+328+98+108+108) + action column
+        # ~300 + scrollbar/margins 60 = 1406 -> rounded down to 1280 as a
+        # workable minimum (the action column can still wrap/crowd a little
+        # below that). Height: toolbar 44 + header 32 + 10 rows × 40 +
+        # progress bar 46 = 522 -> 580 comfortable minimum.
         self.minsize(1280, 580)
 
         self._prefs = prefs.load()
@@ -287,10 +302,10 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         # Table headers
         hdr = ctk.CTkFrame(right)
         hdr.grid(row=1, column=0, sticky="new")
-        for col, (txt, w) in enumerate([
-            ("", 38), (t('Dossier'), 110), (t('Fichier ISO'), 360),
-            (t('Ver. locale'), 100), (t('Dernière ver.'), 100), (t('Statut'), 290)
-        ]):
+        header_labels = ("", t('Dossier'), t('Fichier ISO'), t('Taille'),
+                          t('Ver. locale'), t('Dernière ver.'))
+        headers = list(zip(header_labels, self._TABLE_COL_WIDTHS)) + [(t('Statut'), 290)]
+        for col, (txt, w) in enumerate(headers):
             ctk.CTkLabel(hdr, text=txt, font=ctk.CTkFont(size=12, weight="bold"), width=w
                          ).grid(row=0, column=col, padx=4, pady=4, sticky="w")
 
@@ -432,7 +447,8 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         bg = "#2b2b2b" if idx % 2 == 0 else "#252525"
         row = ctk.CTkFrame(self.table, fg_color=bg, corner_radius=4)
         row.grid(row=idx, column=0, sticky="ew", padx=2, pady=1)
-        row.grid_columnconfigure(2, weight=1)
+
+        w_logo, w_folder, w_file, w_size, w_localver, w_latestver = self._TABLE_COL_WIDTHS
 
         # Logo miniature
         logo_img = None
@@ -444,26 +460,29 @@ class VentoyIsoUpdaterApp(ctk.CTk):
             if distro_cfg:
                 logo_img = _logo_cache.get(distro_cfg.get("grub_class", ""), (32, 32))
         if logo_img:
-            ctk.CTkLabel(row, image=logo_img, text="", width=36
+            ctk.CTkLabel(row, image=logo_img, text="", width=w_logo
                          ).grid(row=0, column=0, padx=4, pady=4)
         else:
-            ctk.CTkLabel(row, text="", width=36).grid(row=0, column=0, padx=4, pady=4)
+            ctk.CTkLabel(row, text="", width=w_logo).grid(row=0, column=0, padx=4, pady=4)
 
         ctk.CTkLabel(row, text=iso.folder, font=ctk.CTkFont(size=11),
-                     width=106, anchor="w").grid(row=0, column=1, padx=4, pady=4, sticky="w")
-        ctk.CTkLabel(row, text=iso.filename, font=ctk.CTkFont(size=11),
-                     anchor="w", wraplength=340).grid(row=0, column=2, padx=4, pady=4, sticky="w")
-        ctk.CTkLabel(row, text=iso.local_version or "—",
-                     font=ctk.CTkFont(size=11), width=94
+                     width=w_folder, anchor="w").grid(row=0, column=1, padx=4, pady=4, sticky="w")
+        ctk.CTkLabel(row, text=iso.filename, font=ctk.CTkFont(size=11), width=w_file,
+                     anchor="w", wraplength=w_file - 10).grid(row=0, column=2, padx=4, pady=4, sticky="w")
+        ctk.CTkLabel(row, text=format_size(iso.size_bytes) if iso.size_bytes else "—",
+                     font=ctk.CTkFont(size=11), width=w_size
                      ).grid(row=0, column=3, padx=4, pady=4)
+        ctk.CTkLabel(row, text=iso.local_version or "—",
+                     font=ctk.CTkFont(size=11), width=w_localver
+                     ).grid(row=0, column=4, padx=4, pady=4)
 
         latest_ver = result.latest_info.version if (result and result.latest_info) else "—"
         ctk.CTkLabel(row, text=latest_ver,
-                     font=ctk.CTkFont(size=11), width=94
-                     ).grid(row=0, column=4, padx=4, pady=4)
+                     font=ctk.CTkFont(size=11), width=w_latestver
+                     ).grid(row=0, column=5, padx=4, pady=4)
 
         action_frame = ctk.CTkFrame(row, fg_color="transparent")
-        action_frame.grid(row=0, column=5, padx=4, pady=4, sticky="e")
+        action_frame.grid(row=0, column=6, padx=4, pady=4, sticky="w")
 
         if result:
             color = STATUS_COLORS.get(result.status, ("#95a5a6", "#7f8c8d"))[0]

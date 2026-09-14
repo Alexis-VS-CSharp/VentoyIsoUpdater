@@ -177,6 +177,7 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "System Rescue": "System Rescue",
         "Sécurité": "Security",
         "Sélectionnez d'abord une clé Ventoy.": "Select a Ventoy drive first.",
+        "Taille": "Size",
         "Thème": "Theme",
         "Thème : ": "Theme: ",
         "Thème : non trouvé": "Theme: not found",
