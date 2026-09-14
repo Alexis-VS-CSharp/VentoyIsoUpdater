@@ -368,7 +368,10 @@ class VentoyIsoUpdaterApp(ctk.CTk):
             self.lbl_logos.configure(text=t('Aucun thème détecté sur la clé'), text_color="#95a5a6")
             self.btn_sync_logos.configure(state="disabled")
             self.btn_force_logos.configure(state="disabled")
-            self.btn_theme_manager.configure(state="disabled")
+            # Left enabled: _open_theme_manager() offers to create a
+            # default theme structure instead of the button being a dead
+            # end on a drive that's never been booted from
+            self.btn_theme_manager.configure(state="normal")
 
         self.btn_check_all.configure(state="normal" if self.iso_entries else "disabled")
         self._render_table()
@@ -834,9 +837,25 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         VentoySetupDialog(self, on_done=self._refresh_drives)
 
     def _open_theme_manager(self):
-        if not self.current_drive or not self.current_drive.theme_dir:
-            show_info(self, t('Thème'), t('Aucun thème détecté sur la clé.'))
+        if not self.current_drive:
             return
+        if not self.current_drive.theme_dir:
+            if not ask_yes_no(
+                self, t('Aucun thème configuré'),
+                t("Cette clé Ventoy n'a pas encore de thème configuré — normal pour une "
+                  "installation qui n'a jamais démarré : rien ne le crée automatiquement.\n\n"
+                  "Créer une structure de thème par défaut pour commencer à la personnaliser ?"),
+            ):
+                return
+            from core.theme_manager import create_default_theme
+            ventoy_json_path, theme_dir, icons_dir = create_default_theme(self.current_drive.mount_point)
+            if not theme_dir:
+                show_error(self, t('Erreur'), t("Impossible de créer la structure du thème."))
+                return
+            self.current_drive.ventoy_json_path = ventoy_json_path
+            self.current_drive.theme_dir = theme_dir
+            self.current_drive.theme_icons_dir = icons_dir
+            self._scan_drive()
         ThemeEditorDialog(self, self.current_drive, self.distros_db,
                           iso_entries=self.iso_entries,
                           on_change=lambda: (self._render_table(), _logo_cache.clear()))

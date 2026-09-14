@@ -52,6 +52,45 @@ def save_ventoy_json(ventoy_json_path: str, data: dict) -> bool:
         return False
 
 
+def create_default_theme(mount_point: str) -> tuple[Optional[str], Optional[str], Optional[str]]:
+    """
+    Bootstraps the minimal ventoy/ structure needed for theme and logo
+    management on a drive that has none yet — the normal state right
+    after installing Ventoy: nothing creates ventoy/ventoy.json until a
+    theme is actually configured (Ventoy's own grub.cfg only reads it
+    from the main partition if it's there; it never creates it itself).
+
+    Creates ventoy/ventoy.json (pointing "theme.file" at the theme.txt
+    below unless it already points somewhere else), ventoy/theme/theme.txt
+    (a harmless empty template if none exists) and ventoy/theme/icons/.
+    Leaves any existing file untouched.
+
+    Returns (ventoy_json_path, theme_dir, icons_dir), or (None, None, None)
+    on failure.
+    """
+    theme_dir = os.path.join(mount_point, "ventoy", "theme")
+    icons_dir = os.path.join(theme_dir, "icons")
+    ventoy_json_path = os.path.join(mount_point, "ventoy", "ventoy.json")
+    theme_txt_path = os.path.join(theme_dir, "theme.txt")
+
+    try:
+        os.makedirs(icons_dir, exist_ok=True)
+
+        if not os.path.isfile(theme_txt_path):
+            with open(theme_txt_path, "w", encoding="utf-8") as f:
+                f.write("# Ventoy theme — created by VentoyIsoUpdater\n")
+
+        data = load_ventoy_json(ventoy_json_path) if os.path.isfile(ventoy_json_path) else {}
+        if not data.get("theme", {}).get("file"):
+            data.setdefault("theme", {})["file"] = "/ventoy/theme/theme.txt"
+            if not save_ventoy_json(ventoy_json_path, data):
+                return None, None, None
+    except OSError:
+        return None, None, None
+
+    return ventoy_json_path, theme_dir, icons_dir
+
+
 def get_existing_menu_classes(ventoy_json_path: str) -> dict[str, str]:
     """
     Returns a {pattern -> class} dict from ventoy.json's menu_class entries.
