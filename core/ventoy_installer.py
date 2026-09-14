@@ -121,19 +121,23 @@ def _find_usb_windows(exclude_ventoy: bool) -> list[UsbDrive]:
 # ──────────────────────────────────────────────────────────────────────────────
 
 _LINUX_CANDIDATES = [
+    "Ventoy2Disk.sh",
     "ventoy2disk.sh",
     "ventoy",
 ]
 _LINUX_PATHS = [
+    "/usr/share/ventoy/Ventoy2Disk.sh",
     "/usr/share/ventoy/ventoy2disk.sh",
+    "/opt/ventoy/Ventoy2Disk.sh",
     "/opt/ventoy/ventoy2disk.sh",
+    "/usr/local/share/ventoy/Ventoy2Disk.sh",
     "/usr/local/share/ventoy/ventoy2disk.sh",
 ]
 
 
 def find_ventoy_binary() -> Optional[str]:
     """
-    Returns the path to ventoy2disk.sh or ventoy, or None if not found.
+    Returns the path to Ventoy2Disk.sh or ventoy, or None if not found.
 
     The standard install locations (_LINUX_PATHS) are checked first: these
     are fixed absolute paths that the user's environment can't influence.
@@ -153,17 +157,21 @@ def find_ventoy_binary() -> Optional[str]:
 
 
 def find_ventoy_in_dir(directory: str) -> Optional[str]:
-    """Looks for ventoy2disk.sh in an extracted directory."""
-    for fname in ["ventoy2disk.sh", "Ventoy2Disk.exe"]:
+    """Looks for Ventoy2Disk.sh in an extracted directory."""
+    # The official Ventoy Linux archive ships "Ventoy2Disk.sh" (mixed case);
+    # the lowercase variant is also accepted in case a third-party package
+    # renamed it — matching matters on case-sensitive filesystems (ext4, etc.)
+    for fname in ["Ventoy2Disk.sh", "ventoy2disk.sh", "Ventoy2Disk.exe"]:
         candidate = os.path.join(directory, fname)
         if os.path.isfile(candidate):
             return candidate
     # Searches one level deeper, recursively
     for entry in os.scandir(directory):
         if entry.is_dir():
-            candidate = os.path.join(entry.path, "ventoy2disk.sh")
-            if os.path.isfile(candidate):
-                return candidate
+            for fname in ["Ventoy2Disk.sh", "ventoy2disk.sh"]:
+                candidate = os.path.join(entry.path, fname)
+                if os.path.isfile(candidate):
+                    return candidate
     return None
 
 

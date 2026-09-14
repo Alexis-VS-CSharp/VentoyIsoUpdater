@@ -5,6 +5,11 @@
 Toutes les modifications notables de ce projet sont documentées dans ce fichier.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
+## [1.1.2] — 2026-09-14
+
+### Corrigé
+- **L'installation de Ventoy échouait systématiquement sur Linux** : le code recherchait le script d'installation sous le nom `ventoy2disk.sh`, alors que l'archive officielle Ventoy pour Linux le fournit sous le nom `Ventoy2Disk.sh` (casse mixte). Sur tout système de fichiers sensible à la casse (ext4, btrfs, xfs — donc pratiquement toutes les distributions Linux, Fedora compris), la recherche ne trouvait jamais de correspondance : `find_ventoy_in_dir`/`find_ventoy_binary` ne renvoyaient jamais rien, et l'appli affichait « Ventoy2Disk.sh introuvable » même juste après avoir téléchargé et extrait une copie toute fraîche. Corrigé en recherchant le vrai nom de fichier (les deux casses sont désormais acceptées, au cas où un paquet tiers utiliserait la forme en minuscules).
+
 ## [1.1.1] — 2026-08-23
 
 ### Corrigé
