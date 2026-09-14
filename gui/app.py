@@ -40,6 +40,33 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
+def _patched_ctk_mouse_wheel_all(self, event):
+    """
+    Replaces CTkScrollableFrame's own global wheel handler.
+
+    On Linux (and macOS), customtkinter scrolls by `-event.delta` "units"
+    directly, with no scaling at all — it assumes `delta` is already a
+    small number (±1, ±2...), which holds on native X11/macOS but not on
+    every desktop: some GNOME/Wayland (via XWayland) setups report much
+    larger values, so a single wheel notch could jump straight to the
+    bottom or top of the list instead of scrolling a little. One "unit"
+    per event, regardless of delta's magnitude, is what Button-4/Button-5
+    (the X11 wheel events, unaffected by this) already do — this just
+    makes <MouseWheel> match.
+    """
+    if self.check_if_master_is_canvas(event.widget):
+        step = -1 if event.delta > 0 else 1
+        if self._shift_pressed:
+            if self._parent_canvas.xview() != (0.0, 1.0):
+                self._parent_canvas.xview("scroll", step, "units")
+        else:
+            if self._parent_canvas.yview() != (0.0, 1.0):
+                self._parent_canvas.yview("scroll", step, "units")
+
+
+ctk.CTkScrollableFrame._mouse_wheel_all = _patched_ctk_mouse_wheel_all
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  Cache de logos (miniatures PNG depuis le dossier icons/)
 # ══════════════════════════════════════════════════════════════════════════════
@@ -382,8 +409,12 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     def _bind_table_scroll(self, widget):
         """Propage la molette de tous les widgets enfants vers le canvas de la table."""
         canvas = self.table._parent_canvas
+        # One "unit" per event regardless of e.delta's magnitude: on X11/
+        # Wayland that value isn't reliably ±120 per notch the way it is on
+        # Windows/macOS — some setups report much larger deltas, which made
+        # a single wheel tick scroll the whole list to the bottom.
         widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(int(-e.delta / 120), "units"), add="+")
+                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"), add="+")
         widget.bind("<Button-4>",
                     lambda e: canvas.yview_scroll(-1, "units"), add="+")
         widget.bind("<Button-5>",
@@ -1221,8 +1252,10 @@ class DistroPickerDialog(ctk.CTkToplevel):
 
     def _bind_scroll_to(self, widget, canvas):
         """Recursively forwards the mouse wheel to the given canvas."""
+        # One "unit" per event regardless of e.delta's magnitude — see
+        # _bind_table_scroll's comment.
         widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(-int(e.delta / 60), "units"),
+                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"),
                     add="+")
         widget.bind("<Button-4>",
                     lambda e: canvas.yview_scroll(-1, "units"),
@@ -1972,8 +2005,10 @@ class ThemeEditorDialog(ctk.CTkToplevel):
 
     def _bind_scroll_to(self, widget, canvas):
         """Recursively forwards the mouse wheel from all children to the given canvas."""
+        # One "unit" per event regardless of e.delta's magnitude — see
+        # _bind_table_scroll's comment.
         widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(int(-e.delta / 120), "units"), add="+")
+                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"), add="+")
         widget.bind("<Button-4>",
                     lambda e: canvas.yview_scroll(-1, "units"), add="+")
         widget.bind("<Button-5>",
@@ -3049,8 +3084,10 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
             canvas = self._listbox._parent_canvas
         except AttributeError:
             return
+        # One "unit" per event regardless of e.delta's magnitude — see
+        # _bind_table_scroll's comment.
         widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(-int(e.delta / 60), "units"),
+                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"),
                     add="+")
         widget.bind("<Button-4>",
                     lambda e: canvas.yview_scroll(-1, "units"),
