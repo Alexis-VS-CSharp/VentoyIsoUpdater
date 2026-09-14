@@ -7,6 +7,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [1.1.2] — 2026-09-14
 
+### Fixed
+- **Ventoy installation failing with "/dev/sdX is already mounted, please umount it first!"**: `Ventoy2Disk.sh` refuses to run at all on a mounted device, and the target USB drive is normally still mounted right when the install button is clicked (the app just scanned it). Fixed by unmounting it automatically first (via `udisksctl` when available, with a couple of retries — an auto-mounting desktop can otherwise silently remount it right back). If something still has it open (e.g. a file manager window browsing the drive) and it truly can't be unmounted, the app now says so plainly and stops there instead of running the install script anyway and dumping its raw failure into the log.
+
 ### Added
 - **"Copy" button on the Ventoy install log**: the output of `Ventoy2Disk.sh` (or the error that stopped it) can now be copied to the clipboard directly from the "Create a Ventoy drive" wizard, instead of having to select the wrapped text by hand.
 

@@ -6,6 +6,7 @@ Linux and Windows compatible.
 import os
 import re
 import json
+import time
 import shutil
 import hashlib
 import platform
@@ -385,6 +386,66 @@ def download_ventoy(
 #  Installing Ventoy
 # ──────────────────────────────────────────────────────────────────────────────
 
+def _mounted_partitions_linux(device: str) -> list[str]:
+    """Lists every currently mounted block device belonging to `device`
+    (its partitions, or the whole disk itself for a "superfloppy"-style USB
+    stick formatted with no partition table)."""
+    try:
+        result = subprocess.run(
+            ["lsblk", "-J", "-b", "-o", "NAME,MOUNTPOINT"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode != 0:
+            return []
+        data = json.loads(result.stdout)
+    except Exception:
+        return []
+
+    dev_name = os.path.basename(device)
+    mounted = []
+
+    def collect(node):
+        if node.get("mountpoint"):
+            mounted.append(f"/dev/{node['name']}")
+        for child in node.get("children", []) or []:
+            collect(child)
+
+    for node in data.get("blockdevices", []):
+        if node.get("name") == dev_name:
+            collect(node)
+    return mounted
+
+
+def _unmount_device_linux(device: str) -> list[str]:
+    """
+    Unmounts every currently mounted partition of `device` before handing
+    it to Ventoy2Disk.sh, which otherwise refuses to run ("is already
+    mounted, please umount it first!"). Desktops that auto-mount removable
+    media (GNOME/udisks2, KDE's Plasma equivalent...) can also silently
+    remount it again right after a plain `umount` — a couple of retries
+    gives that a chance to settle before we give up.
+
+    Returns whatever is still mounted after all attempts (empty list if
+    everything was successfully unmounted).
+    """
+    use_udisksctl = shutil.which("udisksctl") is not None
+    for _attempt in range(3):
+        still_mounted = _mounted_partitions_linux(device)
+        if not still_mounted:
+            return []
+        for part in still_mounted:
+            try:
+                if use_udisksctl:
+                    subprocess.run(["udisksctl", "unmount", "-b", part],
+                                    capture_output=True, timeout=10)
+                else:
+                    subprocess.run(["umount", part], capture_output=True, timeout=10)
+            except Exception:
+                pass
+        time.sleep(0.4)
+    return _mounted_partitions_linux(device)
+
+
 def install_ventoy(
     device: str,
     ventoy_script: str,
@@ -406,6 +467,19 @@ def install_ventoy(
             os.chmod(ventoy_script, 0o755)
         except Exception:
             pass
+
+        # Ventoy2Disk.sh refuses to run at all on a mounted device/partition
+        # ("is already mounted, please umount it first!") — the target USB
+        # drive is normally still mounted at this point (the app just
+        # scanned it), so unmount it first instead of making the user do it
+        # manually from a terminal.
+        still_mounted = _unmount_device_linux(device)
+        if still_mounted:
+            return False, (
+                f"Impossible de démonter {', '.join(still_mounted)} (occupé).\n"
+                f"Fermez tout gestionnaire de fichiers ou toute fenêtre qui a "
+                f"la clé USB ouverte, puis réessayez."
+            )
 
         # Picks the elevation tool
         if shutil.which("pkexec"):
