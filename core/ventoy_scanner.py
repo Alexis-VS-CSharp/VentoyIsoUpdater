@@ -7,7 +7,9 @@ import os
 import re
 import sys
 import json
+import shutil
 import platform
+import subprocess
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
@@ -50,9 +52,60 @@ def find_ventoy_drives() -> list[VentoyDrive]:
 
 
 def _is_ventoy_mount(path: str) -> bool:
-    """Checks whether the path is a Ventoy drive (presence of a ventoy/ folder)."""
-    ventoy_dir = os.path.join(path, "ventoy")
-    return os.path.isdir(ventoy_dir)
+    """
+    Checks whether the path is a Ventoy drive: either it has its own
+    ventoy/ folder (created once the drive's control files exist — e.g.
+    after the first boot into the Ventoy menu, or a theme setup through
+    this app), or — for a freshly installed drive that hasn't been booted
+    from yet, so its main data partition is still completely empty — it
+    sits on a disk that also has a sibling "VTOYEFI" partition, Ventoy's
+    own internal boot partition, always written at install time.
+    """
+    if os.path.isdir(os.path.join(path, "ventoy")):
+        return True
+    return _has_vtoyefi_sibling(path)
+
+
+def _has_vtoyefi_sibling(mount_point: str) -> bool:
+    """True if the disk this mount point's partition belongs to also has
+    a partition labeled "VTOYEFI" (Ventoy's own reserved label — see
+    core/ventoy_installer.py, which relies on the same label to recognize
+    an existing Ventoy install)."""
+    try:
+        source = subprocess.run(
+            ["findmnt", "-n", "-o", "SOURCE", mount_point],
+            capture_output=True, text=True, timeout=3,
+        ).stdout.strip()
+        if not source:
+            return False
+        parent = subprocess.run(
+            ["lsblk", "-n", "-o", "PKNAME", source],
+            capture_output=True, text=True, timeout=3,
+        ).stdout.strip()
+        if not parent:
+            return False
+        result = subprocess.run(
+            ["lsblk", "-J", "-o", "NAME,LABEL", f"/dev/{parent}"],
+            capture_output=True, text=True, timeout=3,
+        )
+        if result.returncode != 0:
+            return False
+        data = json.loads(result.stdout)
+    except Exception:
+        return False
+
+    for disk in data.get("blockdevices", []):
+        for child in disk.get("children", []) or []:
+            if (child.get("label") or "").upper() == "VTOYEFI":
+                return True
+    return False
+
+
+def _is_vtoyefi_mount(path: str) -> bool:
+    """True if `path` is Ventoy's own internal boot partition (always
+    labeled "VTOYEFI") — never presented as a manageable drive: it holds
+    Ventoy's boot loader payload, not the user's ISOs."""
+    return os.path.basename(os.path.normpath(path)).upper() == "VTOYEFI"
 
 
 def _get_ventoy_version(mount_point: str) -> Optional[str]:
@@ -127,7 +180,6 @@ def _get_drive_label_linux(mount_point: str) -> str:
             link = os.path.realpath(os.path.join(label_dir, label))
             # checks whether this disk matches the mount point
             try:
-                import subprocess
                 result = subprocess.run(
                     ["findmnt", "-n", "-o", "SOURCE", mount_point],
                     capture_output=True, text=True, timeout=3
@@ -141,10 +193,67 @@ def _get_drive_label_linux(mount_point: str) -> str:
     return os.path.basename(mount_point)
 
 
+def _auto_mount_unmounted_ventoy_linux() -> None:
+    """
+    Best-effort: mounts any unmounted partition on a hot-pluggable disk
+    that turns out to be a Ventoy drive, so it shows up without the user
+    having to unplug/replug it or open a file manager — which otherwise
+    would be the only way to get it auto-mounted again after this app (or
+    Ventoy2Disk.sh itself, mid-install) unmounted it. Unmounts it right
+    back if it turns out not to actually be Ventoy, to leave any other,
+    unrelated USB drive as untouched as possible.
+    """
+    if not shutil.which("udisksctl"):
+        return
+    try:
+        result = subprocess.run(
+            ["lsblk", "-J", "-b", "-o", "NAME,TYPE,HOTPLUG,MOUNTPOINT,FSTYPE,LABEL"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode != 0:
+            return
+        data = json.loads(result.stdout)
+    except Exception:
+        return
+
+    for disk in data.get("blockdevices", []):
+        if disk.get("type") != "disk" or not disk.get("hotplug"):
+            continue
+        for part in disk.get("children", []) or []:
+            if part.get("type") != "part" or part.get("mountpoint") or not part.get("fstype"):
+                continue
+            # VTOYEFI is Ventoy's own internal boot partition — nothing to
+            # detect by mounting it, and it must never be presented as a
+            # manageable drive
+            if (part.get("label") or "").upper() == "VTOYEFI":
+                continue
+            dev = f"/dev/{part['name']}"
+            try:
+                mount_result = subprocess.run(
+                    ["udisksctl", "mount", "-b", dev],
+                    capture_output=True, text=True, timeout=15,
+                )
+            except Exception:
+                continue
+            if mount_result.returncode != 0:
+                continue
+            # udisksctl prints e.g. "Mounted /dev/sda1 at /run/media/user/Label."
+            m = re.search(r"at (.+?)\.?\s*$", mount_result.stdout.strip())
+            mountpoint = m.group(1) if m else None
+            if not mountpoint or not _is_ventoy_mount(mountpoint):
+                try:
+                    subprocess.run(["udisksctl", "unmount", "-b", dev],
+                                    capture_output=True, timeout=10)
+                except Exception:
+                    pass
+
+
 def _find_linux() -> list[VentoyDrive]:
     drives = []
     checked_paths = set()
     search_roots = []
+
+    _auto_mount_unmounted_ventoy_linux()
 
     # Primary source: /proc/mounts lists exactly the real mount points
     try:
@@ -193,6 +302,9 @@ def _find_linux() -> list[VentoyDrive]:
         if mp in checked_paths:
             continue
         checked_paths.add(mp)
+
+        if _is_vtoyefi_mount(mp):
+            continue
 
         if _is_ventoy_mount(mp):
             label = _get_drive_label_linux(mp)
