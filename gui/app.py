@@ -1611,8 +1611,13 @@ class VentoySetupDialog(ctk.CTkToplevel):
 
     def _check_ventoy(self):
         def run():
-            from core.ventoy_installer import find_ventoy_binary, get_ventoy_latest_version
-            binary = find_ventoy_binary()
+            from core.ventoy_installer import (
+                find_ventoy_binary, find_cached_ventoy, get_ventoy_latest_version
+            )
+            # System install first, then a previously downloaded copy — so
+            # closing and reopening this wizard doesn't forget it and force
+            # a redundant re-download every time.
+            binary = find_ventoy_binary() or find_cached_ventoy()
             version = get_ventoy_latest_version()
             self._ventoy_version = version
             if not self.winfo_exists():
@@ -1645,9 +1650,8 @@ class VentoySetupDialog(ctk.CTkToplevel):
         self.vtoy_progress.set(0)
 
         def run():
-            import tempfile
-            from core.ventoy_installer import download_ventoy
-            self._tmp_dir = tempfile.mkdtemp(prefix="ventoy_")
+            from core.ventoy_installer import download_ventoy, get_ventoy_cache_dir
+            self._tmp_dir = get_ventoy_cache_dir()
 
             def on_progress(done, total):
                 self.after(0, lambda d=done, t=total:

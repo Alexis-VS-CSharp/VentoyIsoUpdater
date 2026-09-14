@@ -175,6 +175,40 @@ def find_ventoy_in_dir(directory: str) -> Optional[str]:
     return None
 
 
+_VENTOY_CACHE_DIR = os.path.join(
+    os.path.expanduser("~"), ".local", "share", "ventoyisoupdater", "ventoy"
+)
+
+
+def get_ventoy_cache_dir() -> str:
+    """
+    Persistent folder for a downloaded Ventoy release, so it survives
+    closing and reopening the "Create a Ventoy drive" wizard (it used to be
+    a throwaway tempdir, silently forgotten — and re-downloaded — every
+    time the wizard was reopened).
+    """
+    os.makedirs(_VENTOY_CACHE_DIR, exist_ok=True)
+    return _VENTOY_CACHE_DIR
+
+
+def find_cached_ventoy() -> Optional[str]:
+    """Returns the install script from a previously downloaded release
+    sitting in the persistent cache dir (most recently extracted first), or
+    None if nothing has been downloaded yet."""
+    if not os.path.isdir(_VENTOY_CACHE_DIR):
+        return None
+    subdirs = [
+        os.path.join(_VENTOY_CACHE_DIR, name)
+        for name in os.listdir(_VENTOY_CACHE_DIR)
+        if os.path.isdir(os.path.join(_VENTOY_CACHE_DIR, name))
+    ]
+    for directory in sorted(subdirs, key=os.path.getmtime, reverse=True):
+        script = find_ventoy_in_dir(directory)
+        if script:
+            return script
+    return None
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 #  Downloading Ventoy from GitHub
 # ──────────────────────────────────────────────────────────────────────────────
@@ -325,6 +359,13 @@ def download_ventoy(
             _safe_extract_tar(archive_path, dest_dir)
         elif archive_name.endswith(".zip"):
             _safe_extract_zip(archive_path, dest_dir)
+
+        # dest_dir is now a persistent cache, not a throwaway tempdir —
+        # don't leave the ~20MB archive behind on every download
+        try:
+            os.remove(archive_path)
+        except OSError:
+            pass
 
         # Looks for the extracted folder
         extracted = os.path.join(dest_dir, f"ventoy-{version}")
