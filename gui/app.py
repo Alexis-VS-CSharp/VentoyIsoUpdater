@@ -10,7 +10,9 @@ from typing import Callable, Optional
 
 import tkinter as tk
 import customtkinter as ctk
-from tkinter import messagebox, filedialog
+from tkinter import filedialog
+
+from gui.dialogs import show_info, show_warning, show_error, ask_yes_no
 
 from core.ventoy_scanner import (
     find_ventoy_drives, scan_isos, load_distros_db,
@@ -112,8 +114,8 @@ class VentoyIsoUpdaterApp(ctk.CTk):
             self.distros_db = load_distros_db()
         except Exception as e:
             logger.critical("Impossible de charger distros.json : %s", e)
-            messagebox.showerror(
-                t('Erreur critique'),
+            show_error(
+                self, t('Erreur critique'),
                 f"{t('Impossible de charger la base de données des distributions :\n')}{e}"
                 f"{t('\n\nVérifiez que le fichier data/distros.json est présent et valide.')}"
             )
@@ -530,8 +532,8 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         info = result.latest_info
         dest_folder = os.path.dirname(iso.path)
         dest_path = get_download_path(dest_folder, info.filename)
-        confirmed = messagebox.askyesno(
-            t('Confirmer le téléchargement'),
+        confirmed = ask_yes_no(
+            self, t('Confirmer le téléchargement'),
             t('Mettre à jour :\n\n  Actuel  :  ') + iso.filename +
             t('\n  Nouveau :  ') + info.filename +
             t('\n\n  Version : ') + info.version +
@@ -571,7 +573,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     def _open_download_browser(self):
         """Opens the global download browser (with no ISO selected)."""
         if not self.current_drive:
-            messagebox.showinfo("Info", t('Sélectionnez d\'abord une clé Ventoy.'))
+            show_info(self, "Info", t('Sélectionnez d\'abord une clé Ventoy.'))
             return
         DistroPickerDialog(self, self.distros_db, self.current_drive,
                            iso_entries=self.iso_entries,
@@ -609,8 +611,8 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                             logger.warning("Not enough space: %s needed, %s available",
                                            needed, avail)
                             if not self._closing:
-                                self.after(0, lambda m=msg: messagebox.showerror(
-                                    t('Espace insuffisant'), m))
+                                self.after(0, lambda m=msg: show_error(
+                                    self, t('Espace insuffisant'), m))
                             return
                 except Exception as e:
                     logger.debug("Disk space check skipped: %s", e)
@@ -639,8 +641,8 @@ class VentoyIsoUpdaterApp(ctk.CTk):
                 # verification instead of implying the integrity was
                 # checked when it wasn't.
                 if manual_verify_url and not checksum and not self._closing:
-                    self.after(0, lambda u=manual_verify_url: messagebox.showinfo(
-                        t('Vérification manuelle recommandée'),
+                    self.after(0, lambda u=manual_verify_url: show_info(
+                        self, t('Vérification manuelle recommandée'),
                         f"{os.path.basename(dest_path)}" +
                         t(" a été téléchargé.\n\nCette source ne publie pas d'empreinte automatiquement vérifiable — pensez à contrôler l'intégrité de l'ISO vous-même avant de l'utiliser :\n\n") +
                         u
@@ -657,12 +659,12 @@ class VentoyIsoUpdaterApp(ctk.CTk):
             except DownloadError as e:
                 logger.warning("Download failed: %s", e)
                 if not self._closing:
-                    self.after(0, lambda err=str(e): messagebox.showerror(t('Erreur'), t(err)))
+                    self.after(0, lambda err=str(e): show_error(self, t('Erreur'), t(err)))
             except Exception as e:
                 logger.error("Erreur inattendue dans _do_download : %s", e, exc_info=True)
                 if not self._closing:
-                    self.after(0, lambda err=str(e): messagebox.showerror(
-                        t('Erreur inattendue'), err))
+                    self.after(0, lambda err=str(e): show_error(
+                        self, t('Erreur inattendue'), err))
             finally:
                 if not self._closing:
                     self.after(0, lambda: self._show_progress(False))
@@ -743,14 +745,15 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     # ─────────────────────────── DELETE ISO ─────────────────────────────────
 
     def _confirm_delete(self, iso: IsoEntry):
-        if messagebox.askyesno(
-            t('Supprimer'),
-            f"{t('Supprimer définitivement :\n')}{iso.filename} ?"
+        if ask_yes_no(
+            self, t('Supprimer'),
+            f"{t('Supprimer définitivement :\n')}{iso.filename} ?",
+            danger=True,
         ):
             if delete_iso(iso.path):
                 self._scan_drive()
             else:
-                messagebox.showerror(t('Erreur'), t('Impossible de supprimer le fichier.'))
+                show_error(self, t('Erreur'), t('Impossible de supprimer le fichier.'))
 
     # ─────────────────────────── LOGO SYNC ──────────────────────────────────
 
@@ -758,7 +761,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         if self._sync_in_progress:
             return
         if not self.current_drive or not self.current_drive.theme_icons_dir:
-            messagebox.showinfo("Logos", t('Aucun dossier icons/ détecté sur la clé.'))
+            show_info(self, "Logos", t('Aucun dossier icons/ détecté sur la clé.'))
             return
         self._sync_in_progress = True
         self.btn_sync_logos.configure(state="disabled", text=t('Téléchargement en cours...'))
@@ -822,10 +825,9 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         """
         lang = self._lang_by_label.get(label, "fr")
         prefs.set_key("language", lang)
-        messagebox.showinfo(
-            t('Langue'),
+        show_info(
+            self, t('Langue'),
             t("La langue sera appliquée au prochain démarrage de VentoyIsoUpdater."),
-            parent=self,
         )
 
     def _open_ventoy_setup(self):
@@ -833,7 +835,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
 
     def _open_theme_manager(self):
         if not self.current_drive or not self.current_drive.theme_dir:
-            messagebox.showinfo(t('Thème'), t('Aucun thème détecté sur la clé.'))
+            show_info(self, t('Thème'), t('Aucun thème détecté sur la clé.'))
             return
         ThemeEditorDialog(self, self.current_drive, self.distros_db,
                           iso_entries=self.iso_entries,
@@ -1051,7 +1053,7 @@ class VersionBrowserDialog(ctk.CTkToplevel):
             try:
                 os.makedirs(dest_folder, exist_ok=True)
             except Exception as e:
-                messagebox.showerror(t('Erreur'), f"{t('Impossible de créer le dossier :\n')}{dest_folder}\n{e}", parent=self)
+                show_error(self, t('Erreur'), f"{t('Impossible de créer le dossier :\n')}{dest_folder}\n{e}")
                 return
         from core.iso_manager import get_download_path
         dest_path = get_download_path(dest_folder, v.filename)
@@ -1421,7 +1423,7 @@ class DistroPickerDialog(ctk.CTkToplevel):
             try:
                 os.makedirs(dest_folder, exist_ok=True)
             except Exception as e:
-                messagebox.showerror(t('Erreur'), f"{t('Impossible de créer le dossier :\n')}{dest_folder}\n{e}", parent=self)
+                show_error(self, t('Erreur'), f"{t('Impossible de créer le dossier :\n')}{dest_folder}\n{e}")
                 return
         from core.iso_manager import get_download_path
         dest_path = get_download_path(dest_folder, v.filename)
@@ -1656,7 +1658,7 @@ class VentoySetupDialog(ctk.CTkToplevel):
 
     def _download_ventoy(self):
         if not self._ventoy_version:
-            messagebox.showerror(t('Erreur'), t('Impossible de récupérer la version Ventoy.'), parent=self)
+            show_error(self, t('Erreur'), t('Impossible de récupérer la version Ventoy.'))
             return
         self.btn_download_ventoy.configure(state="disabled", text=t('Téléchargement...'))
         self.vtoy_progress.grid()
@@ -1716,12 +1718,12 @@ class VentoySetupDialog(ctk.CTkToplevel):
             return
         from core.ventoy_installer import find_ventoy_in_dir
         script = find_ventoy_in_dir(self._ventoy_dir) or self._ventoy_dir
-        answer = messagebox.askyesno(
-            t('Confirmer l\'installation'),
+        answer = ask_yes_no(
+            self, t('Confirmer l\'installation'),
             f"{t('Installer Ventoy sur :\n\n  ')}{self._selected_device}" +
             t('\n\nScript exécuté avec les droits administrateur :\n  ') + script +
             t('\n\n⚠  TOUTES LES DONNÉES SERONT EFFACÉES !\n\nContinuer ?'),
-            icon="warning", parent=self
+            danger=True,
         )
         if answer:
             self._run_install()
@@ -1757,19 +1759,17 @@ class VentoySetupDialog(ctk.CTkToplevel):
         self._append_log(output)
         self.btn_install.configure(state="normal", text=t('💾  Installer Ventoy'))
         if success:
-            messagebox.showinfo(
-                t('Succès'),
+            show_info(
+                self, t('Succès'),
                 t("✓ Ventoy installé avec succès !\n\nRetirez et rebranchez la clé USB puis actualisez VentoyIsoUpdater."),
-                parent=self
             )
             if self.on_done:
                 self.on_done()
             self.destroy()
         else:
-            messagebox.showerror(
-                t('Erreur'),
+            show_error(
+                self, t('Erreur'),
                 t('L\'installation a échoué.\nConsultez la sortie ci-dessous.'),
-                parent=self
             )
 
     def _append_log(self, text: str):
@@ -2015,8 +2015,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
     def _txt_save(self):
         path = self._theme_txt_path()
         if not path:
-            messagebox.showerror(t('Erreur'), t('theme.txt introuvable — impossible de sauvegarder.'),
-                                 parent=self)
+            show_error(self, t('Erreur'), t('theme.txt introuvable — impossible de sauvegarder.'))
             return
         content = self._txt_box.get("0.0", "end")
         # Backup automatique
@@ -2033,7 +2032,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
             if self._on_change:
                 self._on_change()
         except Exception as e:
-            messagebox.showerror(t('Erreur'), t(str(e)), parent=self)
+            show_error(self, t('Erreur'), t(str(e)))
             self._txt_status.configure(text=f"{t('Échec : ')}{e}", text_color="#e74c3c")
 
     # ══════════════════════ TAB 2 — Theme images ══════════════════════
@@ -2163,7 +2162,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
             try:
                 shutil.copy2(src, dest)
             except Exception as e:
-                messagebox.showerror(t('Erreur'), t(str(e)), parent=self)
+                show_error(self, t('Erreur'), t(str(e)))
         self._img_refresh()
         if self._on_change:
             self._on_change()
@@ -2183,7 +2182,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                 shutil.copy2(dest, backup)
             shutil.copy2(src, dest)
         except Exception as e:
-            messagebox.showerror(t('Erreur'), t(str(e)), parent=self)
+            show_error(self, t('Erreur'), t(str(e)))
             return
         self._img_refresh()
         if self._on_change:
@@ -2314,7 +2313,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
 
     def _icons_import(self):
         if not self._icons_dir:
-            messagebox.showerror(t('Erreur'), t('Dossier icons/ introuvable.'), parent=self)
+            show_error(self, t('Erreur'), t('Dossier icons/ introuvable.'))
             return
         paths = filedialog.askopenfilenames(
             title=t('Importer des logos PNG'),
@@ -2338,10 +2337,9 @@ class ThemeEditorDialog(ctk.CTkToplevel):
                 except Exception as e2:
                     errors.append(f"{os.path.basename(src)}: {e2}")
         if errors:
-            messagebox.showwarning(
-                t('Avertissement'),
+            show_warning(
+                self, t('Avertissement'),
                 f"{imported}{t(' logo(s) importé(s).\nÉchecs :\n')}" + "\n".join(errors),
-                parent=self
             )
         self._icons_refresh()
         _logo_cache.clear()
@@ -2349,15 +2347,16 @@ class ThemeEditorDialog(ctk.CTkToplevel):
             self._on_change()
 
     def _icons_delete(self, filename: str):
-        if not messagebox.askyesno(
-            t('Supprimer'), f"{t('Supprimer définitivement :\n')}{filename} ?", parent=self
+        if not ask_yes_no(
+            self, t('Supprimer'), f"{t('Supprimer définitivement :\n')}{filename} ?",
+            danger=True,
         ):
             return
         path = os.path.join(self._icons_dir, filename)
         try:
             os.remove(path)
         except Exception as e:
-            messagebox.showerror(t('Erreur'), t(str(e)), parent=self)
+            show_error(self, t('Erreur'), t(str(e)))
             return
         self._icons_refresh()
         _logo_cache.clear()
@@ -2366,7 +2365,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
 
     def _icons_open_repo(self):
         if not self._icons_dir:
-            messagebox.showerror(t('Erreur'), t('Dossier icons/ introuvable.'), parent=self)
+            show_error(self, t('Erreur'), t('Dossier icons/ introuvable.'))
             return
         LogoRepoBrowserDialog(
             self, self._icons_dir,
@@ -3165,8 +3164,8 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
                     self.after(0, lambda: self.winfo_exists() and self._on_import())
             else:
                 self.after(0, lambda e=err: self.winfo_exists() and
-                           messagebox.showerror(
-                               t('Erreur'), f"{t('Impossible de télécharger :\n')}{e}", parent=self))
+                           show_error(
+                               self, t('Erreur'), f"{t('Impossible de télécharger :\n')}{e}"))
             self.after(0, lambda: self.winfo_exists() and self._btn_import_one.configure(
                 state="normal", text=t('⬆  Importer vers icons/')))
 

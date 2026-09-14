@@ -261,6 +261,8 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "Téléchargement annulé": "Download cancelled",
         "Format distros.json invalide : clé 'distros' manquante": "Invalid distros.json format: missing 'distros' key",
         "Fermer": "Close",
+        "Oui": "Yes",
+        "Non": "No",
         "Autre": "Other",
         "Avertissement": "Warning",
         "Chargement...": "Loading...",
