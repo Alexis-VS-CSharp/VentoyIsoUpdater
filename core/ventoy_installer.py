@@ -379,8 +379,17 @@ def install_ventoy(
             )
 
         try:
+            # Ventoy2Disk.sh itself has no non-interactive flag: it always
+            # asks "Continue? (y/n)" on stdin before wiping the disk (twice,
+            # for a plain -i install). Without an answer piped in, the read
+            # either blocks until this call times out, or — if stdin is
+            # already closed (e.g. launched from a desktop file) — hits EOF
+            # immediately, silently reads it as "no" and exits 0, which we'd
+            # then wrongly report as a successful install that touched
+            # nothing on disk. The confirmation is already shown to the user
+            # beforehand in _confirm_install(), so answering "y" here is safe.
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=120
+                cmd, input="y\ny\n", capture_output=True, text=True, timeout=180
             )
             output = result.stdout + result.stderr
             if on_output:

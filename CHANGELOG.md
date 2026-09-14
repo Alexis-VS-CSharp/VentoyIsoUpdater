@@ -8,6 +8,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.1.2] — 2026-09-14
 
 ### Fixed
+- **Ventoy installation silently doing nothing on Linux**: `Ventoy2Disk.sh` always asks "Continue? (y/n)" on stdin before wiping the disk (twice, for a plain install), and has no flag to skip it. The app ran it without ever answering that prompt, so depending on how stdin was inherited it either hung until the 2-minute timeout, or hit EOF immediately, read that as "no", and exited with status 0 — which the app then reported as a **successful** install even though the disk was never touched. Fixed by feeding the confirmation automatically (the same warning is already shown to the user beforehand, in the app's own confirmation dialog), and raised the timeout to 180s.
 - **Ventoy installation always failing on Linux**: the code looked for the installer script as `ventoy2disk.sh`, but the official Ventoy Linux archive ships it as `Ventoy2Disk.sh` (mixed case). On any case-sensitive filesystem (ext4, btrfs, xfs — i.e. virtually every Linux distro, Fedora included) the lookup never matched, so `find_ventoy_in_dir`/`find_ventoy_binary` always returned nothing and the app reported "Ventoy2Disk.sh not found" even right after downloading and extracting a fresh copy. Fixed by matching the real filename (both cases now accepted, as a third-party package could still use the lowercase form).
 
 ## [1.1.1] — 2026-08-23
