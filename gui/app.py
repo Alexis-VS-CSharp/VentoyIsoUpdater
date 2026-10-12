@@ -3,6 +3,7 @@ Interface graphique principale — VentoyIsoUpdater
 """
 
 import os
+import sys
 import shutil
 import threading
 import webbrowser
@@ -40,6 +41,20 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
+def _wheel_units(event) -> int:
+    """Scroll "units" for one <MouseWheel> event on a CTkScrollableFrame canvas.
+
+    Windows: delta is reliable there (±120 per notch, finer on precision
+    touchpads), and CTk sets its canvases' scroll increment to 1 pixel on
+    that platform, so keep CTk's own -delta/6 (20 px per notch) — a flat
+    ±1 unit would mean 1 pixel per notch. Elsewhere: ±1 unit per event,
+    see _patched_ctk_mouse_wheel_all.
+    """
+    if sys.platform.startswith("win"):
+        return -int(event.delta / 6)
+    return -1 if event.delta > 0 else 1
+
+
 def _patched_ctk_mouse_wheel_all(self, event):
     """
     Replaces CTkScrollableFrame's own global wheel handler.
@@ -55,7 +70,7 @@ def _patched_ctk_mouse_wheel_all(self, event):
     makes <MouseWheel> match.
     """
     if self.check_if_master_is_canvas(event.widget):
-        step = -1 if event.delta > 0 else 1
+        step = _wheel_units(event)
         if self._shift_pressed:
             if self._parent_canvas.xview() != (0.0, 1.0):
                 self._parent_canvas.xview("scroll", step, "units")
@@ -65,6 +80,22 @@ def _patched_ctk_mouse_wheel_all(self, event):
 
 
 ctk.CTkScrollableFrame._mouse_wheel_all = _patched_ctk_mouse_wheel_all
+
+
+def _bind_x11_wheel(widget, canvas):
+    """Binds X11's wheel events (Button-4/5, Linux with Tk 8.6) on `widget`
+    to scroll `canvas` — CTk only handles <MouseWheel>, through its global
+    handler above, which already covers every child widget on Windows/macOS.
+    Binding <MouseWheel> here too would scroll twice per notch.
+
+    Same guard as CTk's handler: never scroll a list that fits entirely in
+    view, or Tk shifts its content down and leaves an empty gap at the top.
+    """
+    def scroll(units):
+        if canvas.yview() != (0.0, 1.0):
+            canvas.yview_scroll(units, "units")
+    widget.bind("<Button-4>", lambda e: scroll(-1), add="+")
+    widget.bind("<Button-5>", lambda e: scroll(1), add="+")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -170,9 +201,13 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         self._drives: list[VentoyDrive] = []
         self._closing = False
         self._sync_in_progress = False
+        self._refresh_in_progress = False
 
         self._build_ui()
-        self._refresh_drives()
+        # Deferred until mainloop() runs: _refresh_drives hands its result
+        # back from a worker thread via self.after(), which Tk silently
+        # drops if the thread finishes before the event loop has started
+        self.after(0, self._refresh_drives)
         logger.info(t('VentoyIsoUpdater démarré'))
 
     def _on_close(self):
@@ -340,12 +375,44 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     # ─────────────────────────── DRIVES ─────────────────────────────────────
 
     def _refresh_drives(self):
+        # Detection shells out to lsblk/findmnt/udisksctl (with timeouts of
+        # up to 15s each when mounting a freshly installed drive), so it
+        # runs off the Tk thread to keep the window responsive.
+        if self._refresh_in_progress:
+            return
+        self._refresh_in_progress = True
         self._set_status(t('Recherche des clés Ventoy...'))
-        drives = find_ventoy_drives()
+
+        def run():
+            try:
+                drives = find_ventoy_drives()
+            except Exception as e:
+                logger.error("Drive detection failed: %s", e, exc_info=True)
+                drives = []
+            if not self._closing:
+                self.after(0, lambda d=drives: self._apply_drives(d))
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def _apply_drives(self, drives: list[VentoyDrive]):
+        self._refresh_in_progress = False
         if not drives:
             self.drive_combo.configure(values=[t('Aucune clé Ventoy détectée')])
             self.drive_combo.set(t('Aucune clé Ventoy détectée'))
             self._set_status(t('Aucune clé Ventoy trouvée.'))
+            # Forget the previous drive too: it would otherwise stay
+            # "selected" (info panel, ISO table, actions) after being
+            # unplugged or wiped by a Ventoy install
+            self._drives = []
+            self.current_drive = None
+            self.iso_entries = []
+            self.check_results.clear()
+            for key, text in (("label", t('Label : —')), ("ver", t('Ventoy : —')),
+                              ("space", t('Libre : —')), ("isos", t('ISO : —')),
+                              ("theme", t('Thème : —'))):
+                self.lbl_info[key].configure(text=text)
+            self.btn_check_all.configure(state="disabled")
+            self._render_table()
             return
         self._drives = drives
         labels = [f"{d.label}  ({d.mount_point})" for d in drives]
@@ -424,16 +491,7 @@ class VentoyIsoUpdaterApp(ctk.CTk):
     def _bind_table_scroll(self, widget):
         """Propage la molette de tous les widgets enfants vers le canvas de la table."""
         canvas = self.table._parent_canvas
-        # One "unit" per event regardless of e.delta's magnitude: on X11/
-        # Wayland that value isn't reliably ±120 per notch the way it is on
-        # Windows/macOS — some setups report much larger deltas, which made
-        # a single wheel tick scroll the whole list to the bottom.
-        widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"), add="+")
-        widget.bind("<Button-4>",
-                    lambda e: canvas.yview_scroll(-1, "units"), add="+")
-        widget.bind("<Button-5>",
-                    lambda e: canvas.yview_scroll(1, "units"), add="+")
+        _bind_x11_wheel(widget, canvas)
         for child in widget.winfo_children():
             self._bind_table_scroll(child)
 
@@ -920,7 +978,10 @@ class VentoyIsoUpdaterApp(ctk.CTk):
         )
 
     def _open_ventoy_setup(self):
-        VentoySetupDialog(self, on_done=self._refresh_drives)
+        # Ventoy2Disk.sh makes the kernel re-read the partition table
+        # several times right up to the end of the install: rescanning
+        # immediately can miss the new partitions, so give it a moment
+        VentoySetupDialog(self, on_done=lambda: self.after(3000, self._refresh_drives))
 
     def _open_theme_manager(self):
         if not self.current_drive:
@@ -1341,17 +1402,7 @@ class DistroPickerDialog(ctk.CTkToplevel):
 
     def _bind_scroll_to(self, widget, canvas):
         """Recursively forwards the mouse wheel to the given canvas."""
-        # One "unit" per event regardless of e.delta's magnitude — see
-        # _bind_table_scroll's comment.
-        widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"),
-                    add="+")
-        widget.bind("<Button-4>",
-                    lambda e: canvas.yview_scroll(-1, "units"),
-                    add="+")
-        widget.bind("<Button-5>",
-                    lambda e: canvas.yview_scroll(1, "units"),
-                    add="+")
+        _bind_x11_wheel(widget, canvas)
         for child in widget.winfo_children():
             self._bind_scroll_to(child, canvas)
 
@@ -2052,7 +2103,9 @@ class VentoySetupDialog(ctk.CTkToplevel):
         self._append_log(t('Démarrage de l\'installation Ventoy...\n'))
 
         def run():
-            from core.ventoy_installer import find_ventoy_in_dir, install_ventoy
+            from core.ventoy_installer import (
+                find_ventoy_in_dir, install_ventoy, prepare_verified_ventoy
+            )
             script = find_ventoy_in_dir(self._ventoy_dir)
             if not script:
                 self.after(0, lambda: self.winfo_exists() and self._append_log(
@@ -2061,22 +2114,39 @@ class VentoySetupDialog(ctk.CTkToplevel):
                     state="normal", text=t('💾  Installer Ventoy')))
                 return
 
-            def _on_output(txt):
-                self.after(0, lambda t=txt: self.winfo_exists() and self._append_log(t))
+            # A copy from the download cache is re-verified against the
+            # official checksum and run from a fresh temp dir, never as-is
+            prepared = prepare_verified_ventoy(script)
+            if not prepared:
+                self.after(0, lambda: self.winfo_exists() and self._append_log(
+                    t("Erreur : impossible de vérifier l'intégrité de la copie de Ventoy "
+                      "en cache (hors ligne ou archive modifiée). Retéléchargez Ventoy.\n")))
+                self.after(0, lambda: self.winfo_exists() and self.btn_install.configure(
+                    state="normal", text=t('💾  Installer Ventoy')))
+                return
+            script, tmp_dir = prepared
 
-            success, output = install_ventoy(
-                device=self._selected_device,
-                ventoy_script=script,
-                force=force,
-                on_output=_on_output,
-            )
+            # No on_output callback: install_ventoy() only reports the
+            # output once the script has finished, and _on_install_done()
+            # already appends it — passing both logged it twice
+            try:
+                success, output = install_ventoy(
+                    device=self._selected_device,
+                    ventoy_script=script,
+                    force=force,
+                )
+            finally:
+                if tmp_dir:
+                    shutil.rmtree(tmp_dir, ignore_errors=True)
             self.after(0, lambda s=success, o=output:
                        self.winfo_exists() and self._on_install_done(s, o))
 
         threading.Thread(target=run, daemon=True).start()
 
     def _on_install_done(self, success: bool, output: str):
-        self._append_log(output)
+        # Keeps the next run's "Démarrage..." line from being glued to the
+        # end of a message that has no trailing newline
+        self._append_log(output if output.endswith("\n") else output + "\n")
         self.btn_install.configure(state="normal", text=t('💾  Installer Ventoy'))
         if success:
             show_info(
@@ -2253,14 +2323,7 @@ class ThemeEditorDialog(ctk.CTkToplevel):
 
     def _bind_scroll_to(self, widget, canvas):
         """Recursively forwards the mouse wheel from all children to the given canvas."""
-        # One "unit" per event regardless of e.delta's magnitude — see
-        # _bind_table_scroll's comment.
-        widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"), add="+")
-        widget.bind("<Button-4>",
-                    lambda e: canvas.yview_scroll(-1, "units"), add="+")
-        widget.bind("<Button-5>",
-                    lambda e: canvas.yview_scroll(1, "units"), add="+")
+        _bind_x11_wheel(widget, canvas)
         for child in widget.winfo_children():
             self._bind_scroll_to(child, canvas)
 
@@ -3332,17 +3395,7 @@ class LogoRepoBrowserDialog(ctk.CTkToplevel):
             canvas = self._listbox._parent_canvas
         except AttributeError:
             return
-        # One "unit" per event regardless of e.delta's magnitude — see
-        # _bind_table_scroll's comment.
-        widget.bind("<MouseWheel>",
-                    lambda e: canvas.yview_scroll(-1 if e.delta > 0 else 1, "units"),
-                    add="+")
-        widget.bind("<Button-4>",
-                    lambda e: canvas.yview_scroll(-1, "units"),
-                    add="+")
-        widget.bind("<Button-5>",
-                    lambda e: canvas.yview_scroll(1, "units"),
-                    add="+")
+        _bind_x11_wheel(widget, canvas)
 
     def _refresh_list(self):
         self._refresh_job = None

@@ -271,16 +271,29 @@ def _get_drive_label_linux(mount_point: str) -> str:
 
 def _auto_mount_unmounted_ventoy_linux() -> None:
     """
-    Best-effort: mounts any unmounted partition on a hot-pluggable disk
-    that turns out to be a Ventoy drive, so it shows up without the user
-    having to unplug/replug it or open a file manager — which otherwise
-    would be the only way to get it auto-mounted again after this app (or
-    Ventoy2Disk.sh itself, mid-install) unmounted it. Unmounts it right
-    back if it turns out not to actually be Ventoy, to leave any other,
-    unrelated USB drive as untouched as possible.
+    Best-effort: mounts the unmounted data partition of any hot-pluggable
+    disk that is a Ventoy drive, so it shows up without the user having to
+    unplug/replug it or open a file manager — which otherwise would be the
+    only way to get it auto-mounted again after this app (or
+    Ventoy2Disk.sh itself, mid-install) unmounted it.
+
+    Only disks that already carry a "VTOYEFI" partition are touched: that
+    label is readable from lsblk without mounting anything, so any other,
+    unrelated USB drive the user deliberately left unmounted is never
+    mounted (mounting can replay a journal, flag an NTFS volume as dirty,
+    or pop up desktop notifications).
     """
     if not shutil.which("udisksctl"):
         return
+    # Lets udev finish processing pending block events (e.g. the partition
+    # table a Ventoy install just rewrote) so lsblk reports the new
+    # partitions and their labels, not a half-updated view
+    if shutil.which("udevadm"):
+        try:
+            subprocess.run(["udevadm", "settle", "--timeout=5"],
+                           capture_output=True, timeout=10)
+        except Exception:
+            pass
     try:
         result = subprocess.run(
             ["lsblk", "-J", "-b", "-o", "NAME,TYPE,HOTPLUG,MOUNTPOINT,FSTYPE,LABEL"],
@@ -295,7 +308,10 @@ def _auto_mount_unmounted_ventoy_linux() -> None:
     for disk in data.get("blockdevices", []):
         if disk.get("type") != "disk" or not disk.get("hotplug"):
             continue
-        for part in disk.get("children", []) or []:
+        children = disk.get("children", []) or []
+        if not any((p.get("label") or "").upper() == "VTOYEFI" for p in children):
+            continue
+        for part in children:
             if part.get("type") != "part" or part.get("mountpoint") or not part.get("fstype"):
                 continue
             # VTOYEFI is Ventoy's own internal boot partition — nothing to
